@@ -31,6 +31,13 @@ cargo build --release
 
 ### Rococo Relay Chain Testnet
 
+--- 
+### _IS THIS TEMPLATE ROCOCO COMPATIBLE?_
+> :white_check_mark: **Yes!** :white_check_mark:
+>
+> As of 5/5/2021 
+---
+
 Rococo is Parity's official relay chain testnet for connecting cumulus-based parathreads
 and parachains.
 
@@ -43,14 +50,6 @@ and parachains.
 
 - **[Polkadot `rococo-v1` branch](https://github.com/paritytech/polkadot/tree/rococo-v1)**
 - **[Cumulus `rococo-v1` branch](https://github.com/paritytech/cumulus/tree/rococo-v1)**
-
---- 
-
-### _IS THIS TEMPLATE ROCOCO COMPATIBLE?_
-> :white_check_mark: **Yes!** :white_check_mark:
->
-> As of 5/5/2021 
----
 
 This network is under _constant development_ - so expect to need to follow progress and update
 your parachains in lock step with the rococo changes if you wish to connect to the network.
@@ -206,6 +205,8 @@ reporting _parachian_ blocks:
 
 ## Learn More
 
+- More detailed instructions to use Cumulus parachains are found in the
+[Cumulus Worship](https://substrate.dev/cumulus-workshop/#/en/3-parachains/2-register)
 - Refer to the upstream
 [Substrate Developer Hub Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
 to learn more about the structure of this project, the capabilities it encapsulates and the way in
