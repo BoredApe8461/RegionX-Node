@@ -1,73 +1,137 @@
 # Substrate Cumulus Parachain Template
 
-A new Cumulus-based Substrate node, ready for hacking :cloud:
-
-## Upstream
+A new [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, ready for hacking :cloud:
 
 This project is a fork of the
-[Substrate Developer Hub Node Template](https://github.com/substrate-developer-hub/substrate-node-template).
+[Substrate Developer Hub Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
+modified to include dependencies required for registering this node as a **parathread or parachian**
+to an established **relay chain** 
 
 ## Build & Run
 
 Follow these steps to prepare a local Substrate development environment :hammer_and_wrench:
 
-### Setup
+### Setup of Machine
 
 If necessary, refer to the setup instructions at the
 [Substrate Developer Hub](https://substrate.dev/docs/en/knowledgebase/getting-started/#manual-installation).
 
 ### Build
 
-Once the development environment is set up, build the node template. This command will build the
-[Wasm](https://substrate.dev/docs/en/knowledgebase/advanced/executor#wasm-execution) and
-[native](https://substrate.dev/docs/en/knowledgebase/advanced/executor#native-execution) code:
+Once the development environment is set up, build the parachain node template. This command will
+build the
+[Wasm Runtime](https://substrate.dev/docs/en/knowledgebase/advanced/executor#wasm-execution) and
+[native node](https://substrate.dev/docs/en/knowledgebase/advanced/executor#native-execution) code:
 
 ```bash
 cargo build --release
 ```
-## Run
+
+## Run A Collator Node
+
+### Rococo Relay Chain Testnet
+
+Rococo is Parity's official relay chain testnet for connecting cumulus-based parathreads
+and parachains.
+
+**See the [Cumulus Workshop](https://substrate.dev/cumulus-workshop/) for the latest instructions**
+**to register a parathread/parachain on Rococo**
+
+> **IMPORTANT NOTE:** you _must_ use the _same_ commit for cumulus and polkadot `rococo-v1` branch
+> to build your parachain against to be compatible!!! You _must_ test locally registering your
+> parachain successfully before you attempt to connect to rococo!
+
+- **[Polkadot `rococo-v1` branch](https://github.com/paritytech/polkadot/tree/rococo-v1)**
+- **[Cumulus `rococo-v1` branch](https://github.com/paritytech/cumulus/tree/rococo-v1)**
+
+--- 
+
+### _IS THIS TEMPLATE ROCOCO COMPATIBLE?_
+> :white_check_mark: **Yes!** :white_check_mark:
+>
+> As of 5/5/2021 
+---
+
+This network is under _constant development_ - so expect to need to follow progress and update
+your parachains in lock step with the rococo changes if you wish to connect to the network.
+
+Do join the [rococo matrix chat room](https://matrix.to/#/#rococo:matrix.parity.io) to ask
+questions and connect with the rococo teams.
 
 ### Local Relay Chain Testnet
 
-#### Relay Chain Network(Validators)
+To operate a parathread or parachain, you _must_ connect to a relay chain.
 
-We need to clone and install the Polkadot (rococo-v1 branch):
+#### Relay Chain Network (Validators)
+
+Clkone and build the Polkadot (**`rococo-v1` branch**):
 ```bash
 # Get a fresh clone, or `cd` to where you have polkadot already:
-git clone git@github.com:paritytech/polkadot.git
+git clone -b rococo-v1 --depth 1 https://github.com:paritytech/polkadot.git
 cd polkadot
-git checkout rococo-v1
-
-# build polkadot relay chain
 cargo build --release
+```
 
-# generaete the chainspec - note this file MUST be shared with all nodes!
-# Other nodes cannot generate it due to possible non-determanism 
-./target/release/polkadot build-spec --chain rococo-local --raw --disable-default-bootnode > rococo_local.json
+##### Generaete the chainspec
 
+> NOTE: this file _must_ be generated on a _single node_ and then the file shared with all nodes!
+> Other nodes _cannot_ generate it due to possible non-determinism. 
+
+```bash
+./target/release/polkadot build-spec\
+--chain rococo-local\
+--raw\
+--disable-default-bootnode\
+> rococo_local.json
+```
+
+##### Start Relay Chain Node(s)
+
+You should have a minimum of 2 running full _validator_ nodes on your relay chain per parachain/thread
+collator you intend to connect!
+
+From the Polkadot working directory:
+```bash
 # Start Relay `Alice` node
-./target/release/polkadot --chain ./rococo_local.json -d cumulus_relay0 --validator --alice --port 50556
+./target/release/polkadot\
+--chain ./rococo_local.json\
+-d cumulus_relay/alice\
+--validator\
+--alice\
+--port 50555
 ```
 
 Open a new terminal, same directory: 
 
-```bash 
-# Start Relay `Bob` node
-./target/release/polkadot --chain ./rococo_local.json -d cumulus_relay1 --validator --bob --port 50555
+```bash
+# Start Relay `Alice` node
+./target/release/polkadot\
+--chain ./rococo_local.json\
+-d cumulus_relay/bob\
+--validator\
+--bob\
+--port 50556
 ```
-
-> There _must_ be a minimum of 2 relay chain nodes per parachain node. Scale as needed!
+Add more nodes as needed, with non-conflicting ports, DB directiories, and validator keys
+(`--charlie`, `--dave`, etc.).
 
 #### Parachain Nodes (Collators)
 
-Substrate Parachain Template:
-```bash
-# NOTE: this command assumes the chain spec is in a directory named polkadot that is a sibling of the working directory
-./target/release/parachain-collator -d local-test --collator --alice --ws-port 9945 --parachain-id 200 -- --execution wasm --chain ../polkadot/rococo_local.json
-```
+From the parachain template working directory:
 
-> Note: this chainspec file MUST be shared with all nodes genereated by _one_ validator node and passed around.
-> Other nodes cannot generate it due to possible non-determanism 
+```bash
+# NOTE: this command assumes the chain spec is in a directory named `polkadot`
+# that is at the same level of the template working directory. Change as needed.
+./target/release/parachain-collator\
+-d cumulus-parachain/alice\
+--collator\
+--alice\
+--ws-port 9945\
+--parachain-id 200\
+--\
+--execution wasm\
+--chain ../polkadot/rococo_local.json
+```
 
 ### Registering on Local Relay Chain
 
@@ -81,7 +145,7 @@ you modified the code you can use the following commands:
 cargo build --release
 
 # Build the Chain spec
-./target/release/parachain-collator build-spec \
+./target/release/parachain-collator build-spec\
 --disable-default-bootnode > ./resources/template-local-plain.json
 
 # Build the raw file
@@ -96,22 +160,30 @@ cargo build --release
 ./target/release/parachain-collator export-genesis-wasm > ./resources/para-200-wasm
 ```
 
+> Note: we have set the `para_ID = 200` here, this _must_ be unique for all parathreads/chains on the
+> relay chain you register with.
+
 #### Register on the Relay with `sudo`
 
-In order to produce blocks you will need to register the parachain as detailed in the [Substrate Cumulus Worship](https://substrate.dev/cumulus-workshop/#/en/3-parachains/2-register) by going to 
+In order to produce blocks you will need to register the parachain as detailed in the
+[Substrate Cumulus Worship](https://substrate.dev/cumulus-workshop/#/en/3-parachains/2-register)
+by going to:
 
 `Developer -> sudo -> paraSudoWrapper -> sudoScheduleParaInitialize(id, genesis)`
-
-> Note : When registering to Rococo, ensure you set a ParaId > 1000, below 1000 is meant for system parachains.
 
 Ensure you set the `ParaId to 200` and the `parachain: Bool to Yes`.
 
 The files you will need are in the `./resources` folder, you just created.
 
+> Note : When registering to the public Rococo testnet, ensure you set a **unique** 
+> `para_id` > 1000, below 1000 is reserved _exclusively_ for system parachains.
+
 #### Restart the Parachain (Collator) and Wait...
 
-The collator node may need to be restarted to get it functioning as expected. After a [new era](https://wiki.polkadot.network/docs/en/glossary#era) starts on the relay chain, your parachain will come online. Once this happens, you should see the
-collator start reporting _parachian_ blocks:
+The collator node may need to be restarted to get it functioning as expected. After a 
+[new era](https://wiki.polkadot.network/docs/en/glossary#era) starts on the relay chain,
+your parachain will come online. Once this happens, you should see the collator start
+reporting _parachian_ blocks:
 
 ```bash
 2021-04-01 16:31:06 [Relaychain] ✨ Imported #243 (0x46d8…f394)    
@@ -130,13 +202,14 @@ collator start reporting _parachian_ blocks:
 2021-04-01 16:31:14 [Parachain] 💤 Idle (0 peers), best: #90 (0x85c6…45be), finalized #65 (0xdd20…d44a), ⬇ 1.6kiB/s ⬆ 1.4kiB/s    
 ``` 
 
-> Note the delay here! It may take some time for your relaychain to enter a new era. 
+> Note the delay here! It may take some time for your relaychain to enter a new era.
 
 ## Learn More
 
-Refer to the upstream
+- Refer to the upstream
 [Substrate Developer Hub Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
 to learn more about the structure of this project, the capabilities it encapsulates and the way in
-which those capabilities are implemented. You can learn more about
+which those capabilities are implemented.
+- You can learn more about
 [The Path of Parachain Block](https://polkadot.network/the-path-of-a-parachain-block/) on the
 official Polkadot Blog.
