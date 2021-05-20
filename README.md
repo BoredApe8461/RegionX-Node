@@ -63,7 +63,7 @@ To operate a parathread or parachain, you _must_ connect to a relay chain.
 
 #### Relay Chain Network (Validators)
 
-Clkone and build the Polkadot (**`rococo-v1` branch**):
+Clone and build the Polkadot (**`rococo-v1` branch**):
 ```bash
 # Get a fresh clone, or `cd` to where you have polkadot already:
 git clone -b rococo-v1 --depth 1 https://github.com:paritytech/polkadot.git
