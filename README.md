@@ -30,6 +30,9 @@ build the
 cargo build --release
 ```
 
+> NOTE: You _must_ use the release builds for parachains! The optimizations here are required
+> as in debug mode, it is expected that nodes are not able to run fast enough to produce blocks.
+
 ## Relay Chain
 
 > **NOTE**: In the following two sections, we document how to manually start a few relay chain
@@ -73,7 +76,7 @@ _single node_ and then shared among all nodes!
 
 ### Start Relay Chain
 
-We need *n + 1* full _validator_ nodes running on a relay chain to accept *n* parachain / parathread
+We need _n + 1_ full _validator_ nodes running on a relay chain to accept _n_ parachain / parathread
 connections. Here we will start two relay chain nodes so we can have one parachain node connecting in
 later.
 
@@ -106,7 +109,7 @@ Add more nodes as needed, with non-conflicting ports, DB directories, and valida
 
 ### Reserve a ParaID
 
-To connect to a relay chain, you must first _reserve a `ParaId` for your parathread that will
+To connect to a relay chain, you must first \_reserve a `ParaId` for your parathread that will
 become a parachain. To do this, you will need sufficient amount of currency on the network account
 to reserve the ID.
 
@@ -245,21 +248,21 @@ Now that you have two relay chain nodes, and a parachain node accompanied with a
 client running, the next step is to register the parachain in the relay chain with the following
 steps (for detail, refer to the [Substrate Cumulus Worship](https://substrate.dev/cumulus-workshop/#/en/3-parachains/2-register)):
 
-- Goto [Polkadot Apps UI](https://polkadot.js.org/apps/#/explorer), connecting to your relay chain.
+-   Goto [Polkadot Apps UI](https://polkadot.js.org/apps/#/explorer), connecting to your relay chain.
 
-- Execute a sudo extrinsic on the relay chain by going to `Developer` -> `sudo` page.
+-   Execute a sudo extrinsic on the relay chain by going to `Developer` -> `sudo` page.
 
-- Pick `paraSudoWrapper` -> `sudoScheduleParaInitialize(id, genesis)` as the extrinsic type,
-shown below.
+-   Pick `paraSudoWrapper` -> `sudoScheduleParaInitialize(id, genesis)` as the extrinsic type,
+    shown below.
 
-	![Polkadot Apps UI](docs/assets/ss01.png)
+        ![Polkadot Apps UI](docs/assets/ss01.png)
 
-- Set the `id: ParaId` to 2,000 (or whatever ParaId you used above), and set the `parachain: Bool`
-option to **Yes**.
+-   Set the `id: ParaId` to 2,000 (or whatever ParaId you used above), and set the `parachain: Bool`
+    option to **Yes**.
 
-- For the `genesisHead`, drag the genesis state file exported above, `para-2000-genesis`, in.
+-   For the `genesisHead`, drag the genesis state file exported above, `para-2000-genesis`, in.
 
-- For the `validationCode`, drag the genesis wasm file exported above, `para-2000-wasm`, in.
+-   For the `validationCode`, drag the genesis wasm file exported above, `para-2000-wasm`, in.
 
 > **Note**: When registering to the public Rococo testnet, ensure you set a **unique** `paraId`
 > larger than 1,000. Values below 1,000 are reserved _exclusively_ for system parachains.
@@ -325,10 +328,10 @@ reporting _parachain_ blocks:
 
 _Is this Cumulus Parachain Template Rococo & Westend testnets compatible?_ **Yes!**
 
-- **Rococo** is the testnet of Kusama (join the
-[Rococo Faucet](https://matrix.to/#/#rococo-faucet:matrix.org) to get testing funds).
-- **Westend** is the testnet of Polkadot (join the
-[Westend Faucet](https://matrix.to/#/#westend_faucet:matrix.org) to get testing funds).
+-   **Rococo** is the testnet of Kusama (join the
+    [Rococo Faucet](https://matrix.to/#/#rococo-faucet:matrix.org) to get testing funds).
+-   **Westend** is the testnet of Polkadot (join the
+    [Westend Faucet](https://matrix.to/#/#westend_faucet:matrix.org) to get testing funds).
 
 See the [Cumulus Workshop](https://substrate.dev/cumulus-workshop/) for the latest instructions to
 register a parathread/parachain on a relay chain.
@@ -350,9 +353,9 @@ to ask questions and connect with the parachain building teams.
 
 ## Learn More
 
-- More detailed instructions to use Cumulus parachains are found in the
-[Cumulus Workshop](https://substrate.dev/cumulus-workshop/#/en/3-parachains/2-register).
-- Refer to the upstream [Substrate Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
-to learn more about the structure of this project, the capabilities it encapsulates and the way in
-which those capabilities are implemented.
-- Learn more about how a parachain block is added to a finalized chain [here](https://polkadot.network/the-path-of-a-parachain-block/).
+-   More detailed instructions to use Cumulus parachains are found in the
+    [Cumulus Workshop](https://substrate.dev/cumulus-workshop/#/en/3-parachains/2-register).
+-   Refer to the upstream [Substrate Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
+    to learn more about the structure of this project, the capabilities it encapsulates and the way in
+    which those capabilities are implemented.
+-   Learn more about how a parachain block is added to a finalized chain [here](https://polkadot.network/the-path-of-a-parachain-block/).
