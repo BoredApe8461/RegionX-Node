@@ -1,6 +1,4 @@
 use crate::chain_spec;
-use cumulus_client_cli;
-use sc_cli;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -92,7 +90,7 @@ pub struct Cli {
 	#[structopt(flatten)]
 	pub run: cumulus_client_cli::RunCmd,
 
-	/// Relaychain arguments
+	/// Relay chain arguments
 	#[structopt(raw = true)]
 	pub relaychain_args: Vec<String>,
 }
