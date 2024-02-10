@@ -64,15 +64,15 @@ pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::Sessio
 pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenSymbol".into(), "REGX".into());
 	properties.insert("tokenDecimals".into(), 12.into());
 	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::from_genesis(
 		// Name
-		"Development",
+		"RegionX DeveloDevpment",
 		// ID
-		"dev",
+		"regionx-dev",
 		ChainType::Development,
 		move || {
 			testnet_genesis(
@@ -120,15 +120,15 @@ pub fn development_config() -> ChainSpec {
 pub fn local_testnet_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenSymbol".into(), "REGX".into());
 	properties.insert("tokenDecimals".into(), 12.into());
 	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::from_genesis(
 		// Name
-		"Local Testnet",
+		"RegionX Local",
 		// ID
-		"local_testnet",
+		"regionx_testnet",
 		ChainType::Local,
 		move || {
 			testnet_genesis(
@@ -166,7 +166,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("template-local"),
+		Some("regionx-local"),
 		// Fork ID
 		None,
 		// Properties
