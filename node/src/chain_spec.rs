@@ -1,5 +1,5 @@
 use cumulus_primitives_core::ParaId;
-use parachain_template_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use regionx_kusama_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -8,7 +8,7 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
-	sc_service::GenericChainSpec<parachain_template_runtime::RuntimeGenesisConfig, Extensions>;
+	sc_service::GenericChainSpec<regionx_kusama_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
@@ -57,8 +57,8 @@ where
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::SessionKeys {
-	parachain_template_runtime::SessionKeys { aura: keys }
+pub fn template_session_keys(keys: AuraId) -> regionx_kusama_runtime::SessionKeys {
+	regionx_kusama_runtime::SessionKeys { aura: keys }
 }
 
 pub fn development_config() -> ChainSpec {
@@ -184,27 +184,27 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	root: AccountId,
 	id: ParaId,
-) -> parachain_template_runtime::RuntimeGenesisConfig {
-	parachain_template_runtime::RuntimeGenesisConfig {
-		system: parachain_template_runtime::SystemConfig {
-			code: parachain_template_runtime::WASM_BINARY
+) -> regionx_kusama_runtime::RuntimeGenesisConfig {
+	regionx_kusama_runtime::RuntimeGenesisConfig {
+		system: regionx_kusama_runtime::SystemConfig {
+			code: regionx_kusama_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
 			..Default::default()
 		},
-		balances: parachain_template_runtime::BalancesConfig {
+		balances: regionx_kusama_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		parachain_info: parachain_template_runtime::ParachainInfoConfig {
+		parachain_info: regionx_kusama_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()
 		},
-		collator_selection: parachain_template_runtime::CollatorSelectionConfig {
+		collator_selection: regionx_kusama_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
 			candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
 			..Default::default()
 		},
-		session: parachain_template_runtime::SessionConfig {
+		session: regionx_kusama_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|(acc, aura)| {
@@ -221,11 +221,11 @@ fn testnet_genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
-		polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
+		polkadot_xcm: regionx_kusama_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
 		transaction_payment: Default::default(),
-		sudo: parachain_template_runtime::SudoConfig { key: Some(root) },
+		sudo: regionx_kusama_runtime::SudoConfig { key: Some(root) },
 	}
 }

@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use log::{info, warn};
-use parachain_template_runtime::Block;
+use regionx_kusama_runtime::Block;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
@@ -218,7 +218,7 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
-			use parachain_template_runtime::MILLISECS_PER_BLOCK;
+			use regionx_kusama_runtime::MILLISECS_PER_BLOCK;
 			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
 
 			let runner = cli.create_runner(cmd)?;
