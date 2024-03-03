@@ -20,7 +20,7 @@ scale-info = { workspace = true }
 smallvec = { workspace = true }
 
 # Local
-regionx-primitives ={ workspace = true }
+regionx-primitives = { workspace = true }
 pallet-parachain-template = { workspace = true }
 
 # Substrate

@@ -218,6 +218,7 @@ parameter_types! {
 		})
 		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
 		.build_or_panic();
+	// TODO: properly set ss58 prefix
 	pub const SS58Prefix: u16 = 42;
 }
 
