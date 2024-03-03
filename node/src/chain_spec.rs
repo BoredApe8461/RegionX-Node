@@ -63,20 +63,20 @@ pub fn template_session_keys(keys: AuraId) -> regionx_runtime::SessionKeys {
 pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenSymbol".into(), "REGX".into());
 	properties.insert("tokenDecimals".into(), 12.into());
+	// TODO: chose an ss58Format
 	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::builder(
-		regionx_runtime::WASM_BINARY
-			.expect("WASM binary was not built, please build it!"),
+		regionx_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 		Extensions {
 			relay_chain: "rococo-local".into(),
 			// You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2000,
 		},
 	)
-	.with_name("Development")
+	.with_name("RegionX Development")
 	.with_id("dev")
 	.with_chain_type(ChainType::Development)
 	.with_genesis_config_patch(testnet_genesis(
@@ -106,7 +106,7 @@ pub fn development_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 		],
 		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		1000.into(),
+		2000.into(),
 	))
 	.build()
 }
@@ -120,16 +120,15 @@ pub fn local_testnet_config() -> ChainSpec {
 
 	#[allow(deprecated)]
 	ChainSpec::builder(
-		regionx_runtime::WASM_BINARY
-			.expect("WASM binary was not built, please build it!"),
+		regionx_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 		Extensions {
 			relay_chain: "rococo-local".into(),
 			// You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2000,
 		},
 	)
-	.with_name("Local Testnet")
-	.with_id("local_testnet")
+	.with_name("RegionX Local")
+	.with_id("regionx_local")
 	.with_chain_type(ChainType::Local)
 	.with_genesis_config_patch(testnet_genesis(
 		// initial collators.
@@ -158,9 +157,9 @@ pub fn local_testnet_config() -> ChainSpec {
 			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 		],
 		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		1000.into(),
+		2000.into(),
 	))
-	.with_protocol_id("template-local")
+	.with_protocol_id("regionx-local")
 	.with_properties(properties)
 	.build()
 }
