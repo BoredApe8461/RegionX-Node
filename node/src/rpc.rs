@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use regionx_primitives::{opaque::Block, AccountId, Balance, Hash, Nonce};
+use regionx_primitives::{opaque::Block, AccountId, Balance, Nonce};
 
 pub use sc_rpc::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
