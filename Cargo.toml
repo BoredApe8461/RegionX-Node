@@ -4,6 +4,7 @@ panic = "unwind"
 [workspace]
 members = [
 	"node",
+	"primitives",
 	"pallets/*",
 	"runtime/*",
 ]
@@ -129,5 +130,6 @@ pallet-collator-selection = { git = "https://github.com/paritytech/polkadot-sdk.
 parachain-info = { package = "staging-parachain-info", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.6.0", default-features = false }
 
 # Local
+regionx-primitives = { path = "./primitives", default-features = false }
 regionx-runtime = { path = "./runtime/regionx" }
 pallet-parachain-template = { path = "./pallets/template", default-features = false }

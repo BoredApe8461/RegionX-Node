@@ -5221,6 +5221,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "local-runtime"
+version = "0.1.0"
+
+[[package]]
 name = "lock_api"
 version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9314,6 +9318,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5ea92a5b6195c6ef2a0295ea818b312502c6fc94dde986c5553242e18fd4ce2"
 
 [[package]]
+name = "regionx-primitives"
+version = "0.1.0"
+dependencies = [
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
 name = "regionx-runtime"
 version = "0.1.0"
 dependencies = [
@@ -9351,6 +9363,7 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-parachain-primitives",
  "polkadot-runtime-common",
+ "regionx-primitives",
  "scale-info",
  "smallvec",
  "sp-api",
