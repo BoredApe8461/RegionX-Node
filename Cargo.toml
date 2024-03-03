@@ -63,6 +63,8 @@ sc-client-api= { git = "https://github.com/paritytech/polkadot-sdk", default-fea
 sp-api = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.6.0" }
 sc-client-db =  { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.6.0" }
 sc-consensus =  { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.6.0" }
+sc-consensus-aura = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.6.0" }
+sc-consensus-grandpa = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.6.0" }
 sc-executor =  { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.6.0" }
 sc-network =  { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.6.0" }
 sc-network-sync =  { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.6.0" }
@@ -133,5 +135,6 @@ parachain-info = { package = "staging-parachain-info", git = "https://github.com
 
 # Local
 regionx-primitives = { path = "./primitives", default-features = false }
+local-runtime = { path = "./runtime/local" }
 regionx-runtime = { path = "./runtime/regionx" }
 pallet-parachain-template = { path = "./pallets/template", default-features = false }

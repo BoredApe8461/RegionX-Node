@@ -1,3 +1,4 @@
+pub mod local;
 pub mod parachain;
 
 mod cli;
