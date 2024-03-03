@@ -16,9 +16,10 @@ parity-scale-codec = { workspace = true }
 serde = { workspace = true, features = ["derive"]}
 jsonrpsee = { workspace = true, features = ["server"]  }
 futures = { workspace = true }
+serde_json = { wokrspace = true }
 
 # Local
-regionx-kusama-runtime = { workspace = true }
+regionx-runtime = { workspace = true }
 
 # Substrate
 frame-benchmarking = { workspace = true }
@@ -60,8 +61,10 @@ xcm = { workspace = true }
 
 # Cumulus
 cumulus-client-cli = { workspace = true }
+cumulus-client-collator = { workspace = true }
 cumulus-client-consensus-aura = { workspace = true }
 cumulus-client-consensus-common = { workspace = true }
+cumulus-client-consensus-proposer = { workspace = true }
 cumulus-client-service = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-parachain-inherent = { workspace = true }
@@ -74,10 +77,10 @@ substrate-build-script-utils = { workspace = true }
 [features]
 default = []
 runtime-benchmarks = [
-	"regionx-kusama-runtime/runtime-benchmarks",
+	"regionx-runtime/runtime-benchmarks",
 	"polkadot-cli/runtime-benchmarks",
 ]
 try-runtime = [
 	"try-runtime-cli/try-runtime",
-	"regionx-kusama-runtime/try-runtime"
+	"regionx-runtime/try-runtime"
 ]

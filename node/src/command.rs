@@ -2,8 +2,8 @@ use std::net::SocketAddr;
 
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use log::{info, warn};
-use regionx_kusama_runtime::Block;
+use log::info;
+use regionx_runtime::Block;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
@@ -20,7 +20,7 @@ use crate::{
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
 		"dev" => Box::new(chain_spec::development_config()),
-		"regionx-rococo" => Box::new(chain_spec::local_testnet_config()),
+		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
 		"" | "local" => Box::new(chain_spec::local_testnet_config()),
 		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
 	})
@@ -28,7 +28,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"RegionX Node".into()
+		"Parachain Collator Template".into()
 	}
 
 	fn impl_version() -> String {
@@ -50,7 +50,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/paritytech/cumulus/issues/new".into()
+		"https://github.com/paritytech/polkadot-sdk/issues/new".into()
 	}
 
 	fn copyright_start_year() -> i32 {
@@ -64,7 +64,7 @@ impl SubstrateCli for Cli {
 
 impl SubstrateCli for RelayChainCli {
 	fn impl_name() -> String {
-		"RegionX Node".into()
+		"Parachain Collator Template".into()
 	}
 
 	fn impl_version() -> String {
@@ -86,7 +86,7 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/paritytech/cumulus/issues/new".into()
+		"https://github.com/paritytech/polkadot-sdk/issues/new".into()
 	}
 
 	fn copyright_start_year() -> i32 {
@@ -162,12 +162,12 @@ pub fn run() -> Result<()> {
 				cmd.run(config, polkadot_config)
 			})
 		},
-		Some(Subcommand::ExportGenesisState(cmd)) => {
+		Some(Subcommand::ExportGenesisHead(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
 				let partials = new_partial(&config)?;
 
-				cmd.run(&*config.chain_spec, &*partials.client)
+				cmd.run(partials.client)
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -216,32 +216,7 @@ pub fn run() -> Result<()> {
 				_ => Err("Benchmarking sub-command unsupported".into()),
 			}
 		},
-		#[cfg(feature = "try-runtime")]
-		Some(Subcommand::TryRuntime(cmd)) => {
-			use regionx_kusama_runtime::MILLISECS_PER_BLOCK;
-			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
-
-			let runner = cli.create_runner(cmd)?;
-
-			type HostFunctions =
-				(sp_io::SubstrateHostFunctions, frame_benchmarking::benchmarking::HostFunctions);
-
-			// grab the task manager.
-			let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
-			let task_manager =
-				sc_service::TaskManager::new(runner.config().tokio_handle.clone(), *registry)
-					.map_err(|e| format!("Error: {:?}", e))?;
-
-			let info_provider = timestamp_with_aura_info(MILLISECS_PER_BLOCK);
-
-			runner.async_run(|_| {
-				Ok((cmd.run::<Block, HostFunctions, _>(Some(info_provider)), task_manager))
-			})
-		},
-		#[cfg(not(feature = "try-runtime"))]
-		Some(Subcommand::TryRuntime) => Err("Try-runtime was not enabled when building the node. \
-			You can enable it with `--features try-runtime`."
-			.into()),
+		Some(Subcommand::TryRuntime) => Err("The `try-runtime` subcommand has been migrated to a standalone CLI (https://github.com/paritytech/try-runtime-cli). It is no longer being maintained here and will be removed entirely some time after January 2024. Please remove this subcommand from your runtime and use the standalone CLI.".into()),
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 			let collator_options = cli.run.collator_options();
@@ -277,16 +252,6 @@ pub fn run() -> Result<()> {
 
 				info!("Parachain Account: {parachain_account}");
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
-
-				if !collator_options.relay_chain_rpc_urls.is_empty() &&
-					!cli.relay_chain_args.is_empty()
-				{
-					warn!(
-						"Detected relay chain node arguments together with --relay-chain-rpc-url. \
-						   This command starts a minimal Polkadot node that only uses a \
-						   network-related subset of all relay chain CLI options."
-					);
-				}
 
 				crate::service::start_parachain_node(
 					config,
