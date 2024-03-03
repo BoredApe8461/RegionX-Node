@@ -1,13 +1,20 @@
 [package]
-name = "parachain-template-node"
+name = "regionx-node"
 version = "0.1.0"
-authors = ["Anonymous"]
-description = "A new Cumulus FRAME-based Substrate Node, ready for hacking together a parachain."
-license = "Unlicense"
-homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/cumulus/"
-edition = "2021"
+description.workspace = true
 build = "build.rs"
+default-run = "regionx-node"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "regionx-node"
+path = "bin/main.rs"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 clap = { workspace = true, features = ["derive"]}
@@ -70,6 +77,9 @@ cumulus-primitives-core = { workspace = true }
 cumulus-primitives-parachain-inherent = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
 color-print = { workspace = true }
+
+# Local Dependencies
+regionx-primitives = { workspace = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }

@@ -1,5 +1,6 @@
 use cumulus_primitives_core::ParaId;
-use regionx_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use regionx_primitives::{opaque::Block, AccountId, Balance, Hash, Nonce, Signature};
+use regionx_runtime::{AuraId, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
