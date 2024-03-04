@@ -2,8 +2,8 @@ use std::net::SocketAddr;
 
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use log::{info, warn};
-use parachain_template_runtime::Block;
+use log::info;
+use regionx_runtime::Block;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
@@ -12,17 +12,34 @@ use sc_service::config::{BasePath, PrometheusConfig};
 use sp_runtime::traits::AccountIdConversion;
 
 use crate::{
-	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::new_partial,
+	local,
+	parachain::{self, chain_spec},
 };
+
+trait IdentifyChain {
+	fn is_dev(&self) -> bool;
+	fn is_regionx(&self) -> bool;
+}
+
+impl IdentifyChain for dyn sc_service::ChainSpec {
+	fn is_dev(&self) -> bool {
+		self.id().starts_with("dev")
+	}
+	fn is_regionx(&self) -> bool {
+		self.id().starts_with("regionx")
+	}
+}
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
-		"dev" => Box::new(chain_spec::development_config()),
-		"regionx-rococo" => Box::new(chain_spec::local_testnet_config()),
-		"" | "local" => Box::new(chain_spec::local_testnet_config()),
-		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
+		"dev" => Box::new(local::development_config()?),
+		"regionx-dev" => Box::new(chain_spec::development_config()),
+		"regionx-rococo" | "regionx-local" => Box::new(chain_spec::local_testnet_config()),
+		path => {
+			// TODO:
+			Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
+		},
 	})
 }
 
@@ -37,7 +54,7 @@ impl SubstrateCli for Cli {
 
 	fn description() -> String {
 		format!(
-			"Parachain Collator Template\n\nThe command-line arguments provided first will be \
+			"RegionX Node\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
 		{} <parachain-args> -- <relay-chain-args>",
@@ -50,11 +67,11 @@ impl SubstrateCli for Cli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/paritytech/cumulus/issues/new".into()
+		"https://github.com/RegionX-Labs/RegionX-Node/issues/new".into()
 	}
 
 	fn copyright_start_year() -> i32 {
-		2020
+		2024
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
@@ -73,7 +90,7 @@ impl SubstrateCli for RelayChainCli {
 
 	fn description() -> String {
 		format!(
-			"Parachain Collator Template\n\nThe command-line arguments provided first will be \
+			"RegionX Node\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
 		{} <parachain-args> -- <relay-chain-args>",
@@ -86,11 +103,11 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/paritytech/cumulus/issues/new".into()
+		"https://github.com/RegionX-Labs/RegionX-Node/issues".into()
 	}
 
 	fn copyright_start_year() -> i32 {
-		2020
+		2024
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
@@ -102,7 +119,8 @@ macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
 		runner.async_run(|$config| {
-			let $components = new_partial(&$config)?;
+			// TODO: shouldn't assume `parachain`.
+			let $components = parachain::new_partial(&$config)?;
 			let task_manager = $components.task_manager;
 			{ $( $code )* }.map(|v| (v, task_manager))
 		})
@@ -162,12 +180,16 @@ pub fn run() -> Result<()> {
 				cmd.run(config, polkadot_config)
 			})
 		},
-		Some(Subcommand::ExportGenesisState(cmd)) => {
+		Some(Subcommand::ExportGenesisHead(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				let partials = new_partial(&config)?;
-
-				cmd.run(&*config.chain_spec, &*partials.client)
+				if config.chain_spec.is_dev() {
+					let partials = local::new_partial(&config)?;
+					cmd.run(partials.client)
+				}else {
+					let partials = parachain::new_partial(&config)?;
+					cmd.run(partials.client)
+				}
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -190,8 +212,13 @@ pub fn run() -> Result<()> {
 							.into())
 					},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
-					cmd.run(partials.client)
+					if config.chain_spec.is_dev() {
+						let partials = local::new_partial(&config)?;
+						cmd.run(partials.client)
+					}else {
+						let partials = parachain::new_partial(&config)?;
+						cmd.run(partials.client)
+					}
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
 				BenchmarkCmd::Storage(_) =>
@@ -203,10 +230,19 @@ pub fn run() -> Result<()> {
 					.into()),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
-					let db = partials.backend.expose_db();
-					let storage = partials.backend.expose_storage();
-					cmd.run(config, partials.client.clone(), db, storage)
+					if config.chain_spec.is_dev() {
+						let partials = local::new_partial(&config)?;
+
+						let db = partials.backend.expose_db();
+						let storage = partials.backend.expose_storage();
+						cmd.run(config, partials.client.clone(), db, storage)
+					}else {
+						let partials = parachain::new_partial(&config)?;
+
+						let db = partials.backend.expose_db();
+						let storage = partials.backend.expose_storage();
+						cmd.run(config, partials.client.clone(), db, storage)
+					}
 				}),
 				BenchmarkCmd::Machine(cmd) =>
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
@@ -216,32 +252,7 @@ pub fn run() -> Result<()> {
 				_ => Err("Benchmarking sub-command unsupported".into()),
 			}
 		},
-		#[cfg(feature = "try-runtime")]
-		Some(Subcommand::TryRuntime(cmd)) => {
-			use parachain_template_runtime::MILLISECS_PER_BLOCK;
-			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
-
-			let runner = cli.create_runner(cmd)?;
-
-			type HostFunctions =
-				(sp_io::SubstrateHostFunctions, frame_benchmarking::benchmarking::HostFunctions);
-
-			// grab the task manager.
-			let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
-			let task_manager =
-				sc_service::TaskManager::new(runner.config().tokio_handle.clone(), *registry)
-					.map_err(|e| format!("Error: {:?}", e))?;
-
-			let info_provider = timestamp_with_aura_info(MILLISECS_PER_BLOCK);
-
-			runner.async_run(|_| {
-				Ok((cmd.run::<Block, HostFunctions, _>(Some(info_provider)), task_manager))
-			})
-		},
-		#[cfg(not(feature = "try-runtime"))]
-		Some(Subcommand::TryRuntime) => Err("Try-runtime was not enabled when building the node. \
-			You can enable it with `--features try-runtime`."
-			.into()),
+		Some(Subcommand::TryRuntime) => Err("The `try-runtime` subcommand has been migrated to a standalone CLI (https://github.com/paritytech/try-runtime-cli). It is no longer being maintained here and will be removed entirely some time after January 2024. Please remove this subcommand from your runtime and use the standalone CLI.".into()),
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 			let collator_options = cli.run.collator_options();
@@ -253,6 +264,10 @@ pub fn run() -> Result<()> {
 						sc_sysinfo::gather_hwbench(Some(database_path))
 					}))
 					.flatten();
+
+				if config.chain_spec.is_dev() {
+					return local::start_node(config).map_err(Into::into);
+				}
 
 				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
 					.map(|e| e.para_id)
@@ -278,17 +293,7 @@ pub fn run() -> Result<()> {
 				info!("Parachain Account: {parachain_account}");
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				if !collator_options.relay_chain_rpc_urls.is_empty() &&
-					!cli.relay_chain_args.is_empty()
-				{
-					warn!(
-						"Detected relay chain node arguments together with --relay-chain-rpc-url. \
-						   This command starts a minimal Polkadot node that only uses a \
-						   network-related subset of all relay chain CLI options."
-					);
-				}
-
-				crate::service::start_parachain_node(
+				parachain::service::start_regionx_node(
 					config,
 					polkadot_config,
 					collator_options,
