@@ -7,9 +7,10 @@
 
 use std::sync::Arc;
 
-use regionx_primitives::{opaque::Block, AccountId, Balance, Nonce};
+use parachain_template_runtime::{opaque::Block, AccountId, Balance, Nonce};
 
-pub use sc_rpc::DenyUnsafe;
+use sc_client_api::AuxStore;
+pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
@@ -35,6 +36,7 @@ pub fn create_full<C, P>(
 where
 	C: ProvideRuntimeApi<Block>
 		+ HeaderBackend<Block>
+		+ AuxStore
 		+ HeaderMetadata<Block, Error = BlockChainError>
 		+ Send
 		+ Sync

@@ -24,11 +24,8 @@ pub enum Subcommand {
 	/// Remove the whole chain.
 	PurgeChain(cumulus_client_cli::PurgeChainCmd),
 
-	/// Export the genesis head data of the parachain.
-	///
-	/// Head data is the encoded block header.
-	#[command(alias = "export-genesis-state")]
-	ExportGenesisHead(cumulus_client_cli::ExportGenesisHeadCommand),
+	/// Export the genesis state of the parachain.
+	ExportGenesisState(cumulus_client_cli::ExportGenesisStateCommand),
 
 	/// Export the genesis wasm of the parachain.
 	ExportGenesisWasm(cumulus_client_cli::ExportGenesisWasmCommand),
@@ -38,21 +35,24 @@ pub enum Subcommand {
 	#[command(subcommand)]
 	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 
-	/// Try-runtime has migrated to a standalone
-	/// [CLI](<https://github.com/paritytech/try-runtime-cli>). The subcommand exists as a stub and
-	/// deprecation notice. It will be removed entirely some time after Janurary 2024.
+	/// Try some testing command against a specified runtime state.
+	#[cfg(feature = "try-runtime")]
+	TryRuntime(try_runtime_cli::TryRuntimeCmd),
+
+	/// Errors since the binary was not build with `--features try-runtime`.
+	#[cfg(not(feature = "try-runtime"))]
 	TryRuntime,
 }
 
 const AFTER_HELP_EXAMPLE: &str = color_print::cstr!(
 	r#"<bold><underline>Examples:</></>
-   <bold>regionx-node build-spec --disable-default-bootnode > plain-parachain-chainspec.json</>
+   <bold>parachain-template-node build-spec --disable-default-bootnode > plain-parachain-chainspec.json</>
            Export a chainspec for a local testnet in json format.
-   <bold>regionx-node --chain plain-parachain-chainspec.json --tmp -- --chain rococo-local</>
+   <bold>parachain-template-node --chain plain-parachain-chainspec.json --tmp -- --chain rococo-local</>
            Launch a full node with chain specification loaded from plain-parachain-chainspec.json.
-   <bold>regionx-node</>
+   <bold>parachain-template-node</>
            Launch a full node with default parachain <italic>local-testnet</> and relay chain <italic>rococo-local</>.
-   <bold>regionx-node --collator</>
+   <bold>parachain-template-node --collator</>
            Launch a collator with default parachain <italic>local-testnet</> and relay chain <italic>rococo-local</>.
  "#
 );
@@ -103,7 +103,7 @@ impl RelayChainCli {
 		para_config: &sc_service::Configuration,
 		relay_chain_args: impl Iterator<Item = &'a String>,
 	) -> Self {
-		let extension = crate::parachain::chain_spec::Extensions::try_get(&*para_config.chain_spec);
+		let extension = crate::chain_spec::Extensions::try_get(&*para_config.chain_spec);
 		let chain_id = extension.map(|e| e.relay_chain.clone());
 		let base_path = para_config.base_path.path().join("polkadot");
 		Self {
