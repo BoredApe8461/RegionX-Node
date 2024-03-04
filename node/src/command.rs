@@ -35,8 +35,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
 		"dev" => Box::new(local::development_config()?),
 		"regionx-dev" => Box::new(chain_spec::development_config()),
-		"regionx-rococo" => Box::new(chain_spec::local_testnet_config()),
-		"regionx-local" => Box::new(chain_spec::local_testnet_config()),
+		"regionx-rococo" | "regionx-local" => Box::new(chain_spec::local_testnet_config()),
 		path => {
 			// TODO:
 			Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
