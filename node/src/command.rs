@@ -13,15 +13,33 @@ use sp_runtime::traits::AccountIdConversion;
 
 use crate::{
 	cli::{Cli, RelayChainCli, Subcommand},
-	parachain::{self, chain_spec},
+	parachain::{self, chain_spec}, local,
 };
+
+trait IdentifyChain {
+	fn is_dev(&self) -> bool;
+	fn is_regionx(&self) -> bool;
+}
+
+impl IdentifyChain for dyn sc_service::ChainSpec {
+	fn is_dev(&self) -> bool {
+        self.id().starts_with("dev")
+    }
+    fn is_regionx(&self) -> bool {
+        self.id().starts_with("regionx")
+    }
+}
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
-		"dev" => Box::new(chain_spec::development_config()),
+		"dev" => Box::new(local::development_config()?),
+		"regionx-dev" => Box::new(chain_spec::development_config()),
 		"regionx-rococo" => Box::new(chain_spec::local_testnet_config()),
-		"" | "local" => Box::new(chain_spec::local_testnet_config()),
-		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
+		"regionx-local" => Box::new(chain_spec::local_testnet_config()),
+		path => {
+			// TODO:
+			Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
+		}
 	})
 }
 
@@ -101,6 +119,7 @@ macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
 		runner.async_run(|$config| {
+			// TODO: shouldn't assume `parachain`.
 			let $components = parachain::new_partial(&$config)?;
 			let task_manager = $components.task_manager;
 			{ $( $code )* }.map(|v| (v, task_manager))
@@ -164,9 +183,13 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::ExportGenesisHead(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				let partials = parachain::new_partial(&config)?;
-
-				cmd.run(partials.client)
+				if config.chain_spec.is_dev() {
+					let partials = local::new_partial(&config)?;
+					cmd.run(partials.client)
+				}else {
+					let partials = parachain::new_partial(&config)?;
+					cmd.run(partials.client)
+				}
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -189,8 +212,13 @@ pub fn run() -> Result<()> {
 							.into())
 					},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					let partials = parachain::new_partial(&config)?;
-					cmd.run(partials.client)
+					if config.chain_spec.is_dev() {
+						let partials = local::new_partial(&config)?;
+						cmd.run(partials.client)
+					}else {
+						let partials = parachain::new_partial(&config)?;
+						cmd.run(partials.client)
+					}
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
 				BenchmarkCmd::Storage(_) =>
@@ -202,10 +230,19 @@ pub fn run() -> Result<()> {
 					.into()),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					let partials = parachain::new_partial(&config)?;
-					let db = partials.backend.expose_db();
-					let storage = partials.backend.expose_storage();
-					cmd.run(config, partials.client.clone(), db, storage)
+					if config.chain_spec.is_dev() {
+						let partials = local::new_partial(&config)?;
+
+						let db = partials.backend.expose_db();
+						let storage = partials.backend.expose_storage();
+						cmd.run(config, partials.client.clone(), db, storage)
+					}else {
+						let partials = parachain::new_partial(&config)?;
+
+						let db = partials.backend.expose_db();
+						let storage = partials.backend.expose_storage();
+						cmd.run(config, partials.client.clone(), db, storage)
+					}
 				}),
 				BenchmarkCmd::Machine(cmd) =>
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
@@ -227,6 +264,10 @@ pub fn run() -> Result<()> {
 						sc_sysinfo::gather_hwbench(Some(database_path))
 					}))
 					.flatten();
+
+				if config.chain_spec.is_dev() {
+					return local::start_node(config).map_err(Into::into);
+				}
 
 				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
 					.map(|e| e.para_id)
