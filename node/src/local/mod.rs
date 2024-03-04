@@ -5,4 +5,4 @@ mod service;
 mod chain_spec;
 
 pub use chain_spec::*;
-pub use service::{start_node, new_partial};
+pub use service::{new_partial, start_node};

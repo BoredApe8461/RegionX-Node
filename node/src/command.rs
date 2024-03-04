@@ -13,7 +13,8 @@ use sp_runtime::traits::AccountIdConversion;
 
 use crate::{
 	cli::{Cli, RelayChainCli, Subcommand},
-	parachain::{self, chain_spec}, local,
+	local,
+	parachain::{self, chain_spec},
 };
 
 trait IdentifyChain {
@@ -23,11 +24,11 @@ trait IdentifyChain {
 
 impl IdentifyChain for dyn sc_service::ChainSpec {
 	fn is_dev(&self) -> bool {
-        self.id().starts_with("dev")
-    }
-    fn is_regionx(&self) -> bool {
-        self.id().starts_with("regionx")
-    }
+		self.id().starts_with("dev")
+	}
+	fn is_regionx(&self) -> bool {
+		self.id().starts_with("regionx")
+	}
 }
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
@@ -39,7 +40,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		path => {
 			// TODO:
 			Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
-		}
+		},
 	})
 }
 
