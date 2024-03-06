@@ -7127,6 +7127,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-uniques"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/polkadot-sdk.git?branch=release-polkadot-v1.6.0#61801ce324f18eacb9c29e2f674f0d262a00bd4d"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std 8.0.0",
+]
+
+[[package]]
 name = "pallet-utility"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk.git?branch=release-polkadot-v1.6.0#61801ce324f18eacb9c29e2f674f0d262a00bd4d"
@@ -9396,6 +9411,7 @@ dependencies = [
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-uniques",
  "pallet-xcm",
  "parachains-common",
  "parity-scale-codec",
