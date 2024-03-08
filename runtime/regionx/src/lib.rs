@@ -34,9 +34,7 @@ use frame_support::{
 	dispatch::DispatchClass,
 	genesis_builder_helper::{build_config, create_default_config},
 	parameter_types,
-	traits::{
-		AsEnsureOriginWithArg, ConstBool, ConstU32, ConstU64, ConstU8, EitherOfDiverse, Everything,
-	},
+	traits::{ConstBool, ConstU32, ConstU64, ConstU8, EitherOfDiverse, Everything},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
 		WeightToFeeCoefficients, WeightToFeePolynomial,
@@ -45,7 +43,7 @@ use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot, EnsureSigned,
+	EnsureRoot,
 };
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -187,12 +185,6 @@ const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
 	WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
 	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 );
-
-pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	// map to 1/10 of what the kusama relay chain charges (v9020)
-	// TODO: don't use westend:
-	parachains_common::westend::currency::deposit(items, bytes) / 10
-}
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -456,38 +448,6 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
-type CollectionId = u32;
-type ItemId = u128;
-
-parameter_types! {
-	pub const UniquesCollectionDeposit: Balance = 10 * M4X;
-	pub const UniquesItemDeposit: Balance = 1 * M4X;
-	pub const UniquesMetadataDepositBase: Balance = deposit(1, 129);
-	pub const UniquesAttributeDepositBase: Balance = deposit(1, 0);
-	pub const UniquesDepositPerByte: Balance = deposit(0, 1);
-}
-
-impl pallet_uniques::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type CollectionId = CollectionId;
-	type ItemId = ItemId;
-	type Currency = Balances;
-	type ForceOrigin = EnsureRoot<AccountId>;
-	type CollectionDeposit = UniquesCollectionDeposit;
-	type ItemDeposit = UniquesItemDeposit;
-	type MetadataDepositBase = UniquesMetadataDepositBase;
-	type AttributeDepositBase = UniquesAttributeDepositBase;
-	type DepositPerByte = UniquesDepositPerByte;
-	type StringLimit = ConstU32<128>;
-	type KeyLimit = ConstU32<32>;
-	type ValueLimit = ConstU32<64>;
-	type WeightInfo = ();
-	#[cfg(feature = "runtime-benchmarks")]
-	type Helper = ();
-	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
-	type Locker = ();
-}
-
 /// Configure the pallet template in pallets/template.
 impl pallet_parachain_template::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -523,9 +483,8 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		MessageQueue: pallet_message_queue = 33,
 
-		// Main stage.
-		Uniques: pallet_uniques = 50,
-		TemplatePallet: pallet_parachain_template = 51,
+		// Template
+		TemplatePallet: pallet_parachain_template = 50,
 	}
 );
 
@@ -539,7 +498,6 @@ mod benches {
 		[pallet_sudo, Sudo]
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
-		[pallet_uniques, Uniques]
 	);
 }
 
