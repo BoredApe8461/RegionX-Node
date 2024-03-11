@@ -28,15 +28,18 @@ jobs:
 
     - name: Install Rust
       run: |
-        rustup update stable --no-self-update
-        rustup target add wasm32-unknown-unknown
+        rustup show
+        rustup toolchain install nightly
+        rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+        rustup component add clippy --toolchain nightly-x86_64-unknown-linux-gnu
+        rustup show
 
     # Rust cache
     - uses: Swatinem/rust-cache@v2
 
     # Enable this for clippy linting.
-    # - name: Check and Lint Code
-    #   run: cargo +nightly clippy -- -D warnings
+    - name: Check and Lint Code
+      run: cargo +nightly clippy -- -D warnings
 
     - name: Check Code
       run: cargo check

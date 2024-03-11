@@ -135,6 +135,5 @@ parachain-info = { package = "staging-parachain-info", git = "https://github.com
 
 # Local
 regionx-primitives = { path = "./primitives", default-features = false }
-local-runtime = { path = "./runtime/local" }
 regionx-runtime = { path = "./runtime/regionx" }
 pallet-parachain-template = { path = "./pallets/template", default-features = false }

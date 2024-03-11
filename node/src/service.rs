@@ -4,7 +4,6 @@
 use std::{sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
-// Local Runtime Types
 use regionx_primitives::opaque::{Block, Hash};
 use regionx_runtime::RuntimeApi;
 
@@ -328,7 +327,7 @@ async fn start_node_impl(
 }
 
 /// Build the import queue for the parachain runtime.
-pub fn build_import_queue(
+fn build_import_queue(
 	client: Arc<ParachainClient>,
 	block_import: ParachainBlockImport,
 	config: &Configuration,
@@ -428,7 +427,7 @@ fn start_consensus(
 }
 
 /// Start a parachain node.
-pub async fn start_regionx_node(
+pub async fn start_parachain_node(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
 	collator_options: CollatorOptions,

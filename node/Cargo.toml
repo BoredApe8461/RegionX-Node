@@ -3,18 +3,10 @@ name = "regionx-node"
 version = "0.1.0"
 description.workspace = true
 build = "build.rs"
-default-run = "regionx-node"
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
 repository.workspace = true
-
-[[bin]]
-name = "regionx-node"
-path = "bin/main.rs"
-
-[lib]
-crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 clap = { workspace = true, features = ["derive"]}
@@ -24,6 +16,10 @@ serde = { workspace = true, features = ["derive"]}
 jsonrpsee = { workspace = true, features = ["server"]  }
 futures = { workspace = true }
 serde_json = { wokrspace = true }
+
+# Local
+regionx-runtime = { workspace = true }
+regionx-primitives = { workspace = true }
 
 # Substrate
 frame-benchmarking = { workspace = true }
@@ -35,8 +31,6 @@ sc-cli = { workspace = true }
 sc-client-api = { workspace = true }
 sc-offchain = { workspace = true }
 sc-consensus = { workspace = true }
-sc-consensus-aura = { workspace = true }
-sc-consensus-grandpa = { workspace = true }
 sc-executor = { workspace = true }
 sc-network = { workspace = true }
 sc-network-sync = { workspace = true }
@@ -51,7 +45,6 @@ sp-api = { workspace = true }
 sp-block-builder = { workspace = true }
 sp-blockchain = { workspace = true }
 sp-consensus-aura = { workspace = true }
-sp-consensus-grandpa = { workspace = true }
 sp-core = { workspace = true }
 sp-keystore = { workspace = true }
 sp-io = { workspace = true }
@@ -77,11 +70,6 @@ cumulus-primitives-core = { workspace = true }
 cumulus-primitives-parachain-inherent = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
 color-print = { workspace = true }
-
-# Local
-regionx-runtime = { workspace = true }
-local-runtime = { workspace = true }
-regionx-primitives = { workspace = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
