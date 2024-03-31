@@ -4162,7 +4162,7 @@ dependencies = [
 [[package]]
 name = "ismp"
 version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=export-ismp-parachain#6f823d2f77762c8a20e5c467e660b45767d241f0"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-try-runtime#554bb4ba0e108ab4d4958ab45e38809e1a51f10f"
 dependencies = [
  "derive_more",
  "hex",
@@ -4176,7 +4176,7 @@ dependencies = [
 [[package]]
 name = "ismp-parachain"
 version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=export-ismp-parachain#6f823d2f77762c8a20e5c467e660b45767d241f0"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-try-runtime#554bb4ba0e108ab4d4958ab45e38809e1a51f10f"
 dependencies = [
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
@@ -4200,7 +4200,7 @@ dependencies = [
 [[package]]
 name = "ismp-parachain-inherent"
 version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=export-ismp-parachain#6f823d2f77762c8a20e5c467e660b45767d241f0"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-try-runtime#554bb4ba0e108ab4d4958ab45e38809e1a51f10f"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4219,7 +4219,7 @@ dependencies = [
 [[package]]
 name = "ismp-parachain-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=export-ismp-parachain#6f823d2f77762c8a20e5c467e660b45767d241f0"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-try-runtime#554bb4ba0e108ab4d4958ab45e38809e1a51f10f"
 dependencies = [
  "sp-api",
 ]
@@ -4227,7 +4227,7 @@ dependencies = [
 [[package]]
 name = "ismp-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=export-ismp-parachain#6f823d2f77762c8a20e5c467e660b45767d241f0"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-try-runtime#554bb4ba0e108ab4d4958ab45e38809e1a51f10f"
 dependencies = [
  "ismp",
  "pallet-ismp",
@@ -6400,7 +6400,7 @@ dependencies = [
 [[package]]
 name = "pallet-ismp"
 version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=export-ismp-parachain#6f823d2f77762c8a20e5c467e660b45767d241f0"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-try-runtime#554bb4ba0e108ab4d4958ab45e38809e1a51f10f"
 dependencies = [
  "ckb-merkle-mountain-range",
  "derive_more",
@@ -12575,7 +12575,7 @@ dependencies = [
 [[package]]
 name = "substrate-state-machine"
 version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=export-ismp-parachain#6f823d2f77762c8a20e5c467e660b45767d241f0"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-try-runtime#554bb4ba0e108ab4d4958ab45e38809e1a51f10f"
 dependencies = [
  "ckb-merkle-mountain-range",
  "frame-support",

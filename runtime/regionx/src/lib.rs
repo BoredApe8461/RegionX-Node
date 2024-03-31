@@ -6,6 +6,8 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+extern crate alloc;
+
 mod weights;
 pub mod xcm_config;
 
@@ -702,7 +704,7 @@ impl_runtime_apis! {
 
 		/// Fetch all ISMP events
 		fn block_events() -> Vec<pallet_ismp::events::Event> {
-			let raw_events = frame_system::Pallet::<Self>::read_events_no_consensus().into_iter();
+			let raw_events = frame_system::Pallet::<Self>::read_events_no_consensus();
 			raw_events.filter_map(|e| {
 				let frame_system::EventRecord{ event, ..} = *e;
 
@@ -717,7 +719,7 @@ impl_runtime_apis! {
 
 		/// Fetch all ISMP events and their extrinsic metadata
 		fn block_events_with_metadata() -> Vec<(pallet_ismp::events::Event, u32)> {
-			let raw_events = frame_system::Pallet::<Self>::read_events_no_consensus().into_iter();
+			let raw_events = frame_system::Pallet::<Self>::read_events_no_consensus();
 			raw_events.filter_map(|e| {
 				let frame_system::EventRecord { event, phase, ..} = *e;
 				let Phase::ApplyExtrinsic(index) = phase else {

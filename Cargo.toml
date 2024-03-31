@@ -130,14 +130,14 @@ substrate-wasm-builder = { version = "17.0.0" }
 substrate-build-script-utils = "11.0.0"
 
 # Polytope Labs
-ismp = { git="https://github.com/Szegoo/hyperbridge.git", branch="export-ismp-parachain", default-features = false }
-pallet-ismp = { git="https://github.com/Szegoo/hyperbridge.git", branch="export-ismp-parachain", default-features = false }
-ismp-parachain = { git="https://github.com/Szegoo/hyperbridge.git", branch="export-ismp-parachain", default-features = false }
-ismp-parachain-inherent = { git="https://github.com/Szegoo/hyperbridge.git", branch="export-ismp-parachain", default-features = false }
-ismp-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", branch="export-ismp-parachain", default-features = false }
-ismp-parachain-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", branch="export-ismp-parachain", default-features = false }
+ismp = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-try-runtime", default-features = false }
+pallet-ismp = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-try-runtime", default-features = false }
+ismp-parachain = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-try-runtime", default-features = false }
+ismp-parachain-inherent = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-try-runtime", default-features = false }
+ismp-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-try-runtime", default-features = false }
+ismp-parachain-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-try-runtime", default-features = false }
 
 # Local
 regionx-primitives = { path = "./primitives", default-features = false }
-regionx-runtime = { path = "./runtime/regionx" }
+regionx-runtime = { path = "./runtime/regionx", default-features = false }
 pallet-parachain-template = { path = "./pallets/template", default-features = false }

@@ -28,6 +28,7 @@ env:
   # Set an environment variable (that can be overriden) for the Docker Repo
   # TODO: Fix this
   DOCKER_REPO: tripleight/regionx
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
 defaults:
   run:
