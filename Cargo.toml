@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
 	"node",
-	"pallets/*",
 	"runtime/*",
 ]
 
@@ -139,4 +138,3 @@ ismp-parachain-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", 
 # Local
 regionx-primitives = { path = "./runtime/primitives", default-features = false }
 regionx-runtime = { path = "./runtime/regionx", default-features = false }
-pallet-parachain-template = { path = "./pallets/template", default-features = false }
