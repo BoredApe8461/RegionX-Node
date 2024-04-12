@@ -9265,6 +9265,7 @@ dependencies = [
  "ismp-parachain-runtime-api",
  "ismp-runtime-api",
  "log",
+ "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
