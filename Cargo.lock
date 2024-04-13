@@ -5893,6 +5893,66 @@ dependencies = [
 ]
 
 [[package]]
+name = "orml-asset-registry"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e98494d6c579cbfa0a3fd3b1b274468baf4aa8ba74ce152a4ae575d8dec021b"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-traits",
+ "pallet-xcm",
+ "parity-scale-codec",
+ "polkadot-runtime-common",
+ "scale-info",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "staging-xcm",
+ "staging-xcm-builder",
+ "staging-xcm-executor",
+]
+
+[[package]]
+name = "orml-traits"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f4617d5262e9a8f3b5e7ab5961e8d0a3d4e25ef0c9d34e6ff87766c406898b"
+dependencies = [
+ "frame-support",
+ "impl-trait-for-tuples",
+ "num-traits",
+ "orml-utilities",
+ "parity-scale-codec",
+ "paste",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "staging-xcm",
+]
+
+[[package]]
+name = "orml-utilities"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1756d8ca7c433fdb538ff14bbb60a343fc6cf7b0684af4a73889f89de364e18f"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-asset-rate"
 version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9235,6 +9295,8 @@ dependencies = [
 name = "regionx-primitives"
 version = "0.1.0"
 dependencies = [
+ "parity-scale-codec",
+ "scale-info",
  "sp-core",
  "sp-runtime",
 ]
@@ -9265,6 +9327,8 @@ dependencies = [
  "ismp-parachain-runtime-api",
  "ismp-runtime-api",
  "log",
+ "orml-asset-registry",
+ "orml-traits",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
