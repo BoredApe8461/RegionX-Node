@@ -1,0 +1,29 @@
+name: Dependency checks
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+
+jobs:
+  check-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/setup
+
+    - name: Install Rust
+      run: |
+        rustup show
+        rustup toolchain install nightly
+        cargo install --git https://github.com/paritytech/psvm psvm
+
+    - name: Check Dependency Versions
+      run: |
+        chmod +x ./scripts/check-dependency-versions.sh
+        ./scripts/check-dependency-versions.sh 

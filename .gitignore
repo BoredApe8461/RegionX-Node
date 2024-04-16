@@ -13,6 +13,8 @@
 # The cache for docker container dependency
 /.cargo/config
 
+bin/
+
 .DS_Store
 .idea
 .vscode
