@@ -15,5 +15,6 @@ runs:
         rustup component add clippy --toolchain nightly-x86_64-unknown-linux-gnu
         rustup component add rustfmt --toolchain nightly
         rustup target add wasm32-unknown-unknown --toolchain nightly
+        rustup component add rust-src
         rustup show
       shell: bash

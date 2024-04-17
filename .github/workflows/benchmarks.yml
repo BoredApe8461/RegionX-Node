@@ -3,6 +3,10 @@ name: Benchmarks
 on:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   benchmark:
     runs-on: ubuntu-22.04

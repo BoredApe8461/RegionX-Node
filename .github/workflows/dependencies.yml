@@ -10,6 +10,10 @@ on:
     - main
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check-dependencies:
     runs-on: ubuntu-latest
@@ -18,11 +22,7 @@ jobs:
     - uses: ./.github/actions/setup
 
     - name: Install Rust
-      run: |
-        rustup show
-        rustup toolchain install nightly
-        cargo install --git https://github.com/paritytech/psvm psvm
-
+      run: cargo install --git https://github.com/paritytech/psvm psvm
     - name: Check Dependency Versions
       run: |
         chmod +x ./scripts/check-dependency-versions.sh

@@ -3,6 +3,10 @@ name: Try-runtime
 on:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   try-runtime:
     runs-on: ubuntu-22.04
