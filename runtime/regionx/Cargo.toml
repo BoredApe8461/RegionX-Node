@@ -46,11 +46,14 @@ pallet-aura = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-message-queue = { workspace = true }
+pallet-multisig = { workspace = true }
+pallet-proxy = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
+pallet-utility = { workspace = true }
 sp-api = { workspace = true }
 sp-block-builder = { workspace = true }
 sp-consensus-aura = { workspace = true }
@@ -119,8 +122,11 @@ std = [
 	"pallet-collator-selection/std",
 	"pallet-message-queue/std",
 	"regionx-primitives/std",
+	"pallet-multisig/std",
+	"pallet-proxy/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
+	"pallet-utility/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -164,7 +170,10 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
 	"pallet-message-queue/runtime-benchmarks",
+	"pallet-multisig/runtime-benchmarks",
+	"pallet-proxy/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"parachains-common/runtime-benchmarks",
@@ -194,8 +203,11 @@ try-runtime = [
 	"pallet-balances/try-runtime",
 	"pallet-collator-selection/try-runtime",
 	"pallet-message-queue/try-runtime",
+	"pallet-multisig/try-runtime",
+	"pallet-proxy/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",
+	"pallet-utility/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-xcm/try-runtime",

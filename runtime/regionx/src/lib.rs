@@ -553,6 +553,58 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
+	pub const DepositBase: Balance = deposit(1, 88);
+	// Additional storage item size of 32 bytes.
+	pub const DepositFactor: Balance = deposit(0, 32);
+	pub const MaxSignatories: u32 = 100;
+}
+
+impl pallet_multisig::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type DepositBase = DepositBase;
+	type DepositFactor = DepositFactor;
+	type MaxSignatories = MaxSignatories;
+	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+	// One storage item; key size 32, value size 8; .
+	pub const ProxyDepositBase: Balance = deposit(1, 40);
+	// Additional storage item size of 33 bytes.
+	pub const ProxyDepositFactor: Balance = deposit(0, 33);
+	pub const MaxProxies: u16 = 32;
+	// One storage item; key size 32, value size 16
+	pub const AnnouncementDepositBase: Balance = deposit(1, 48);
+	pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
+	pub const MaxPending: u16 = 32;
+}
+
+impl pallet_proxy::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type ProxyType = ProxyType;
+	type ProxyDepositBase = ProxyDepositBase;
+	type ProxyDepositFactor = ProxyDepositFactor;
+	type MaxProxies = MaxProxies;
+	type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
+	type MaxPending = MaxPending;
+	type CallHasher = BlakeTwo256;
+	type AnnouncementDepositBase = AnnouncementDepositBase;
+	type AnnouncementDepositFactor = AnnouncementDepositFactor;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime
@@ -579,15 +631,20 @@ construct_runtime!(
 		Aura: pallet_aura = 33,
 		AuraExt: cumulus_pallet_aura_ext = 34,
 
+		// Handy utilities
+		Utility: pallet_utility = 40,
+		Multisig: pallet_multisig = 41,
+		Proxy: pallet_proxy = 42,
+
 		// XCM helpers.
-		XcmpQueue: cumulus_pallet_xcmp_queue = 40,
-		PolkadotXcm: pallet_xcm = 41,
-		CumulusXcm: cumulus_pallet_xcm = 42,
-		MessageQueue: pallet_message_queue = 43,
+		XcmpQueue: cumulus_pallet_xcmp_queue = 50,
+		PolkadotXcm: pallet_xcm = 51,
+		CumulusXcm: cumulus_pallet_xcm = 52,
+		MessageQueue: pallet_message_queue = 53,
 
 		// ISMP
-		Ismp: pallet_ismp = 50,
-		IsmpParachain: ismp_parachain = 51,
+		Ismp: pallet_ismp = 60,
+		IsmpParachain: ismp_parachain = 61,
 	}
 );
 
@@ -598,6 +655,9 @@ mod benches {
 		[pallet_assets, Assets]
 		[pallet_balances, Balances]
 		[pallet_session, SessionBench::<Runtime>]
+		[pallet_multisig, Multisig]
+		[pallet_proxy, Proxy]
+		[pallet_timestamp, Utility]
 		[pallet_timestamp, Timestamp]
 		[pallet_sudo, Sudo]
 		[pallet_collator_selection, CollatorSelection]
