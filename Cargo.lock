@@ -4162,7 +4162,7 @@ dependencies = [
 [[package]]
 name = "ismp"
 version = "0.1.0"
-source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#a58262ac7acf9dc96e1bed233a67251d97fb2d62"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
 dependencies = [
  "derive_more",
  "hex",
@@ -4176,7 +4176,7 @@ dependencies = [
 [[package]]
 name = "ismp-parachain"
 version = "0.1.0"
-source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#a58262ac7acf9dc96e1bed233a67251d97fb2d62"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
 dependencies = [
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
@@ -4200,7 +4200,7 @@ dependencies = [
 [[package]]
 name = "ismp-parachain-inherent"
 version = "0.1.0"
-source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#a58262ac7acf9dc96e1bed233a67251d97fb2d62"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4219,7 +4219,7 @@ dependencies = [
 [[package]]
 name = "ismp-parachain-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#a58262ac7acf9dc96e1bed233a67251d97fb2d62"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
 dependencies = [
  "sp-api",
 ]
@@ -6446,7 +6446,7 @@ dependencies = [
 [[package]]
 name = "pallet-ismp"
 version = "0.1.0"
-source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#a58262ac7acf9dc96e1bed233a67251d97fb2d62"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
 dependencies = [
  "ckb-merkle-mountain-range",
  "derive_more",
@@ -6472,7 +6472,7 @@ dependencies = [
 [[package]]
 name = "pallet-ismp-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#a58262ac7acf9dc96e1bed233a67251d97fb2d62"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
 dependencies = [
  "ismp",
  "pallet-ismp",
@@ -12627,7 +12627,7 @@ dependencies = [
 [[package]]
 name = "substrate-state-machine"
 version = "0.1.0"
-source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#a58262ac7acf9dc96e1bed233a67251d97fb2d62"
+source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
 dependencies = [
  "ckb-merkle-mountain-range",
  "frame-support",

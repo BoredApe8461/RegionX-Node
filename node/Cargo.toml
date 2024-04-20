@@ -11,7 +11,7 @@ repository.workspace = true
 [dependencies]
 clap = { workspace = true, features = ["derive"]}
 log = { workspace = true }
-parity-scale-codec = { workspace = true }
+codec = { workspace = true }
 serde = { workspace = true, features = ["derive"]}
 jsonrpsee = { workspace = true, features = ["server"]  }
 futures = { workspace = true }

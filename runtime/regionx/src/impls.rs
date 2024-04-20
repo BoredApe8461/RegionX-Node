@@ -1,8 +1,8 @@
 use crate::{AssetId, Runtime, RuntimeCall};
+use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::InstanceFilter;
 use orml_asset_registry::DefaultAssetMetadata;
 use orml_traits::asset_registry::AssetProcessor;
-use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
 
