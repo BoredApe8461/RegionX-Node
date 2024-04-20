@@ -5902,6 +5902,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "orml-currencies"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "496b4db60d9a5511bd04a97676f5de762d4712a8a9fa8b351d9add12cdbd7d45"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "orml-traits",
+ "orml-utilities",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "orml-tokens"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02dce1f619f42d2a520423da923fd8f2eb8abb8dc3f5cdff3f853c7791abef3e"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-arithmetic",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "orml-traits"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9327,8 +9363,9 @@ dependencies = [
  "ismp-parachain-runtime-api",
  "log",
  "orml-asset-registry",
+ "orml-currencies",
+ "orml-tokens",
  "orml-traits",
- "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",

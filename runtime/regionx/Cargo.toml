@@ -31,6 +31,8 @@ ismp-parachain-runtime-api = { workspace = true, default-features = false }
 
 # Orml
 orml-asset-registry = { workspace = true }
+orml-currencies = { workspace = true }
+orml-tokens = { workspace = true }
 orml-traits = { workspace = true }
 
 # Substrate
@@ -41,7 +43,6 @@ frame-system = { workspace = true }
 frame-system-benchmarking = { workspace = true, optional = true }
 frame-system-rpc-runtime-api = { workspace = true }
 frame-try-runtime = { workspace = true, optional = true }
-pallet-assets = { workspace = true }
 pallet-aura = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true }
@@ -115,7 +116,9 @@ std = [
 	"frame-try-runtime?/std",
 	"log/std",
 	"orml-asset-registry/std",
-	"pallet-assets/std",
+	"orml-currencies/std",
+	"orml-tokens/std",
+	"orml-traits/std",
 	"pallet-aura/std",
 	"pallet-authorship/std",
 	"pallet-balances/std",
@@ -166,7 +169,7 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"hex-literal",
 	"orml-asset-registry/runtime-benchmarks",
-	"pallet-assets/runtime-benchmarks",
+	"orml-tokens/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
 	"pallet-message-queue/runtime-benchmarks",
@@ -195,9 +198,10 @@ try-runtime = [
 	"frame-system/try-runtime",
 	"frame-try-runtime/try-runtime",
 	"orml-asset-registry/try-runtime",
+	"orml-currencies/try-runtime",
+	"orml-tokens/try-runtime",
 	"pallet-ismp/try-runtime",
 	"ismp-parachain/try-runtime",
-	"pallet-assets/try-runtime",
 	"pallet-aura/try-runtime",
 	"pallet-authorship/try-runtime",
 	"pallet-balances/try-runtime",
