@@ -26,7 +26,7 @@ regionx-primitives = { workspace = true }
 ismp = { workspace = true, default-features = false }
 pallet-ismp = { workspace = true, default-features = false }
 ismp-parachain = { workspace = true, default-features = false }
-ismp-runtime-api = { workspace = true, default-features = false }
+pallet-ismp-runtime-api = { workspace = true, default-features = false }
 ismp-parachain-runtime-api = { workspace = true, default-features = false }
 
 # Orml
@@ -103,7 +103,7 @@ std = [
 	"cumulus-primitives-utility/std",
 	"ismp/std",
 	"pallet-ismp/std",
-	"ismp-runtime-api/std",
+	"pallet-ismp-runtime-api/std",
 	"ismp-parachain/std",
 	"ismp-parachain-runtime-api/std",
 	"frame-benchmarking?/std",

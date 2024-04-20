@@ -74,7 +74,7 @@ use frame_system::{
 	EnsureRoot, EnsureSigned, Phase,
 };
 use pallet_ismp::{
-	mmr_primitives::{Leaf, LeafIndex},
+	mmr::primitives::{Leaf, LeafIndex},
 	primitives::Proof,
 	ProofKeys,
 };
@@ -809,7 +809,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl ismp_runtime_api::IsmpRuntimeApi<Block, <Block as BlockT>::Hash> for Runtime {
+	impl pallet_ismp_runtime_api::IsmpRuntimeApi<Block, <Block as BlockT>::Hash> for Runtime {
 		/// Return the number of MMR leaves.
 		fn mmr_leaf_count() -> Result<LeafIndex, pallet_ismp::primitives::Error> {
 			Ok(Ismp::mmr_leaf_count())

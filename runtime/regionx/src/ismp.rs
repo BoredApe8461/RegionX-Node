@@ -56,7 +56,6 @@ impl pallet_ismp::Config for Runtime {
 	type TimeProvider = Timestamp;
 	type Router = Router;
 	type ConsensusClients = (ParachainConsensusClient<Runtime, IsmpParachain>,);
-	type WeightInfo = ();
 	type WeightProvider = ();
 }
 
