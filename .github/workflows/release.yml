@@ -28,6 +28,7 @@ env:
   # Set an environment variable (that can be overriden) for the Docker Repo
   # TODO: Fix this
   DOCKER_REPO: tripleight/regionx
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
 defaults:
   run:
@@ -42,7 +43,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - uses: taiki-e/create-gh-release-action@v1
@@ -79,7 +80,7 @@ jobs:
       contents: write
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -133,7 +134,7 @@ jobs:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Download the binary from the previous job
       - name: Download x86_64 linux binary

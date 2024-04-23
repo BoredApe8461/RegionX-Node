@@ -1,22 +1,26 @@
-# Substrate Cumulus Parachain Template
+# RegionX parachain
 
-A new [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, ready for hacking ☁️..
+### Running zombienet tests
 
-This project is originally a fork of the
-[Substrate Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
-modified to include dependencies required for registering this node as a **parathread** or
-**parachain** to a **relay chain**.
+1. Install the latest zombienet release from the [Zombienet release page](https://github.com/paritytech/zombienet/releases).
 
-The stand-alone version of this template is hosted on the
-[Substrate Devhub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/)
-for each release of Polkadot. It is generated directly to the upstream
-[Parachain Template in Cumulus](https://github.com/paritytech/cumulus/tree/master/parachain-template)
-at each release branch using the
-[Substrate Template Generator](https://github.com/paritytech/substrate-template-generator/).
+2. Build the `regionx-node` by running:
 
-👉 Learn more about parachains [here](https://wiki.polkadot.network/docs/learn-parachains), and
-parathreads [here](https://wiki.polkadot.network/docs/learn-parathreads).
+    ```
+    cargo build --release
+    ```
 
+3. Get the polkadot binary:
 
-🧙 Learn about how to use this template and run your own parachain testnet for it in the
-[Devhub Cumulus Tutorial](https://docs.substrate.io/tutorials/v3/cumulus/start-relay/).
+    ```sh
+    zombienet-linux setup polkadot 
+
+    Please add the dir to your $PATH by running the command:
+    export PATH=/home/<username>/zombienet/dist:$PATH
+    ```
+
+4. Run the test:
+
+    ```
+    zombienet-linux -p native test ./zombienet_tests/0001-smoke-test.zndsl
+    ```

@@ -1,0 +1,42 @@
+name: Smoke tests
+
+# Controls when the action will run.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - uses: ./.github/actions/setup
+
+    - name: Zombienet setup
+      run: |
+        wget https://github.com/paritytech/zombienet/releases/download/v1.3.100/zombienet-linux-x64
+        chmod +x zombienet-linux-x64
+        yes 2>/dev/null | ./zombienet-linux-x64 setup polkadot || true
+        echo $GITHUB_WORKSPACE
+        echo "PATH=$GITHUB_WORKSPACE:$PATH" >> $GITHUB_ENV
+        echo $PATH
+
+    - name: Pull Docker Image
+      run: docker pull szegoo/regionx-node:latest
+
+    - name: Compile regionx-node
+      run: |
+        cargo build --release
+        cp ./target/release/regionx-node .
+    
+    - name: Run smoke test 0001
+      run: ./zombienet-linux-x64 -p native test ./zombienet_tests/0001-smoke-test.zndsl

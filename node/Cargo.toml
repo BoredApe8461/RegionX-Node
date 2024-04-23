@@ -11,7 +11,7 @@ repository.workspace = true
 [dependencies]
 clap = { workspace = true, features = ["derive"]}
 log = { workspace = true }
-parity-scale-codec = { workspace = true }
+codec = { workspace = true }
 serde = { workspace = true, features = ["derive"]}
 jsonrpsee = { workspace = true, features = ["server"]  }
 futures = { workspace = true }
@@ -20,6 +20,9 @@ serde_json = { wokrspace = true }
 # Local
 regionx-runtime = { workspace = true }
 regionx-primitives = { workspace = true }
+
+# Polytope Labs
+ismp-parachain-inherent = { workspace = true }
 
 # Substrate
 frame-benchmarking = { workspace = true }
@@ -66,6 +69,7 @@ cumulus-client-consensus-aura = { workspace = true }
 cumulus-client-consensus-common = { workspace = true }
 cumulus-client-consensus-proposer = { workspace = true }
 cumulus-client-service = { workspace = true }
+cumulus-client-parachain-inherent = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-parachain-inherent = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
