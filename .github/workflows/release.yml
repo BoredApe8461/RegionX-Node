@@ -113,7 +113,7 @@ jobs:
 
       - name: Upload x86_64 linux binary to workflow
         if: (matrix.target == 'x86_64-unknown-linux-gnu')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: regionx-node
           path: ${{ github.workspace }}/target/x86_64-unknown-linux-gnu/release/regionx-node
