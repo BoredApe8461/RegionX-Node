@@ -138,7 +138,7 @@ jobs:
 
       # Download the binary from the previous job
       - name: Download x86_64 linux binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: regionx-node
           path: ${{ github.workspace }}
