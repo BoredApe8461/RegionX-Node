@@ -2,13 +2,14 @@
 resolver = "2"
 members = [
 	"node",
+	"pallets/*",
 	"runtime/*",
 ]
 
 [workspace.package]
 name = "regionx"
 version = "0.1.0"
-authors = ["Anonymous"]
+authors = ["Sergej Sakac", "Oliver Lim"]
 description = "RegionX Coretime market Kusama runtime"
 license = "Apache-2.0"
 homepage = "https://regionx.tech/"
@@ -40,6 +41,7 @@ frame-try-runtime = { version = "0.34.0", default-features = false }
 pallet-aura = { version = "27.0.0", default-features = false }
 pallet-authorship = { version = "28.0.0", default-features = false }
 pallet-balances = { version = "28.0.0", default-features = false }
+pallet-broker = { version = "0.6.0", default-features = false }
 pallet-session = { version = "28.0.0", default-features = false }
 pallet-sudo = { version = "28.0.0", default-features = false }
 pallet-timestamp = { version = "27.0.0", default-features = false }
@@ -143,7 +145,9 @@ ismp-parachain = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-
 ismp-parachain-inherent = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
 pallet-ismp-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
 ismp-parachain-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
+ismp-testsuite = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
 
 # Local
 regionx-primitives = { path = "./runtime/primitives", default-features = false }
 regionx-runtime = { path = "./runtime/regionx", default-features = false }
+pallet-regions = { path = "./pallets/regions", default-features = false }

@@ -34,6 +34,7 @@ use impls::*;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use frame_support::traits::TransformOrigin;
+use pallet_regions::primitives::StateMachineHeightProvider as StateMachineHeightProviderT;
 use parachains_common::message_queue::{NarrowOriginToSibling, ParaIdToSibling};
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use smallvec::smallvec;
@@ -53,6 +54,7 @@ use sp_version::RuntimeVersion;
 
 use ::ismp::{
 	consensus::{ConsensusClientId, StateMachineId},
+	host::StateMachine,
 	router::{Request, Response},
 };
 use frame_support::{
@@ -73,6 +75,7 @@ use frame_system::{
 };
 use orml_currencies::BasicCurrencyAdapter;
 use pallet_ismp::{
+	dispatcher::Dispatcher,
 	mmr::primitives::{Leaf, LeafIndex},
 	primitives::Proof,
 	ProofKeys,
@@ -397,13 +400,14 @@ impl orml_currencies::Config for Runtime {
 impl orml_asset_registry::Config for Runtime {
 	type AssetId = AssetId;
 	type AssetProcessor = CustomAssetProcessor;
-	// TODO after https://github.com/RegionX-Labs/RegionX-Node/issues/72:
+	// TODO: after https://github.com/RegionX-Labs/RegionX-Node/issues/72:
 	// Allow TC to register an asset.
 	type AuthorityOrigin = EnsureRoot<AccountId>;
 	type Balance = Balance;
 	type CustomMetadata = CustomMetadata;
 	type StringLimit = AssetsStringLimit;
 	type RuntimeEvent = RuntimeEvent;
+	// TODO: accurate weight
 	type WeightInfo = ();
 }
 
@@ -552,6 +556,28 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
+pub struct StateMachineHeightProvider;
+impl StateMachineHeightProviderT for StateMachineHeightProvider {
+	fn get_latest_state_machine_height(id: StateMachineId) -> u64 {
+		Ismp::latest_state_height(id)
+	}
+}
+
+parameter_types! {
+	pub const CoretimeChain: StateMachine = StateMachine::Kusama(1005); // coretime-kusama
+}
+
+impl pallet_regions::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type NativeCurrency = Balances;
+	type CoretimeChain = CoretimeChain;
+	type IsmpDispatcher = Dispatcher<Runtime>;
+	type StateMachineHeightProvider = StateMachineHeightProvider;
+	type Timeout = ConstU64<1000>; // TODO: FIXME
+	type WeightInfo = ();
+}
+
 impl pallet_utility::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -645,6 +671,9 @@ construct_runtime!(
 		// ISMP
 		Ismp: pallet_ismp = 60,
 		IsmpParachain: ismp_parachain = 61,
+
+		// Main stage:
+		Regions: pallet_regions = 70,
 	}
 );
 
@@ -656,11 +685,12 @@ mod benches {
 		[pallet_session, SessionBench::<Runtime>]
 		[pallet_multisig, Multisig]
 		[pallet_proxy, Proxy]
-		[pallet_timestamp, Utility]
 		[pallet_timestamp, Timestamp]
+		[pallet_utility, Utility]
 		[pallet_sudo, Sudo]
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
+		[pallet_regions, Regions]
 	);
 }
 

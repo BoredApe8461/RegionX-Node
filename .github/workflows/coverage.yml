@@ -40,7 +40,7 @@ jobs:
         tar -zxvf cargo-tarpaulin-x86_64-unknown-linux-musl.tar.gz -C $HOME/.cargo/bin
         cargo tarpaulin --workspace \
         -e regionx-node regionx-runtime \
-        --exclude-files **/mock.rs **/weights/* \
+        --exclude-files **/mock.rs **/weights/* **/weights.rs \
         --out xml
 
     - uses: codecov/codecov-action@v4.0.1
