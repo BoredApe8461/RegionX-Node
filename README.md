@@ -16,7 +16,7 @@
     zombienet-linux setup polkadot 
 
     Please add the dir to your $PATH by running the command:
-    export PATH=/home/<username>/zombienet/dist:$PATH
+    export PATH=/home/<username>/RegionX-Node/:$PATH
     ```
 
 4. Run the test:

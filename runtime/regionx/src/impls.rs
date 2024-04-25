@@ -1,10 +1,16 @@
-use crate::{AssetId, Balance, OrmlAssetRegistry, Runtime, RuntimeCall};
+use crate::{AccountId, AssetId, AssetRegistry, Authorship, Balance, Runtime, RuntimeCall, Tokens};
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::traits::InstanceFilter;
+use frame_support::traits::{
+	fungibles, tokens::ConversionToAssetBalance, Defensive, InstanceFilter,
+};
 use orml_asset_registry::DefaultAssetMetadata;
 use orml_traits::{asset_registry::AssetProcessor, GetByKey};
+use pallet_asset_tx_payment::HandleCredit;
 use scale_info::TypeInfo;
-use sp_runtime::{DispatchError, RuntimeDebug};
+use sp_runtime::{
+	traits::CheckedDiv, ArithmeticError, DispatchError, FixedPointNumber, FixedU128, RuntimeDebug,
+	TokenError,
+};
 
 #[derive(
 	Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Debug, Encode, Decode, TypeInfo, MaxEncodedLen,
@@ -27,6 +33,43 @@ impl AssetProcessor<AssetId, DefaultAssetMetadata<Runtime>> for CustomAssetProce
 		_metadata: DefaultAssetMetadata<Runtime>,
 	) -> Result<(), DispatchError> {
 		Ok(())
+	}
+}
+
+/// A `HandleCredit` implementation that naively transfers the fees to the block author.
+/// Will drop and burn the assets in case the transfer fails.
+pub struct TokensToBlockAuthor;
+impl HandleCredit<AccountId, Tokens> for TokensToBlockAuthor {
+	fn handle_credit(credit: fungibles::Credit<AccountId, Tokens>) {
+		use frame_support::traits::fungibles::Balanced;
+		if let Some(author) = Authorship::author() {
+			// In case of error: Will drop the result triggering the `OnDrop` of the imbalance.
+			let _ = Tokens::resolve(&author, credit).defensive();
+		}
+	}
+}
+
+pub struct TokenToNativeConverter;
+impl ConversionToAssetBalance<Balance, AssetId, Balance> for TokenToNativeConverter {
+	type Error = DispatchError;
+
+	fn to_asset_balance(balance: Balance, asset_id: AssetId) -> Result<Balance, Self::Error> {
+		// NOTE: in the newer version of the asset-rate pallet the `ConversionToAssetBalance`
+		// is implemented.
+		//
+		// However, that version is not matching with the rest of the versions we use, so we
+		// will implement it manually for now.
+		//
+		// TODO: This should be updated once we start using the versions from `1.7.0` release.
+
+		let rate = pallet_asset_rate::ConversionRateToNative::<Runtime>::get(asset_id)
+			.ok_or(DispatchError::Token(TokenError::UnknownAsset))?;
+
+		// We cannot use `saturating_div` here so we use `checked_div`.
+		Ok(FixedU128::from_u32(1)
+			.checked_div(&rate)
+			.ok_or(DispatchError::Arithmetic(ArithmeticError::Overflow))?
+			.saturating_mul_int(balance))
 	}
 }
 
@@ -79,7 +122,7 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 pub struct ExistentialDeposits;
 impl GetByKey<AssetId, Balance> for ExistentialDeposits {
 	fn get(asset: &AssetId) -> Balance {
-		if let Some(metadata) = OrmlAssetRegistry::metadata(asset) {
+		if let Some(metadata) = AssetRegistry::metadata(asset) {
 			metadata.existential_deposit
 		} else {
 			// As restrictive as we can be. The asset must have associated metadata.

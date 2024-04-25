@@ -1,4 +1,3 @@
-use crate::Balance;
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 
@@ -19,9 +18,7 @@ pub type AssetId = u32;
 	TypeInfo,
 	MaxEncodedLen,
 )]
-pub struct CustomMetadata {
-	pub existential_deposit: Balance,
-}
+pub struct CustomMetadata;
 
 pub const REGX_ASSET_ID: AssetId = 0;
 pub const RELAY_CHAIN_ASSET_ID: AssetId = 1;

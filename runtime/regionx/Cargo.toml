@@ -46,6 +46,8 @@ frame-system-rpc-runtime-api = { workspace = true }
 frame-try-runtime = { workspace = true, optional = true }
 pallet-aura = { workspace = true }
 pallet-authorship = { workspace = true }
+pallet-asset-rate = { workspace = true }
+pallet-asset-tx-payment = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-message-queue = { workspace = true }
 pallet-multisig = { workspace = true }
@@ -123,6 +125,8 @@ std = [
 	"orml-traits/std",
 	"pallet-aura/std",
 	"pallet-authorship/std",
+	"pallet-asset-rate/std",
+	"pallet-asset-tx-payment/std",
 	"pallet-balances/std",
 	"pallet-collator-selection/std",
 	"pallet-message-queue/std",
@@ -174,6 +178,8 @@ runtime-benchmarks = [
 	"hex-literal",
 	"orml-asset-registry/runtime-benchmarks",
 	"orml-tokens/runtime-benchmarks",
+  	"pallet-asset-rate/runtime-benchmarks",
+  	"pallet-asset-tx-payment/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
 	"pallet-message-queue/runtime-benchmarks",
@@ -209,6 +215,8 @@ try-runtime = [
 	"ismp-parachain/try-runtime",
 	"pallet-aura/try-runtime",
 	"pallet-authorship/try-runtime",
+	"pallet-asset-rate/try-runtime",
+	"pallet-asset-tx-payment/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-collator-selection/try-runtime",
 	"pallet-message-queue/try-runtime",

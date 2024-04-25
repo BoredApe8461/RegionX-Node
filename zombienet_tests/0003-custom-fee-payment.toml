@@ -1,0 +1,25 @@
+[settings]
+timeout = 1000
+
+[relaychain]
+chain = "rococo-local"
+command = "polkadot"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+[[parachains]]
+id = 2000
+addToGenesis = false
+
+  [parachains.collator]
+  name = "regionx-collator01"
+  command = "regionx-node"
+  args = [ "-lruntime=debug,parachain=trace" ]
+
+
