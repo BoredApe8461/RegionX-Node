@@ -52,6 +52,8 @@ pallet-transaction-payment-rpc-runtime-api = { version = "28.0.0", default-featu
 pallet-message-queue = { version = "31.0.0", default-features = false }
 pallet-multisig = { version = "28.0.0", default-features = false }
 pallet-proxy = { version = "28.0.0", default-features = false }
+pallet-preimage = { version = "28.0.0", default-features = false }
+pallet-scheduler = { version = "29.0.0", default-features = false }
 pallet-utility = { version = "28.0.0", default-features = false }
 sp-api = { version = "26.0.0", default-features = false }
 sp-blockchain = { version = "28.0.0", default-features = false }
