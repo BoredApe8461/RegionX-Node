@@ -441,6 +441,10 @@ impl pallet_asset_rate::Config for Runtime {
 	type BenchmarkHelper = ();
 }
 
+impl orml_unknown_tokens::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
 impl pallet_asset_tx_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Fungibles = Tokens;
@@ -709,6 +713,7 @@ construct_runtime!(
 		Tokens: orml_tokens = 14,
 		Currencies: orml_currencies = 15,
 		AssetRate: pallet_asset_rate = 16,
+		UnknownTokens: orml_unknown_tokens = 17,
 
 		// Governance
 		Sudo: pallet_sudo = 20,

@@ -14,25 +14,30 @@
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
 use super::{
-	AccountId, AllPalletsWithSystem, Balances, ParachainInfo, ParachainSystem, PolkadotXcm,
-	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, WeightToFee, XcmpQueue,
+	AccountId, AllPalletsWithSystem, AssetId, Balance, Balances, Currencies, ParachainInfo,
+	ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, UnknownTokens,
+	WeightToFee, XcmpQueue,
 };
 use frame_support::{
 	match_types, parameter_types,
 	traits::{ConstU32, Everything, Nothing},
+	PalletId,
 };
 use frame_system::EnsureRoot;
+use orml_xcm_support::{DepositToAlternative, IsNativeConcrete, MultiCurrencyAdapter};
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
 use polkadot_runtime_common::impls::ToAuthor;
+use regionx_primitives::assets::{REGX_ASSET_ID, RELAY_CHAIN_ASSET_ID};
+use sp_runtime::traits::{AccountIdConversion, Convert};
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
 	DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, IsConcrete, NativeAsset, ParentIsPreset,
-	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
-	TrailingSetTopicAsId, UsingComponents, WithComputedOrigin, WithUniqueTopic,
+	FrameTransactionalProcessor, NativeAsset, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
+	UsingComponents, WithComputedOrigin, WithUniqueTopic,
 };
 use xcm_executor::XcmExecutor;
 
@@ -55,19 +60,53 @@ pub type LocationToAccountId = (
 	AccountId32Aliases<RelayNetwork, AccountId>,
 );
 
+parameter_types! {
+	// The account which receives multi-currency tokens from failed attempts to deposit them
+	pub Alternative: AccountId = PalletId(*b"xcm/alte").into_account_truncating();
+}
+
 /// Means for transacting assets on this chain.
-pub type LocalAssetTransactor = FungibleAdapter<
-	// Use this currency:
-	Balances,
-	// Use this currency when it is a fungible asset matching the given location or name:
-	IsConcrete<RelayLocation>,
-	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
-	LocationToAccountId,
-	// Our chain's account ID type (we can't get away without mentioning it explicitly):
+pub type FungiblesAssetTransactor = MultiCurrencyAdapter<
+	Currencies,
+	UnknownTokens,
+	IsNativeConcrete<AssetId, AssetIdConverter>,
 	AccountId,
-	// We don't track any teleports.
-	(),
+	LocationToAccountId,
+	AssetId,
+	AssetIdConverter,
+	DepositToAlternative<Alternative, Currencies, AssetId, AccountId, Balance>,
 >;
+
+pub struct AssetIdConverter;
+impl Convert<AssetId, Option<MultiLocation>> for AssetIdConverter {
+	fn convert(id: AssetId) -> Option<MultiLocation> {
+		match id {
+			RELAY_CHAIN_ASSET_ID => Some(MultiLocation::parent()),
+			REGX_ASSET_ID => Some(MultiLocation::here()),
+			_ => None,
+		}
+	}
+}
+
+impl Convert<MultiLocation, Option<AssetId>> for AssetIdConverter {
+	fn convert(location: MultiLocation) -> Option<AssetId> {
+		match location {
+			MultiLocation { parents: 1, interior: Here } => Some(RELAY_CHAIN_ASSET_ID),
+			MultiLocation { parents: 0, interior: Here } => Some(REGX_ASSET_ID),
+			_ => None,
+		}
+	}
+}
+
+impl Convert<MultiAsset, Option<AssetId>> for AssetIdConverter {
+	fn convert(asset: MultiAsset) -> Option<AssetId> {
+		if let MultiAsset { id: Concrete(location), .. } = asset {
+			Self::convert(location)
+		} else {
+			None
+		}
+	}
+}
 
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can
@@ -127,7 +166,7 @@ impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	// How to withdraw and deposit an asset.
-	type AssetTransactor = LocalAssetTransactor;
+	type AssetTransactor = FungiblesAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = NativeAsset;
 	type IsTeleporter = (); // Teleporting is disabled.

@@ -6,11 +6,11 @@ chain = "rococo-local"
 command = "polkadot"
 
   [[relaychain.nodes]]
-  name = "alice"
+  name = "rococo-validator01"
   validator = true
 
   [[relaychain.nodes]]
-  name = "bob"
+  name = "rococo-validator02"
   validator = true
 
 [[parachains]]

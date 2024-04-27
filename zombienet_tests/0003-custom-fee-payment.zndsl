@@ -2,9 +2,9 @@ Description: Native currency fee payment
 Network: ./0003-custom-fee-payment.toml
 Creds: config
 
-alice: is up
-bob: is up
+rococo-validator01: is up
+rococo-validator02: is up
 
-alice: parachain 2000 is registered within 225 seconds
+rococo-validator01: parachain 2000 is registered within 225 seconds
 
 regionx-collator01: js-script ../e2e_tests/custom-fee-payment.js return is 0 within 400 seconds

@@ -19,8 +19,23 @@
     export PATH=/home/<username>/RegionX-Node/:$PATH
     ```
 
-4. Run the test:
+4. Run the tests:
+ 
+   - block production
 
-    ```
-    zombienet-linux -p native test ./zombienet_tests/0001-smoke-test.zndsl
-    ```
+
+        ```
+        zombienet-linux -p native test ./zombienet_tests/0001-block-production.zndsl
+        ```
+
+    - native fee payment
+
+        ```
+        zombienet-linux -p native test ./zombienet_tests/0002-native-fee-payment.zndsl
+        ```
+
+    - custom fee payment
+
+        ```
+        zombienet-linux -p native test ./zombienet_tests/0003-custom-fee-payment.zndsl
+        ```
