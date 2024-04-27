@@ -6299,15 +6299,16 @@ dependencies = [
 
 [[package]]
 name = "pallet-collator-selection"
-version = "9.0.0"
+version = "9.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4199122c135e161d2e2f4cbc9339c54a11ac4b11e0beb67e53b49a3c90d566b"
+checksum = "05cc67e8233b748a0c0b1ecc2cbecfc6deb08be633fedba9c3d6b1ade6c2a036"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
  "pallet-authorship",
+ "pallet-balances",
  "pallet-session",
  "parity-scale-codec",
  "rand",
@@ -9451,12 +9452,14 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-collator-selection",
+ "pallet-conviction-voting",
  "pallet-ismp",
  "pallet-ismp-runtime-api",
  "pallet-message-queue",
  "pallet-multisig",
  "pallet-preimage",
  "pallet-proxy",
+ "pallet-referenda",
  "pallet-regions",
  "pallet-scheduler",
  "pallet-session",

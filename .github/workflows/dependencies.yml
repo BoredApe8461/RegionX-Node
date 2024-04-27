@@ -22,7 +22,7 @@ jobs:
     - uses: ./.github/actions/setup
 
     - name: Install Rust
-      run: cargo install psvm@0.1.0
+      run: cargo install --git https://github.com/paritytech/psvm --rev a3ecef700e4c1429c2d01e265a145654ceb3cc49 psvm
     - name: Check Dependency Versions
       run: |
         chmod +x ./scripts/check-dependency-versions.sh

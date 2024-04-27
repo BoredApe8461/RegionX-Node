@@ -26,6 +26,7 @@ extern crate alloc;
 mod weights;
 pub mod xcm_config;
 
+mod governance;
 mod impls;
 mod ismp;
 
@@ -76,6 +77,7 @@ use frame_system::{
 	EnsureRoot, Phase,
 };
 use orml_currencies::BasicCurrencyAdapter;
+use orml_tokens::CurrencyAdapter;
 use pallet_asset_tx_payment::FungiblesAdapter;
 use pallet_ismp::{
 	dispatcher::Dispatcher,
@@ -101,7 +103,7 @@ use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
 use xcm::latest::prelude::BodyId;
 
 use regionx_primitives::{
-	assets::{AssetId, CustomMetadata, REGX_ASSET_ID},
+	assets::{AssetId, CustomMetadata, REGX_ASSET_ID, RELAY_CHAIN_ASSET_ID},
 	AccountId, Address, Amount, Balance, BlockNumber, Hash, Header, Nonce, Signature,
 };
 
@@ -138,6 +140,9 @@ pub type Executive = frame_executive::Executive<
 	Runtime,
 	AllPalletsWithSystem,
 >;
+
+/// The relay chain currency on the RegionX parachain.
+pub type RelayChainCurrency = CurrencyAdapter<Runtime, ConstU32<RELAY_CHAIN_ASSET_ID>>;
 
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 /// node's balance type.
@@ -205,6 +210,10 @@ pub const DAYS: BlockNumber = HOURS * 24;
 pub const REGX: Balance = 1_000_000_000_000;
 pub const MILLIREGX: Balance = 1_000_000_000;
 pub const MICROREGX: Balance = 1_000_000;
+
+pub const KSM: Balance = 1_000_000_000_000;
+pub const MILLI_KSM: Balance = 1_000_000_000;
+pub const MICRO_KSM: Balance = 1_000_000;
 
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	// TODO: ensure this is a sensible value.
@@ -415,6 +424,7 @@ impl orml_asset_registry::Config for Runtime {
 }
 
 parameter_types! {
+	// TODO: set to a reasonable value.
 	/// Relay Chain `TransactionByteFee` / 10
 	pub const TransactionByteFee: Balance = 10 * MICROREGX;
 }
@@ -716,7 +726,9 @@ construct_runtime!(
 		UnknownTokens: orml_unknown_tokens = 17,
 
 		// Governance
-		Sudo: pallet_sudo = 20,
+		Sudo: pallet_sudo = 20, // TODO: leave this only for testnets
+		Referenda: pallet_referenda = 21,
+		ConvictionVoting: pallet_conviction_voting = 22,
 
 		// Collator support. The order of these 4 are important and shall not change.
 		Authorship: pallet_authorship = 30,

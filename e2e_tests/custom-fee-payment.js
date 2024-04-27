@@ -1,7 +1,5 @@
 const { ApiPromise, WsProvider, Keyring } = require("@polkadot/api");
-const { submitExtrinsic } = require("./common");
-
-const RELAY_ASSET_ID = 1;
+const { submitExtrinsic, setupRelayAsset, RELAY_ASSET_ID } = require("./common");
 
 async function run(nodeName, networkInfo, _jsArgs) {
   const { wsUri: regionXUri } = networkInfo.nodesByName[nodeName];
@@ -30,29 +28,7 @@ async function run(nodeName, networkInfo, _jsArgs) {
   const setXcmVersion = rococoApi.tx.xcmPallet.forceDefaultXcmVersion([3]);
   await submitExtrinsic(alice, rococoApi.tx.sudo.sudo(setXcmVersion), {});
 
-  const assetMetadata = {
-    decimals: 12,
-    name: "ROC",
-    symbol: "ROC",
-    existentialDeposit: 10n ** 3n,
-    location: null,
-    additional: null,
-  };
-
-  const assetSetupCalls = [
-    regionXApi.tx.assetRegistry.registerAsset(assetMetadata, RELAY_ASSET_ID),
-    regionXApi.tx.assetRate.create(RELAY_ASSET_ID, 1_000_000_000_000_000_000n), // 1 on 1
-    regionXApi.tx.tokens.setBalance(
-      alice.address,
-      RELAY_ASSET_ID,
-      10n ** 12n,
-      0,
-    ),
-  ];
-  const batchCall = regionXApi.tx.utility.batch(assetSetupCalls);
-  const sudoCall = regionXApi.tx.sudo.sudo(batchCall);
-
-  await submitExtrinsic(alice, sudoCall, {});
+  await setupRelayAsset(regionXApi, alice);
 
   const receiverKeypair = new Keyring();
   receiverKeypair.addFromAddress(alice.address);

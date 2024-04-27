@@ -1,4 +1,4 @@
-Description: Native currency fee payment
+Description: Custom currency fee payment
 Network: ./0003-custom-fee-payment.toml
 Creds: config
 

@@ -7,7 +7,7 @@
 2. Build the `regionx-node` by running:
 
     ```
-    cargo build --release
+    cargo build --release --features fast-runtime
     ```
 
 3. Get the polkadot binary:
