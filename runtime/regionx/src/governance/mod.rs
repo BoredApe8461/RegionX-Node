@@ -13,12 +13,25 @@
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::*;
+use super::*;
 
+mod origins;
+pub use origins::{pallet_custom_origins, WhitelistedCaller};
 mod tracks;
-use tracks::*;
+pub use tracks::*;
 
 use polkadot_runtime_common::prod_or_fast;
+
+pub type GeneralCouncilInstance = pallet_collective::Instance1;
+pub type TechnicalCommitteeInstance = pallet_collective::Instance2;
+
+pub type GeneralCouncilMembershipInstance = pallet_membership::Instance1;
+pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance2;
+
+type EnsureTwoThirdGeneralCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, GeneralCouncilInstance, 2, 3>;
+type EnsureTwoThirdTechnicalCommittee =
+	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 2, 3>;
 
 parameter_types! {
 	pub const VoteLockingPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1);
@@ -50,15 +63,87 @@ impl pallet_referenda::Config for Runtime {
 	type Scheduler = Scheduler;
 	type Currency = RelayChainCurrency;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
-	type CancelOrigin = EnsureRoot<AccountId>; // TODO: Or Technical fellowship
-	type KillOrigin = EnsureRoot<AccountId>; // TODO: Or Technical fellowship
+	type CancelOrigin =
+		EitherOfDiverse<EnsureTwoThirdTechnicalCommittee, EnsureTwoThirdGeneralCouncil>;
+	type KillOrigin =
+		EitherOfDiverse<EnsureTwoThirdTechnicalCommittee, EnsureTwoThirdGeneralCouncil>;
 	type Slash = (); // TODO: treasury
 	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
 	type Tally = pallet_conviction_voting::TallyOf<Runtime>;
 	type SubmissionDeposit = SubmissionDeposit;
-	type MaxQueued = ConstU32<100>;
+	type MaxQueued = ConstU32<50>;
 	type UndecidingTimeout = UndecidingTimeout;
 	type AlarmInterval = AlarmInterval;
 	type Tracks = TracksInfo;
+	type Preimages = Preimage;
+}
+
+parameter_types! {
+	pub const MotionDuration: BlockNumber = 3 * DAYS;
+	pub const MaxMembers: u32 = 30;
+	pub const MaxProposals: u32 = 10;
+	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
+}
+
+impl pallet_collective::Config<GeneralCouncilInstance> for Runtime {
+	type RuntimeOrigin = RuntimeOrigin;
+	type Proposal = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type MotionDuration = MotionDuration;
+	type MaxProposals = MaxProposals;
+	type MaxMembers = MaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type SetMembersOrigin = EnsureTwoThirdGeneralCouncil;
+	type WeightInfo = ();
+	type MaxProposalWeight = MaxProposalWeight;
+}
+
+impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
+	type RuntimeOrigin = RuntimeOrigin;
+	type Proposal = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type MotionDuration = MotionDuration;
+	type MaxProposals = MaxProposals;
+	type MaxMembers = MaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type SetMembersOrigin = EnsureTwoThirdGeneralCouncil;
+	type WeightInfo = ();
+	type MaxProposalWeight = MaxProposalWeight;
+}
+
+impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type AddOrigin = EnsureTwoThirdGeneralCouncil;
+	type RemoveOrigin = EnsureTwoThirdGeneralCouncil;
+	type SwapOrigin = EnsureTwoThirdGeneralCouncil;
+	type ResetOrigin = EnsureTwoThirdGeneralCouncil;
+	type PrimeOrigin = EnsureTwoThirdGeneralCouncil;
+	type MembershipInitialized = GeneralCouncil;
+	type MembershipChanged = GeneralCouncil;
+	type MaxMembers = MaxMembers;
+	type WeightInfo = ();
+}
+
+impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type AddOrigin = EnsureTwoThirdGeneralCouncil;
+	type RemoveOrigin = EnsureTwoThirdGeneralCouncil;
+	type SwapOrigin = EnsureTwoThirdGeneralCouncil;
+	type ResetOrigin = EnsureTwoThirdGeneralCouncil;
+	type PrimeOrigin = EnsureTwoThirdGeneralCouncil;
+	type MembershipInitialized = TechnicalCommittee;
+	type MembershipChanged = TechnicalCommittee;
+	type MaxMembers = MaxMembers;
+	type WeightInfo = ();
+}
+
+impl pallet_custom_origins::Config for Runtime {}
+
+impl pallet_whitelist::Config for Runtime {
+	type WeightInfo = ();
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type WhitelistOrigin = EnsureTwoThirdTechnicalCommittee;
+	type DispatchWhitelistedOrigin = WhitelistedCaller;
 	type Preimages = Preimage;
 }

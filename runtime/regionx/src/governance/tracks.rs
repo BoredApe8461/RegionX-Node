@@ -13,31 +13,52 @@
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::*;
-
+use super::*;
 use pallet_referenda::Curve;
 
 const fn percent(x: i32) -> sp_runtime::FixedI64 {
 	sp_runtime::FixedI64::from_rational(x as u128, 100)
 }
 
+// Same curve as on Polkadot.
 const APP_ROOT: Curve = Curve::make_reciprocal(4, 28, percent(80), percent(50), percent(100));
 const SUP_ROOT: Curve = Curve::make_linear(28, 28, percent(0), percent(50));
+// Same curve as on Polkadot.
+const APP_WHITELISTED_CALLER: Curve =
+	Curve::make_reciprocal(16, 28 * 24, percent(96), percent(50), percent(100));
+const SUP_WHITELISTED_CALLER: Curve =
+	Curve::make_reciprocal(1, 28, percent(20), percent(5), percent(50));
 
-const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 1] = [(
-	0,
-	pallet_referenda::TrackInfo {
-		name: "root",
-		max_deciding: 1,
-		decision_deposit: 50 * KSM, // TODO: adjust
-		prepare_period: 2 * HOURS,
-		decision_period: 14 * DAYS,
-		confirm_period: 24 * HOURS,
-		min_enactment_period: 24 * HOURS,
-		min_approval: APP_ROOT,
-		min_support: SUP_ROOT,
-	},
-)];
+const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 2] = [
+	(
+		0,
+		pallet_referenda::TrackInfo {
+			name: "root",
+			max_deciding: 1,
+			decision_deposit: 200 * KSM,
+			prepare_period: 2 * HOURS,
+			decision_period: 14 * DAYS,
+			confirm_period: 24 * HOURS,
+			min_enactment_period: 24 * HOURS,
+			min_approval: APP_ROOT,
+			min_support: SUP_ROOT,
+		},
+	),
+	(
+		1,
+		pallet_referenda::TrackInfo {
+			name: "whitelisted_caller",
+			max_deciding: 50,
+			decision_deposit: 50 * KSM,
+			prepare_period: 30 * MINUTES,
+			decision_period: 14 * DAYS,
+			confirm_period: 30 * MINUTES,
+			min_enactment_period: 30 * MINUTES,
+			min_approval: APP_WHITELISTED_CALLER,
+			min_support: SUP_WHITELISTED_CALLER,
+		},
+	),
+];
 
 pub struct TracksInfo;
 impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
@@ -50,6 +71,11 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 		if let Ok(system_origin) = frame_system::RawOrigin::try_from(id.clone()) {
 			match system_origin {
 				frame_system::RawOrigin::Root => Ok(0),
+				_ => Err(()),
+			}
+		} else if let Ok(custom_origin) = origins::Origin::try_from(id.clone()) {
+			match custom_origin {
+				origins::Origin::WhitelistedCaller => Ok(1),
 				_ => Err(()),
 			}
 		} else {
