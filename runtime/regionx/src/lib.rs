@@ -27,7 +27,7 @@ mod weights;
 pub mod xcm_config;
 
 mod governance;
-use governance::pallet_custom_origins;
+use governance::{pallet_custom_origins, Spender};
 
 mod impls;
 mod ismp;
@@ -37,7 +37,9 @@ use impls::*;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use frame_support::traits::{
-	fungible::HoldConsideration, EqualPrivilegeOnly, LinearStoragePrice, TransformOrigin,
+	fungible::HoldConsideration,
+	tokens::{PayFromAccount, UnityAssetBalanceConversion},
+	EqualPrivilegeOnly, LinearStoragePrice, TransformOrigin,
 };
 use pallet_regions::primitives::StateMachineHeightProvider as StateMachineHeightProviderT;
 use parachains_common::message_queue::{NarrowOriginToSibling, ParaIdToSibling};
@@ -47,7 +49,7 @@ use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT},
+	traits::{AccountIdConversion, AccountIdLookup, BlakeTwo256, Block as BlockT, IdentityLookup},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
@@ -705,6 +707,45 @@ impl pallet_scheduler::Config for Runtime {
 	type Preimages = Preimage;
 }
 
+parameter_types! {
+	pub const TreasuryPalletId: PalletId = PalletId(*b"rgx/trsy");
+	pub RegionXTreasuryAccount: AccountId = TreasuryPalletId::get().into_account_truncating();
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const ProposalBondMinimum: Balance = 100 * REGX;
+	pub const ProposalBondMaximum: Balance = 5_000 * REGX;
+	pub const SpendPeriod: BlockNumber = 7 * DAYS;
+	pub const PayoutPeriod: BlockNumber = 30 * DAYS;
+	pub const MaxApprovals: u32 = 50;
+	pub const Burn: Permill = Permill::from_percent(0);
+}
+
+impl pallet_treasury::Config for Runtime {
+	type PalletId = TreasuryPalletId;
+	type Currency = Balances;
+	type ApproveOrigin = Spender;
+	type RejectOrigin = Spender;
+	type RuntimeEvent = RuntimeEvent;
+	type OnSlash = Treasury;
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = ProposalBondMinimum;
+	type ProposalBondMaximum = ProposalBondMaximum;
+	type SpendPeriod = SpendPeriod;
+	type Burn = Burn;
+	type BurnDestination = ();
+	type MaxApprovals = MaxApprovals;
+	type WeightInfo = ();
+	type SpendFunds = ();
+	type SpendOrigin = Spender;
+	type AssetKind = ();
+	type Beneficiary = AccountId;
+	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
+	type Paymaster = PayFromAccount<Balances, RegionXTreasuryAccount>;
+	type BalanceConverter = UnityAssetBalanceConversion;
+	type PayoutPeriod = PayoutPeriod;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime
@@ -729,39 +770,44 @@ construct_runtime!(
 
 		// Governance
 		Sudo: pallet_sudo = 20, // TODO: leave this only for testnets
-		Referenda: pallet_referenda = 21,
-		ConvictionVoting: pallet_conviction_voting = 22,
-		GeneralCouncil: pallet_collective::<Instance1> = 23,
-		TechnicalCommittee: pallet_collective::<Instance2> = 24,
-		GeneralCouncilMembership: pallet_membership::<Instance1> = 25,
-		TechnicalCommitteeMembership: pallet_membership::<Instance2> = 26,
-		Origins: pallet_custom_origins = 27,
-		Whitelist: pallet_whitelist = 28,
+		DelegatedReferenda: pallet_referenda::<Instance1> = 21,
+		NativeReferenda: pallet_referenda::<Instance2> = 22,
+		DelegatedConvictionVoting: pallet_conviction_voting::<Instance1> = 23,
+		NativeConvictionVoting: pallet_conviction_voting::<Instance2> = 24,
+		GeneralCouncil: pallet_collective::<Instance1> = 25,
+		TechnicalCommittee: pallet_collective::<Instance2> = 26,
+		GeneralCouncilMembership: pallet_membership::<Instance1> = 27,
+		TechnicalCommitteeMembership: pallet_membership::<Instance2> = 28,
+		Origins: pallet_custom_origins = 29,
+		Whitelist: pallet_whitelist = 30,
 
 		// Collator support. The order of these 4 are important and shall not change.
-		Authorship: pallet_authorship = 30,
-		CollatorSelection: pallet_collator_selection = 31,
-		Session: pallet_session = 32,
-		Aura: pallet_aura = 33,
-		AuraExt: cumulus_pallet_aura_ext = 34,
+		Authorship: pallet_authorship = 40,
+		CollatorSelection: pallet_collator_selection = 41,
+		Session: pallet_session = 42,
+		Aura: pallet_aura = 43,
+		AuraExt: cumulus_pallet_aura_ext = 44,
+
+		// Treasury
+		Treasury: pallet_treasury = 50,
 
 		// Handy utilities
-		Utility: pallet_utility = 40,
-		Multisig: pallet_multisig = 41,
-		Proxy: pallet_proxy = 42,
+		Utility: pallet_utility = 60,
+		Multisig: pallet_multisig = 61,
+		Proxy: pallet_proxy = 62,
 
 		// XCM helpers.
-		XcmpQueue: cumulus_pallet_xcmp_queue = 50,
-		PolkadotXcm: pallet_xcm = 51,
-		CumulusXcm: cumulus_pallet_xcm = 52,
-		MessageQueue: pallet_message_queue = 53,
+		XcmpQueue: cumulus_pallet_xcmp_queue = 70,
+		PolkadotXcm: pallet_xcm = 71,
+		CumulusXcm: cumulus_pallet_xcm = 72,
+		MessageQueue: pallet_message_queue = 73,
 
 		// ISMP
-		Ismp: pallet_ismp = 60,
-		IsmpParachain: ismp_parachain = 61,
+		Ismp: pallet_ismp = 80,
+		IsmpParachain: ismp_parachain = 81,
 
 		// Main stage:
-		Regions: pallet_regions = 70,
+		Regions: pallet_regions = 90,
 	}
 );
 

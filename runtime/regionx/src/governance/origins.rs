@@ -1,3 +1,18 @@
+// This file is part of RegionX.
+//
+// RegionX is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// RegionX is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
+
 pub use pallet_custom_origins::*;
 
 // TODO: investigate warning
@@ -18,6 +33,8 @@ pub mod pallet_custom_origins {
 	pub enum Origin {
 		/// Origin able to dispatch a whitelisted call.
 		WhitelistedCaller,
+		/// Origin for spending (any amount of) funds.
+		Treasurer,
 		/// Origin able to spend up to 500 REGX from the treasury at once.
 		SmallTipper,
 		/// Origin able to spend up to 2,000 REGX from the treasury at once.
@@ -60,7 +77,7 @@ pub mod pallet_custom_origins {
 		};
 		() => {}
 	}
-	decl_unit_ensures!(WhitelistedCaller);
+	decl_unit_ensures!(WhitelistedCaller, Treasurer);
 
 	macro_rules! decl_ensure {
 		(

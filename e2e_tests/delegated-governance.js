@@ -31,17 +31,17 @@ async function run(nodeName, networkInfo, _jsArgs) {
   const remarkCallBytes = api.tx.system.remark("hey").toU8a();
   await submitExtrinsic(alice, api.tx.preimage.notePreimage(remarkCallBytes), {});
 
-  const submitProposal = api.tx.referenda.submit(
+  const submitProposal = api.tx.delegatedReferenda.submit(
     { system: "Root" },
     { Lookup: { hash: PREIMAGE_HASH, len: remarkCallBytes.length } },
     { After: 5 },
   );
   await submitExtrinsic(anna, submitProposal, { assetId: RELAY_ASSET_ID });
 
-  const placeDeposit = api.tx.referenda.placeDecisionDeposit(0);
+  const placeDeposit = api.tx.delegatedReferenda.placeDecisionDeposit(0);
   await submitExtrinsic(anna, placeDeposit, { assetId: RELAY_ASSET_ID });
 
-  const voteCall = api.tx.convictionVoting.vote(0, {
+  const voteCall = api.tx.delegatedConvictionVoting.vote(0, {
     // Voting with relay chain tokens. We know this is true; otherwise, this call
     // would fail, given that Anna doesn't have 10^16 RegionX tokens.
     Standard: { vote: { aye: true, conviction: "None" }, balance: 10n ** 16n },

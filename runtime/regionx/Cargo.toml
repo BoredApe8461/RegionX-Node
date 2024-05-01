@@ -62,6 +62,7 @@ pallet-preimage = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-scheduler = { workspace = true }
+pallet-treasury = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
@@ -153,6 +154,7 @@ std = [
 	"pallet-session/std",
 	"pallet-sudo/std",
 	"pallet-scheduler/std",
+	"pallet-treasury/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -210,6 +212,7 @@ runtime-benchmarks = [
 	"pallet-regions/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
+	"pallet-treasury/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
@@ -254,6 +257,7 @@ try-runtime = [
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-scheduler/try-runtime",
+	"pallet-treasury/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-utility/try-runtime",
