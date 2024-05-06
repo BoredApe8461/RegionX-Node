@@ -1,13 +1,11 @@
 const { ApiPromise, WsProvider, Keyring } = require("@polkadot/api");
-const { submitExtrinsic, setupRelayAsset, RELAY_ASSET_ID } = require("./common");
+const { submitExtrinsic, setupRelayAsset, RELAY_ASSET_ID } = require("../common");
 
 async function run(nodeName, networkInfo, _jsArgs) {
   const { wsUri: regionXUri } = networkInfo.nodesByName[nodeName];
   const { wsUri: rococoUri } = networkInfo.nodesByName["rococo-validator01"];
 
-  const rococoApi = await ApiPromise.create({
-    provider: new WsProvider(rococoUri),
-  });
+  const rococoApi = await ApiPromise.create({provider: new WsProvider(rococoUri)});
   const regionXApi = await ApiPromise.create({
     provider: new WsProvider(regionXUri),
     signedExtensions: {

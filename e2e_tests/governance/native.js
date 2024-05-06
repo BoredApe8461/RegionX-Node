@@ -1,5 +1,5 @@
 const { ApiPromise, WsProvider, Keyring } = require("@polkadot/api");
-const { submitExtrinsic, setupRelayAsset, RELAY_ASSET_ID } = require("./common");
+const { submitExtrinsic, setupRelayAsset } = require("../common");
 
 const PREIMAGE_HASH = "0x0ccf4369e9a9f88f035828ba0dd5da645d5c0fa7baa86bdc8d7a80c183ab84c9";
 

@@ -17,7 +17,7 @@ async function submitExtrinsic(signer, call, options) {
       } else if (result.isError) {
         console.log(`Transaction error`);
         unsub();
-        return resolve();
+        return reject();
       }
     });
   });

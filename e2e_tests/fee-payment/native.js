@@ -1,5 +1,5 @@
 const { ApiPromise, WsProvider } = require("@polkadot/api");
-const { submitExtrinsic } = require("./common");
+const { submitExtrinsic } = require("../common");
 
 async function run(nodeName, networkInfo, _jsArgs) {
   const { wsUri } = networkInfo.nodesByName[nodeName];
