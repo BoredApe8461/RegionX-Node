@@ -181,7 +181,7 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for DelegatedReferendaTr
 				_ => Err(()),
 			}
 		} else {
-			// Treasury is only controlable with native tokens.
+			// Treasury is only controllable with native tokens.
 			Err(())
 		}
 	}
@@ -197,7 +197,7 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for NativeReferendaTrack
 	}
 	fn track_for(id: &Self::RuntimeOrigin) -> Result<Self::Id, ()> {
 		if let Ok(_system_origin) = frame_system::RawOrigin::try_from(id.clone()) {
-			// Root is the only avaialable origin for relay chain asset holders.
+			// Root is the only available origin for relay chain asset holders.
 			Err(())
 		} else if let Ok(custom_origin) = origins::Origin::try_from(id.clone()) {
 			match custom_origin {

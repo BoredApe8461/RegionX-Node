@@ -15,7 +15,6 @@
 
 pub use pallet_custom_origins::*;
 
-// TODO: investigate warning
 #[allow(unused_imports)]
 #[frame_support::pallet]
 pub mod pallet_custom_origins {
@@ -117,7 +116,7 @@ pub mod pallet_custom_origins {
 			SmallTipper = 500 * REGX,
 			BigTipper = 2000 * REGX,
 			SmallSpender = 50_000 * REGX,
-			MediumSpender = 100_000 * REGX,
+			MediumSpender = 200_000 * REGX,
 			BigSpender = 500_000 * REGX,
 		}
 	}
