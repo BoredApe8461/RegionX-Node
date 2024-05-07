@@ -39,3 +39,15 @@
         ```
         zombienet-linux -p native test ./zombienet_tests/0003-custom-fee-payment.zndsl
         ```
+
+    - delegated governance(relay chain token holders)
+
+        ```
+        zombienet-linux -p native test ./zombienet_tests/0004-delegated-governance.zndsl
+        ```
+
+    - native governance(RegionX token holders)
+
+        ```
+        zombienet-linux -p native test ./zombienet_tests/0005-native-governance.zndsl
+        ```

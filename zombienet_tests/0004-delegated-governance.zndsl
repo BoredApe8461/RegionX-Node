@@ -1,4 +1,4 @@
-Description: Native currency fee payment
+Description: Governance by relay chain token holders
 Network: ./0004-delegated-governance.toml
 Creds: config
 
