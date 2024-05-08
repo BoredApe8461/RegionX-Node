@@ -26,44 +26,10 @@ async function run(nodeName: string, networkInfo: any, _jsArgs: any) {
 	const setXcmVersion = rococoApi.tx.xcmPallet.forceDefaultXcmVersion([3]);
 	await submitExtrinsic(alice, rococoApi.tx.sudo.sudo(setXcmVersion), {});
 
-	await setupRelayAsset(regionXApi, alice);
+	await setupRelayAsset(regionXApi, alice, 10n**12n);
 
 	const receiverKeypair = new Keyring();
 	receiverKeypair.addFromAddress(alice.address);
-
-	const feeAssetItem = 0;
-	const weightLimit = "Unlimited";
-	const reserveTransfer = rococoApi.tx.xcmPallet.limitedReserveTransferAssets(
-		{ V3: { parents: 0, interior: { X1: { Parachain: 2000 } } } }, //dest
-		{
-			V3: {
-				parents: 0,
-				interior: {
-					X1: {
-						AccountId32: {
-							chain: "Any",
-							id: receiverKeypair.pairs[0].publicKey,
-						},
-					},
-				},
-			},
-		}, //beneficiary
-		{
-			V3: [
-				{
-					id: {
-						Concrete: { parents: 0, interior: "Here" },
-					},
-					fun: {
-						Fungible: 10n ** 9n,
-					},
-				},
-			],
-		}, //asset
-		feeAssetItem,
-		weightLimit
-	);
-	await submitExtrinsic(alice, reserveTransfer, {});
 
 	// Try to pay for fees with relay chain asset.
 	const remarkCall = regionXApi.tx.system.remark("0x44");
