@@ -11,6 +11,7 @@ async function run(nodeName: string, networkInfo: any, _jsArgs: any) {
 	const keyring = new Keyring({ type: "sr25519" });
 	const alice = keyring.addFromUri("//Alice");
 
+	// relay asset is needed for storing the preimage.
 	await setupRelayAsset(api, alice);
 
 	const spendCallBytes = api.tx.treasury.spendLocal(10n ** 6n, alice.address).toU8a();

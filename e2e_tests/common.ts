@@ -1,4 +1,4 @@
-import { ApiPromise } from "@polkadot/api";
+import { ApiPromise, Keyring } from "@polkadot/api";
 import { SubmittableExtrinsic, SignerOptions } from "@polkadot/api/types";
 import { KeyringPair } from "@polkadot/keyring/types";
 
@@ -30,7 +30,7 @@ async function submitExtrinsic(
 async function setupRelayAsset(
 	api: ApiPromise,
 	signer: KeyringPair,
-	initialBalance: bigint = 10n ** 12n
+	initialBalance: bigint = 0n
 ) {
 	const assetMetadata = {
 		decimals: 12,
@@ -58,8 +58,52 @@ async function setupRelayAsset(
 	await submitExtrinsic(signer, sudoCall, {});
 }
 
-async function sleep(milliseconds: number) {
-	return new Promise((resolve) => setTimeout(resolve, milliseconds));
+// Transfer the relay chain asset to the parachain specified by paraId.
+// Receiver address is same as the sender's.
+async function transferRelayAssetToPara(amount: bigint, paraId: number, relayApi: ApiPromise, signer: KeyringPair) {
+  const receiverKeypair = new Keyring();
+  receiverKeypair.addFromAddress(signer.address);
+
+  // If system parachain we use teleportation, otherwise we do a reserve transfer.
+  const transferKind = paraId < 2000 ? 'limitedTeleportAssets' : 'limitedReserveTransferAssets';
+
+  const feeAssetItem = 0;
+  const weightLimit = "Unlimited";
+  const reserveTransfer = relayApi.tx.xcmPallet[transferKind](
+    { V3: { parents: 0, interior: { X1: { Parachain: paraId } } } }, //dest
+    {
+      V3: {
+        parents: 0,
+        interior: {
+          X1: {
+            AccountId32: {
+              chain: "Any",
+              id: receiverKeypair.pairs[0].publicKey,
+            },
+          },
+        },
+      },
+    }, //beneficiary
+    {
+      V3: [
+        {
+          id: {
+            Concrete: { parents: 0, interior: "Here" },
+          },
+          fun: {
+            Fungible: amount,
+          },
+        },
+      ],
+    }, //asset
+    feeAssetItem,
+    weightLimit,
+  );
+  await submitExtrinsic(signer, reserveTransfer, {});
 }
 
-export { submitExtrinsic, setupRelayAsset, sleep, RELAY_ASSET_ID };
+async function sleep(milliseconds: number) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+export { submitExtrinsic, setupRelayAsset, transferRelayAssetToPara, sleep, RELAY_ASSET_ID }

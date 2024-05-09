@@ -13,7 +13,7 @@
 3. Get the polkadot binary:
 
     ```sh
-    zombienet-linux setup polkadot 
+    zombienet-linux setup polkadot polkadot-parachain
 
     Please add the dir to your $PATH by running the command:
     export PATH=/home/<username>/RegionX-Node/:$PATH

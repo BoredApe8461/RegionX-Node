@@ -22,5 +22,6 @@ bin/
 bin/
 
 node_modules
+build/
 **/package-lock.json
 **/build

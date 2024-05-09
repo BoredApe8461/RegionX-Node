@@ -1,5 +1,5 @@
 Description: Cross chain transfer between RegionX and the relay chain
-Network: ./0006-xc-transfer.toml
+Network: ./0006-asset-transfer.toml
 Creds: config
 
 rococo-validator01: is up

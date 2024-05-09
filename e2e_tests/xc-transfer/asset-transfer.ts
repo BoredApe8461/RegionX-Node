@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
-import { RELAY_ASSET_ID, setupRelayAsset, sleep, submitExtrinsic } from "../common";
+import { RELAY_ASSET_ID, setupRelayAsset, sleep, submitExtrinsic, transferRelayAssetToPara } from "../common";
 
 import assert from "node:assert";
 
@@ -27,58 +27,25 @@ async function run(nodeName: string, networkInfo: any, _jsArgs: any) {
 	const assertRegionXBalance = async (address: string, balance: bigint) => {
 		const { free } = (
 			await regionXApi.query.tokens.accounts(address, RELAY_ASSET_ID)
-		).toHuman() as any;
+		).toJSON() as any;
 
-		console.log(`RegionX: ${free}`);
-		assert(balance - BigInt(free.toString().replace(/,/g, "")) < TOLERANCE);
+		console.log(`RegionX: ${BigInt(free).toString()} | Expected: ${balance}`);
+		assert(balance - BigInt(free) < TOLERANCE);
 	};
 
 	const assertRococoBalance = async (address: string, balance: bigint) => {
 		const {
 			data: { free },
-		} = (await rococoApi.query.system.account(address)).toHuman() as any;
+		} = (await rococoApi.query.system.account(address)).toJSON() as any;
 
-		console.log(`Rococo: ${free}`);
-		assert(balance - BigInt(free.toString().replace(/,/g, "")) < TOLERANCE);
+		console.log(`Rococo: ${BigInt(free).toString()} | Expected: ${balance}`);
+		assert(balance - BigInt(free) < TOLERANCE);
 	};
 
 	await assertRegionXBalance(alice.address, 10n ** 12n);
 	await assertRococoBalance(alice.address, 10n ** 18n);
 
-	const feeAssetItem = 0;
-	const weightLimit = "Unlimited";
-	const rococoReserveTransfer = rococoApi.tx.xcmPallet.limitedReserveTransferAssets(
-		{ V3: { parents: 0, interior: { X1: { Parachain: 2000 } } } }, //dest
-		{
-			V3: {
-				parents: 0,
-				interior: {
-					X1: {
-						AccountId32: {
-							chain: "Any",
-							id: receiverKeypair.pairs[0].publicKey,
-						},
-					},
-				},
-			},
-		}, //beneficiary
-		{
-			V3: [
-				{
-					id: {
-						Concrete: { parents: 0, interior: "Here" },
-					},
-					fun: {
-						Fungible: 3n * 10n ** 12n,
-					},
-				},
-			],
-		}, //asset
-		feeAssetItem,
-		weightLimit
-	);
-	await submitExtrinsic(alice, rococoReserveTransfer, {});
-
+	await transferRelayAssetToPara(3n * 10n ** 12n, 2000, rococoApi, alice);
 	await sleep(5 * 1000);
 
 	await assertRegionXBalance(alice.address, 4n * 10n ** 12n);
@@ -111,15 +78,15 @@ async function run(nodeName: string, networkInfo: any, _jsArgs: any) {
 				},
 			],
 		}, //asset
-		feeAssetItem,
-		weightLimit
+		0,
+		"Unlimited"
 	);
 
 	await submitExtrinsic(alice, regionXReserveTransfer, {});
 
 	await sleep(5 * 1000);
 
-	await assertRegionXBalance(alice.address, 4n * 10n ** 12n);
+	await assertRegionXBalance(alice.address, 3n * 10n ** 12n);
 	await assertRococoBalance(alice.address, 10n ** 18n - 3n * 10n ** 12n);
 }
 

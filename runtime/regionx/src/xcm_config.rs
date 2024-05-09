@@ -14,9 +14,9 @@
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
 use super::{
-	AccountId, AllPalletsWithSystem, AssetId, Balance, Balances, Currencies, ParachainInfo,
-	ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, UnknownTokens,
-	WeightToFee, XcmpQueue,
+	AccountId, AllPalletsWithSystem, AssetId, Balance, Balances, Currencies, NonFungibleAdapter,
+	ParachainInfo, ParachainSystem, PolkadotXcm, Regions, Runtime, RuntimeCall, RuntimeEvent,
+	RuntimeOrigin, UnknownTokens, WeightToFee, XcmpQueue, CORETIME_CHAIN_PARA_ID,
 };
 use frame_support::{
 	match_types, parameter_types,
@@ -34,7 +34,7 @@ use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
 	DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin, FixedWeightBounds,
-	FrameTransactionalProcessor, NativeAsset, ParentIsPreset, RelayChainAsNative,
+	FrameTransactionalProcessor, IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative,
 	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
 	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
 	UsingComponents, WithComputedOrigin, WithUniqueTopic,
@@ -43,10 +43,24 @@ use xcm_executor::XcmExecutor;
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
+	pub const BrokerPalletLocation: MultiLocation = MultiLocation {
+		parents: 1,
+		interior: X2(Parachain(CORETIME_CHAIN_PARA_ID), PalletInstance(50))
+	};
 	pub const RelayNetwork: Option<NetworkId> = None;
+	pub const CoretimeChainLocation: MultiLocation = MultiLocation {
+		parents: 1,
+		interior: X1(Parachain(CORETIME_CHAIN_PARA_ID))
+	};
+	pub AssetsFromCoretimeChain: (MultiAssetFilter, MultiLocation) = (
+		Wild(All), // We can trust system parachains.
+		CoretimeChainLocation::get()
+	);
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 }
+
+pub type TrustedReserves = (NativeAsset, xcm_builder::Case<AssetsFromCoretimeChain>);
 
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
 /// when determining ownership of accounts for asset transacting and when attempting to use XCM
@@ -76,6 +90,21 @@ pub type FungiblesAssetTransactor = MultiCurrencyAdapter<
 	AssetIdConverter,
 	DepositToAlternative<Alternative, Currencies, AssetId, AccountId, Balance>,
 >;
+
+pub type RegionTransactor = NonFungibleAdapter<
+	// Use this non-fungible implementation:
+	Regions,
+	// This adapter will handle coretime regions from the broker pallet.
+	IsConcrete<BrokerPalletLocation>,
+	// Convert an XCM Location into a local account id:
+	LocationToAccountId,
+	// Our chain's account ID type (we can't get away without mentioning it explicitly):
+	AccountId,
+	// We don't track any teleports.
+	(),
+>;
+
+pub type AssetTransactors = (RegionTransactor, FungiblesAssetTransactor);
 
 pub struct AssetIdConverter;
 impl Convert<AssetId, Option<MultiLocation>> for AssetIdConverter {
@@ -166,9 +195,9 @@ impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	// How to withdraw and deposit an asset.
-	type AssetTransactor = FungiblesAssetTransactor;
+	type AssetTransactor = AssetTransactors;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	type IsReserve = NativeAsset;
+	type IsReserve = TrustedReserves;
 	type IsTeleporter = (); // Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
@@ -214,7 +243,7 @@ impl pallet_xcm::Config for Runtime {
 	// Needs to be `Everything` for local testing.
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = Everything;
-	type XcmReserveTransferFilter = Nothing;
+	type XcmReserveTransferFilter = Everything;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
 	type RuntimeOrigin = RuntimeOrigin;

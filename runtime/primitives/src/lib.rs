@@ -51,6 +51,9 @@ pub type Address = MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 
+/// u128 encoded `RegionId`. Used for specifying regions in XCM messages.
+pub type RawRegionId = u128;
+
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
