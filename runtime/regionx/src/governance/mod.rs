@@ -30,7 +30,7 @@ pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance2;
 
 type EnsureTwoThirdGeneralCouncil =
 	pallet_collective::EnsureProportionAtLeast<AccountId, GeneralCouncilInstance, 2, 3>;
-type EnsureTwoThirdTechnicalCommittee =
+pub type EnsureTwoThirdTechnicalCommittee =
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 2, 3>;
 
 pub type DelegatedReferendaInstance = pallet_referenda::Instance1;

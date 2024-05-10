@@ -31,7 +31,7 @@ mod weights;
 pub mod xcm_config;
 
 mod governance;
-use governance::{pallet_custom_origins, Spender};
+use governance::{pallet_custom_origins, EnsureTwoThirdTechnicalCommittee, Spender};
 
 mod impls;
 mod ismp;
@@ -422,9 +422,7 @@ impl orml_currencies::Config for Runtime {
 impl orml_asset_registry::Config for Runtime {
 	type AssetId = AssetId;
 	type AssetProcessor = CustomAssetProcessor;
-	// TODO: after https://github.com/RegionX-Labs/RegionX-Node/issues/72:
-	// Allow TC to register an asset.
-	type AuthorityOrigin = EnsureRoot<AccountId>;
+	type AuthorityOrigin = EitherOfDiverse<EnsureRoot<AccountId>, EnsureTwoThirdTechnicalCommittee>;
 	type Balance = Balance;
 	type CustomMetadata = CustomMetadata;
 	type StringLimit = AssetsStringLimit;
