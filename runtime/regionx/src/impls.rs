@@ -13,18 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{AccountId, AssetId, AssetRegistry, Authorship, Balance, Runtime, RuntimeCall, Tokens};
+use crate::{
+	AccountId, AssetId, AssetRegistry, Authorship, Balance, Balances, PalletCurrency, PotId,
+	Runtime, RuntimeCall, Tokens, Treasury,
+};
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::{
-	fungibles, tokens::ConversionToAssetBalance, Defensive, InstanceFilter,
+	fungibles, tokens::ConversionToAssetBalance, Defensive, Imbalance, InstanceFilter, OnUnbalanced,
 };
 use orml_asset_registry::DefaultAssetMetadata;
 use orml_traits::{asset_registry::AssetProcessor, GetByKey};
 use pallet_asset_tx_payment::HandleCredit;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::CheckedDiv, ArithmeticError, DispatchError, FixedPointNumber, FixedU128, RuntimeDebug,
-	TokenError,
+	traits::{AccountIdConversion, CheckedDiv},
+	ArithmeticError, DispatchError, FixedPointNumber, FixedU128, RuntimeDebug, TokenError,
 };
 
 #[derive(
@@ -142,6 +145,33 @@ impl GetByKey<AssetId, Balance> for ExistentialDeposits {
 		} else {
 			// As restrictive as we can be. The asset must have associated metadata.
 			Balance::MAX
+		}
+	}
+}
+
+type NegativeImbalance = <Balances as PalletCurrency<AccountId>>::NegativeImbalance;
+
+pub struct ToStakingPot;
+impl OnUnbalanced<NegativeImbalance> for ToStakingPot {
+	fn on_nonzero_unbalanced(amount: NegativeImbalance) {
+		let staking_pot = PotId::get().into_account_truncating();
+		Balances::resolve_creating(&staking_pot, amount);
+	}
+}
+
+pub struct DealWithFees;
+impl OnUnbalanced<NegativeImbalance> for DealWithFees {
+	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
+		if let Some(fees) = fees_then_tips.next() {
+			// 60% of the fees go to the treasury, and the rest goes to the collators along with the tips.
+			let (treasury, mut collators) = fees.ration(60, 40);
+
+			if let Some(tips) = fees_then_tips.next() {
+				tips.merge_into(&mut collators);
+			}
+
+			<ToStakingPot as OnUnbalanced<_>>::on_unbalanced(collators);
+			Treasury::on_unbalanced(treasury);
 		}
 	}
 }

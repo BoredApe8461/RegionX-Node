@@ -43,7 +43,7 @@ use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use frame_support::traits::{
 	fungible::HoldConsideration,
 	tokens::{PayFromAccount, UnityAssetBalanceConversion},
-	EqualPrivilegeOnly, LinearStoragePrice, TransformOrigin,
+	Currency as PalletCurrency, EqualPrivilegeOnly, LinearStoragePrice, TransformOrigin,
 };
 use pallet_regions::primitives::StateMachineHeightProvider as StateMachineHeightProviderT;
 use parachains_common::message_queue::{NarrowOriginToSibling, ParaIdToSibling};
@@ -439,8 +439,7 @@ parameter_types! {
 
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	// TODO: send fees to treasury.
-	type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
+	type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees>;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
