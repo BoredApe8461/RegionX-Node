@@ -1,66 +1,67 @@
-import { ApiPromise, Keyring } from "@polkadot/api";
-import { SubmittableExtrinsic, SignerOptions } from "@polkadot/api/types";
-import { KeyringPair } from "@polkadot/keyring/types";
+import { ApiPromise, Keyring } from '@polkadot/api';
+import { SignerOptions, SubmittableExtrinsic } from '@polkadot/api/types';
+import { KeyringPair } from '@polkadot/keyring/types';
 
 const RELAY_ASSET_ID = 1;
 
 async function submitExtrinsic(
-	signer: KeyringPair,
-	call: SubmittableExtrinsic<"promise">,
-	options: Partial<SignerOptions>
+  signer: KeyringPair,
+  call: SubmittableExtrinsic<'promise'>,
+  options: Partial<SignerOptions>
 ): Promise<void> {
-	return new Promise(async (resolve, reject) => {
-		const unsub = await call.signAndSend(signer, options, (result) => {
-			console.log(`Current status is ${result.status}`);
-			if (result.status.isInBlock) {
-				console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
-			} else if (result.status.isFinalized) {
-				console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-				unsub();
-				return resolve();
-			} else if (result.isError) {
-				console.log(`Transaction error`);
-				unsub();
-				return reject();
-			}
-		});
-	});
+  return new Promise((resolve, reject) => {
+    const unsub = call.signAndSend(signer, options, (result) => {
+      console.log(`Current status is ${result.status}`);
+      if (result.status.isInBlock) {
+        console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+      } else if (result.status.isFinalized) {
+        console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+        unsub.then();
+        return resolve();
+      } else if (result.isError) {
+        console.log('Transaction error');
+        unsub.then();
+        return reject();
+      }
+    });
+  });
 }
 
-async function setupRelayAsset(
-	api: ApiPromise,
-	signer: KeyringPair,
-	initialBalance: bigint = 0n
-) {
-	const assetMetadata = {
-		decimals: 12,
-		name: "ROC",
-		symbol: "ROC",
-		existentialDeposit: 10n ** 3n,
-		location: null,
-		additional: null,
-	};
+async function setupRelayAsset(api: ApiPromise, signer: KeyringPair, initialBalance = 0n) {
+  const assetMetadata = {
+    decimals: 12,
+    name: 'ROC',
+    symbol: 'ROC',
+    existentialDeposit: 10n ** 3n,
+    location: null,
+    additional: null,
+  };
 
-	const assetSetupCalls = [
-		api.tx.assetRegistry.registerAsset(assetMetadata, RELAY_ASSET_ID),
-		api.tx.assetRate.create(RELAY_ASSET_ID, 1_000_000_000_000_000_000n), // 1 on 1
-	];
+  const assetSetupCalls = [
+    api.tx.assetRegistry.registerAsset(assetMetadata, RELAY_ASSET_ID),
+    api.tx.assetRate.create(RELAY_ASSET_ID, 1_000_000_000_000_000_000n), // 1 on 1
+  ];
 
-	if (initialBalance > BigInt(0)) {
-		assetSetupCalls.push(
-			api.tx.tokens.setBalance(signer.address, RELAY_ASSET_ID, initialBalance, 0)
-		);
-	}
+  if (initialBalance > BigInt(0)) {
+    assetSetupCalls.push(
+      api.tx.tokens.setBalance(signer.address, RELAY_ASSET_ID, initialBalance, 0)
+    );
+  }
 
-	const batchCall = api.tx.utility.batch(assetSetupCalls);
-	const sudoCall = api.tx.sudo.sudo(batchCall);
+  const batchCall = api.tx.utility.batch(assetSetupCalls);
+  const sudoCall = api.tx.sudo.sudo(batchCall);
 
-	await submitExtrinsic(signer, sudoCall, {});
+  await submitExtrinsic(signer, sudoCall, {});
 }
 
 // Transfer the relay chain asset to the parachain specified by paraId.
 // Receiver address is same as the sender's.
-async function transferRelayAssetToPara(amount: bigint, paraId: number, relayApi: ApiPromise, signer: KeyringPair) {
+async function transferRelayAssetToPara(
+  amount: bigint,
+  paraId: number,
+  relayApi: ApiPromise,
+  signer: KeyringPair
+) {
   const receiverKeypair = new Keyring();
   receiverKeypair.addFromAddress(signer.address);
 
@@ -68,7 +69,7 @@ async function transferRelayAssetToPara(amount: bigint, paraId: number, relayApi
   const transferKind = paraId < 2000 ? 'limitedTeleportAssets' : 'limitedReserveTransferAssets';
 
   const feeAssetItem = 0;
-  const weightLimit = "Unlimited";
+  const weightLimit = 'Unlimited';
   const reserveTransfer = relayApi.tx.xcmPallet[transferKind](
     { V3: { parents: 0, interior: { X1: { Parachain: paraId } } } }, //dest
     {
@@ -77,7 +78,7 @@ async function transferRelayAssetToPara(amount: bigint, paraId: number, relayApi
         interior: {
           X1: {
             AccountId32: {
-              chain: "Any",
+              chain: 'Any',
               id: receiverKeypair.pairs[0].publicKey,
             },
           },
@@ -88,7 +89,7 @@ async function transferRelayAssetToPara(amount: bigint, paraId: number, relayApi
       V3: [
         {
           id: {
-            Concrete: { parents: 0, interior: "Here" },
+            Concrete: { parents: 0, interior: 'Here' },
           },
           fun: {
             Fungible: amount,
@@ -97,13 +98,13 @@ async function transferRelayAssetToPara(amount: bigint, paraId: number, relayApi
       ],
     }, //asset
     feeAssetItem,
-    weightLimit,
+    weightLimit
   );
   await submitExtrinsic(signer, reserveTransfer, {});
 }
 
 async function sleep(milliseconds: number) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-export { submitExtrinsic, setupRelayAsset, transferRelayAssetToPara, sleep, RELAY_ASSET_ID }
+export { RELAY_ASSET_ID, setupRelayAsset, sleep, submitExtrinsic, transferRelayAssetToPara };
