@@ -100,6 +100,6 @@ impl core::fmt::Display for IsmpCustomError {
 
 impl From<IsmpCustomError> for IsmpError {
 	fn from(error: IsmpCustomError) -> Self {
-		IsmpError::ImplementationSpecific(format!("{}", error))
+		IsmpError::Custom(format!("{}", error))
 	}
 }

@@ -15,17 +15,15 @@
 
 #[cfg(not(feature = "std"))]
 use crate::alloc::string::ToString;
-use crate::{AccountId, Ismp, IsmpParachain, ParachainInfo, Runtime, RuntimeEvent, Timestamp};
+use crate::{
+	AccountId, Balance, Balances, Ismp, IsmpParachain, ParachainInfo, Runtime, RuntimeEvent,
+	Timestamp,
+};
 use frame_support::pallet_prelude::Get;
 use frame_system::EnsureRoot;
-use ismp::{
-	error::Error,
-	host::StateMachine,
-	module::IsmpModule,
-	router::{IsmpRouter, Post, Request, Response, Timeout},
-};
+use ismp::{error::Error, host::StateMachine, module::IsmpModule, router::IsmpRouter};
 use ismp_parachain::ParachainConsensusClient;
-use pallet_ismp::{dispatcher::FeeMetadata, primitives::ModuleId};
+use pallet_ismp::NoOpMmrTree;
 use sp_std::prelude::*;
 
 pub struct HostStateMachine;
@@ -39,83 +37,39 @@ pub struct Coprocessor;
 
 impl Get<Option<StateMachine>> for Coprocessor {
 	fn get() -> Option<StateMachine> {
-		Some(HostStateMachine::get())
+		None
 	}
 }
 
 impl ismp_parachain::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type IsmpHost = Ismp;
 }
 
 impl pallet_ismp::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	const INDEXING_PREFIX: &'static [u8] = b"ISMP";
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type HostStateMachine = HostStateMachine;
-	type Coprocessor = Coprocessor;
-	type TimeProvider = Timestamp;
+	type TimestampProvider = Timestamp;
 	type Router = Router;
+	type Balance = Balance;
+	type Currency = Balances;
+	type Coprocessor = Coprocessor;
 	type ConsensusClients = (ParachainConsensusClient<Runtime, IsmpParachain>,);
+
+	type Mmr = NoOpMmrTree<Self>;
 	type WeightProvider = ();
 }
 
 #[derive(Default)]
-pub struct ProxyModule;
-
-impl IsmpModule for ProxyModule {
-	fn on_accept(&self, _request: Post) -> Result<(), Error> {
-		// we don't support any incoming post requests.
-		Err(Error::CannotHandleMessage)
-	}
-
-	fn on_response(&self, response: Response) -> Result<(), Error> {
-		if response.dest_chain() != HostStateMachine::get() {
-			let meta = FeeMetadata { origin: [0u8; 32].into(), fee: Default::default() };
-			return Ismp::dispatch_response(response, meta);
-		}
-
-		let request = &response.request();
-		let from = match &request {
-			Request::Post(post) => &post.from,
-			Request::Get(get) => &get.from,
-		};
-
-		let pallet_id = ModuleId::from_bytes(from)
-			.map_err(|err| Error::ImplementationSpecific(err.to_string()))?;
-
-		#[allow(clippy::match_single_binding)]
-		match pallet_id {
-			pallet_regions::PALLET_ID =>
-				pallet_regions::IsmpModuleCallback::<Runtime>::default().on_response(response),
-			_ => Err(Error::ImplementationSpecific("Destination module not found".to_string())),
-		}
-	}
-
-	fn on_timeout(&self, timeout: Timeout) -> Result<(), Error> {
-		let from = match &timeout {
-			Timeout::Request(Request::Post(post)) => &post.from,
-			Timeout::Request(Request::Get(get)) => &get.from,
-			Timeout::Response(res) => &res.post.to,
-		};
-
-		let pallet_id = ModuleId::from_bytes(from)
-			.map_err(|err| Error::ImplementationSpecific(err.to_string()))?;
-
-		#[allow(clippy::match_single_binding)]
-		match pallet_id {
-			pallet_regions::PALLET_ID =>
-				pallet_regions::IsmpModuleCallback::<Runtime>::default().on_timeout(timeout),
-			// instead of returning an error, do nothing. The timeout is for a connected chain.
-			_ => Ok(()),
-		}
-	}
-}
-
-#[derive(Default)]
 pub struct Router;
-
 impl IsmpRouter for Router {
-	fn module_for_id(&self, _bytes: Vec<u8>) -> Result<Box<dyn IsmpModule>, Error> {
-		Ok(Box::new(ProxyModule))
+	fn module_for_id(&self, id: Vec<u8>) -> Result<Box<dyn IsmpModule>, Error> {
+		let module = match id.as_slice() {
+			pallet_regions::PALLET_ID =>
+				Box::<pallet_regions::IsmpModuleCallback<Runtime>>::default(),
+			_ => Err(Error::ModuleNotFound(id))?,
+		};
+		Ok(module)
 	}
 }

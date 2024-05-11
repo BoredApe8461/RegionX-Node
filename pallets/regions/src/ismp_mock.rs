@@ -14,11 +14,12 @@
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
 use ismp::{
+	dispatcher::{DispatchRequest, FeeMetadata, IsmpDispatcher},
 	error::Error,
-	router::{DispatchRequest, Get as IsmpGet, IsmpDispatcher, PostResponse, Request},
+	router::{Get as IsmpGet, PostResponse, Request},
 };
 use ismp_testsuite::mocks::Host;
-use sp_core::Get;
+use sp_core::{Get, H256};
 use std::{cell::RefCell, marker::PhantomData, sync::Arc};
 
 pub struct MockDispatcher<T: crate::Config>(pub Arc<Host>, PhantomData<T>);
@@ -47,9 +48,8 @@ impl<T: crate::Config> IsmpDispatcher for MockDispatcher<T> {
 	fn dispatch_request(
 		&self,
 		request: DispatchRequest,
-		who: Self::Account,
-		_fee: Self::Balance,
-	) -> Result<(), Error> {
+		fee: FeeMetadata<Self::Account, Self::Balance>,
+	) -> Result<H256, Error> {
 		let request = match request {
 			DispatchRequest::Get(get) => Request::Get(IsmpGet {
 				source: T::CoretimeChain::get(),
@@ -65,19 +65,18 @@ impl<T: crate::Config> IsmpDispatcher for MockDispatcher<T> {
 
 		REQUESTS.with(|requests| {
 			let mut requests = requests.borrow_mut();
-			requests.push(MockRequest { request, who });
+			requests.push(MockRequest { request, who: fee.payer });
 		});
 
-		Ok(())
+		Ok(Default::default())
 	}
 
 	fn dispatch_response(
 		&self,
 		_response: PostResponse,
-		_who: Self::Account,
-		_fee: Self::Balance,
-	) -> Result<(), Error> {
-		Ok(())
+		_fee: FeeMetadata<Self::Account, Self::Balance>,
+	) -> Result<H256, Error> {
+		Ok(Default::default())
 	}
 }
 

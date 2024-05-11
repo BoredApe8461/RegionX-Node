@@ -101,7 +101,6 @@ sp-keystore = { version = "0.34.0", default-features = false }
 sp-mmr-primitives = { version = "26.0.0", default-features = false }
 sp-storage = { version = "19.0.0", default-features = false }
 pallet-beefy-mmr = { version = "28.0.0", default-features = false }
-pallet-mmr = { version = "27.0.0", default-features = false }
 
 # client
 frame-benchmarking-cli = "32.0.0"
@@ -151,13 +150,13 @@ orml-unknown-tokens = { version = "0.7.0", default-features = false }
 orml-xcm-support = { version = "0.7.0", default-features = false }
 
 # Polytope Labs
-ismp = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
-pallet-ismp = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
-ismp-parachain = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
-ismp-parachain-inherent = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
-pallet-ismp-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
-ismp-parachain-runtime-api = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
-ismp-testsuite = { git="https://github.com/Szegoo/hyperbridge.git", branch="fix-to-string", default-features = false }
+ismp = { version = "0.1.2", default-features = false }
+pallet-ismp = { version = "1.6.2", default-features = false }
+ismp-parachain = { version = "1.6.2", default-features = false }
+ismp-parachain-inherent = { version = "1.6.2", default-features = false }
+pallet-ismp-runtime-api = { version = "1.6.2", default-features = false }
+ismp-parachain-runtime-api = { version = "1.6.2", default-features = false }
+ismp-testsuite = { git="https://github.com/polytope-labs/hyperbridge.git", branch="main", default-features = false }
 
 # Local
 regionx-primitives = { path = "./runtime/primitives", default-features = false }

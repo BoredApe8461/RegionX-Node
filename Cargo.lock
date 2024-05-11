@@ -4172,8 +4172,23 @@ dependencies = [
 
 [[package]]
 name = "ismp"
-version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fccd6e0fc7610973a861881baefa0a9ebdb3ec500d9cd0a5c7a7374a410b046b"
+dependencies = [
+ "derive_more",
+ "hex",
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-info",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ismp"
+version = "0.1.2"
+source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#711fd0cd9676de88afa6d7c571a950494b90eaf1"
 dependencies = [
  "derive_more",
  "hex",
@@ -4186,15 +4201,17 @@ dependencies = [
 
 [[package]]
 name = "ismp-parachain"
-version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d61338c0e24f1414bb90641ca18226ab59ec2479b3924dbb863a004f02f13594"
 dependencies = [
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
  "frame-support",
  "frame-system",
  "hex-literal",
- "ismp",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log",
  "pallet-ismp",
  "parity-scale-codec",
  "primitive-types",
@@ -4210,16 +4227,19 @@ dependencies = [
 
 [[package]]
 name = "ismp-parachain-inherent"
-version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01640c48d57c367289df9d4e60ff838569ff7fd7efa7807f28fa0ec01eb6bf42"
 dependencies = [
  "anyhow",
  "async-trait",
  "cumulus-primitives-core",
  "cumulus-relay-chain-interface",
- "ismp",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ismp-parachain",
  "ismp-parachain-runtime-api",
+ "log",
+ "pallet-ismp-runtime-api",
  "parity-scale-codec",
  "sp-api",
  "sp-blockchain",
@@ -4229,18 +4249,20 @@ dependencies = [
 
 [[package]]
 name = "ismp-parachain-runtime-api"
-version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a3a1e8c1c0e3b9a94577d192ffd16114e6db85762e5118a25f41f0e00aa3838"
 dependencies = [
+ "cumulus-pallet-parachain-system",
  "sp-api",
 ]
 
 [[package]]
 name = "ismp-testsuite"
-version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
+version = "0.1.1"
+source = "git+https://github.com/polytope-labs/hyperbridge.git?branch=main#711fd0cd9676de88afa6d7c571a950494b90eaf1"
 dependencies = [
- "ismp",
+ "ismp 0.1.2 (git+https://github.com/polytope-labs/hyperbridge.git?branch=main)",
  "once_cell",
  "parity-scale-codec",
  "primitive-types",
@@ -5367,6 +5389,25 @@ dependencies = [
  "sp-core",
  "sp-mmr-primitives",
  "sp-runtime",
+]
+
+[[package]]
+name = "mmr-primitives"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e06bd5ddfd3c7b75b99046e9d80d9b4f36a6ec84941c08a69a0b061dff37eea5"
+dependencies = [
+ "ckb-merkle-mountain-range",
+ "frame-system",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-mmr-primitives",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6535,42 +6576,41 @@ dependencies = [
 
 [[package]]
 name = "pallet-ismp"
-version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9946f35078ea0056dbe8e03f8bc8526668962b57f30fa5a5c2a7044370586c0a"
 dependencies = [
- "ckb-merkle-mountain-range",
- "derive_more",
- "enum-as-inner",
  "fortuples",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "ismp",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log",
- "pallet-balances",
+ "mmr-primitives",
  "parity-scale-codec",
  "scale-info",
  "serde",
  "sp-api",
- "sp-consensus-aura",
  "sp-core",
  "sp-io",
+ "sp-mmr-primitives",
  "sp-runtime",
  "sp-std",
 ]
 
 [[package]]
 name = "pallet-ismp-runtime-api"
-version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "810e0d1e115fdd0fe3fa35b0099006f03ce59dd2e0d4d7c765b5316bb01db4a0"
 dependencies = [
- "ismp",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-ismp",
  "parity-scale-codec",
+ "primitive-types",
  "serde",
  "sp-api",
- "sp-core",
- "sp-std",
+ "sp-mmr-primitives",
 ]
 
 [[package]]
@@ -6858,7 +6898,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex",
- "ismp",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ismp-parachain",
  "ismp-testsuite",
  "log",
@@ -9435,8 +9475,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "hex-literal",
- "ismp",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ismp-parachain",
  "ismp-parachain-runtime-api",
  "log",
@@ -9486,6 +9525,7 @@ dependencies = [
  "sp-core",
  "sp-genesis-builder",
  "sp-inherents",
+ "sp-mmr-primitives",
  "sp-offchain",
  "sp-runtime",
  "sp-session",
@@ -12754,20 +12794,19 @@ dependencies = [
 
 [[package]]
 name = "substrate-state-machine"
-version = "0.1.0"
-source = "git+https://github.com/Szegoo/hyperbridge.git?branch=fix-to-string#ff5e3878bdda2ed61a28c24811e6bb0ecf0ec5ed"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b4419938bb41e334beafd07ef3d9498e6da5ee18a4de478a5207b53433465db"
 dependencies = [
- "ckb-merkle-mountain-range",
  "frame-support",
- "frame-system",
  "hash-db",
- "ismp",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-ismp",
  "parity-scale-codec",
  "primitive-types",
  "scale-info",
  "serde",
- "sp-core",
+ "sp-consensus-aura",
  "sp-runtime",
  "sp-trie",
 ]

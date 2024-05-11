@@ -54,7 +54,7 @@ jobs:
       run: echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> $GITHUB_ENV
 
     - name: Cargo clippy
-      run: cargo clippy -- -D warnings
+      run: cargo clippy --release -- -D warnings
   
     - name: Check Code
       run: cargo check

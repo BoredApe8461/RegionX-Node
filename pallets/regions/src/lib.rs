@@ -17,18 +17,17 @@
 
 use codec::{alloc::collections::BTreeMap, Decode};
 use core::cmp::max;
-use frame_support::PalletId;
 use ismp::{
 	consensus::StateMachineId,
+	dispatcher::{DispatchGet, DispatchRequest, FeeMetadata, IsmpDispatcher},
 	error::Error as IsmpError,
 	host::StateMachine,
 	module::IsmpModule,
-	router::{DispatchGet, DispatchRequest, IsmpDispatcher, Post, Request, Response, Timeout},
+	router::{Post, Request, Response, Timeout},
 };
 use ismp_parachain::PARACHAIN_CONSENSUS_ID;
 pub use pallet::*;
 use pallet_broker::RegionId;
-use pallet_ismp::primitives::ModuleId;
 use scale_info::prelude::{format, vec, vec::Vec};
 use sp_runtime::traits::Zero;
 
@@ -58,7 +57,7 @@ pub use weights::WeightInfo;
 const LOG_TARGET: &str = "runtime::regions";
 
 /// Constant Pallet ID
-pub const PALLET_ID: ModuleId = ModuleId::Pallet(PalletId(*b"region-p"));
+pub const PALLET_ID: &[u8] = b"region-pallet";
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -247,16 +246,19 @@ pub mod pallet {
 			// TODO: should requests be coupled in the future?
 			let get = DispatchGet {
 				dest: T::CoretimeChain::get(),
-				from: PALLET_ID.to_bytes(),
+				from: PALLET_ID.into(),
 				keys: vec![key],
 				height: coretime_chain_height,
-				timeout_timestamp: T::Timeout::get(),
+				timeout: T::Timeout::get(),
 			};
 
 			let dispatcher = T::IsmpDispatcher::default();
 
 			dispatcher
-				.dispatch_request(DispatchRequest::Get(get), who.clone(), Zero::zero())
+				.dispatch_request(
+					DispatchRequest::Get(get),
+					FeeMetadata { payer: who.clone(), fee: Zero::zero() },
+				)
 				.map_err(|_| Error::<T>::IsmpDispatchError)?;
 
 			Self::deposit_event(Event::RegionRecordRequested { region_id, account: who });
@@ -297,7 +299,7 @@ impl<T: Config> IsmpModule for IsmpModuleCallback<T> {
 						.map_err(|_| IsmpCustomError::DecodeFailed)?;
 
 					crate::Pallet::<T>::set_record(region_id, record)
-						.map_err(|e| IsmpError::ImplementationSpecific(format!("{:?}", e)))?;
+						.map_err(|e| IsmpError::Custom(format!("{:?}", e)))?;
 
 					Ok(())
 				})?;

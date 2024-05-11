@@ -14,7 +14,6 @@ substrate-wasm-builder = { workspace = true }
 
 [dependencies]
 codec = { workspace = true }
-hex-literal = { workspace = true, optional = true }
 log = { workspace = true }
 scale-info = { workspace = true }
 smallvec = { workspace = true }
@@ -24,11 +23,11 @@ regionx-primitives = { workspace = true, default-features = false }
 pallet-regions = { workspace = true, default-features = false }
 
 # Polytope Labs
-ismp = { workspace = true, default-features = false }
-pallet-ismp = { workspace = true, default-features = false }
-ismp-parachain = { workspace = true, default-features = false }
-pallet-ismp-runtime-api = { workspace = true, default-features = false }
-ismp-parachain-runtime-api = { workspace = true, default-features = false }
+ismp = { workspace = true }
+pallet-ismp = { workspace = true, features = ["unsigned"] }
+ismp-parachain = { workspace = true }
+pallet-ismp-runtime-api = { workspace = true }
+ismp-parachain-runtime-api = { workspace = true }
 
 # Orml
 orml-asset-registry = { workspace = true }
@@ -80,6 +79,7 @@ sp-session = { workspace = true }
 sp-std = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
+sp-mmr-primitives = { workspace = true }
 
 # Polkadot
 pallet-xcm = { workspace = true }
@@ -179,6 +179,7 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
+	"sp-mmr-primitives/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
@@ -195,7 +196,6 @@ runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
-	"hex-literal",
 	"orml-asset-registry/runtime-benchmarks",
 	"orml-tokens/runtime-benchmarks",
   	"pallet-asset-rate/runtime-benchmarks",
@@ -210,6 +210,7 @@ runtime-benchmarks = [
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-regions/runtime-benchmarks",
+	"pallet-referenda/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
@@ -238,6 +239,7 @@ try-runtime = [
 	"orml-asset-registry/try-runtime",
 	"orml-currencies/try-runtime",
 	"orml-tokens/try-runtime",
+	"orml-unknown-tokens/try-runtime",
 	"pallet-ismp/try-runtime",
 	"ismp-parachain/try-runtime",
 	"pallet-aura/try-runtime",
@@ -248,12 +250,13 @@ try-runtime = [
 	"pallet-collective/try-runtime",
 	"pallet-conviction-voting/try-runtime",
 	"pallet-collator-selection/try-runtime",
-	"pallet-membership/std",
+	"pallet-membership/try-runtime",
 	"pallet-message-queue/try-runtime",
   	"pallet-multisig/try-runtime",
 	"pallet-proxy/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-regions/try-runtime",
+	"pallet-referenda/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-scheduler/try-runtime",
