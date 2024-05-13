@@ -1,5 +1,5 @@
 Description: Cross chain transfer between RegionX and the relay chain
-Network: ./0006-asset-transfer.toml
+Network: ./asset-transfer.toml
 Creds: config
 
 rococo-validator01: is up
@@ -7,5 +7,5 @@ rococo-validator02: is up
 
 rococo-validator01: parachain 2000 is registered within 225 seconds
 
-regionx-collator01: js-script ../e2e_tests/build/xc-transfer/asset-transfer.js return is 0 within 400 seconds
+regionx-collator01: js-script ../../e2e_tests/build/xc-transfer/asset-transfer.js return is 0 within 400 seconds
 

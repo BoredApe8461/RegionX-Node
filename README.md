@@ -20,34 +20,51 @@
     ```
 
 4. Run the tests:
- 
-   - block production
+
+    - block production
 
 
-        ```
-        zombienet-linux -p native test ./zombienet_tests/0001-block-production.zndsl
-        ```
+            ```
+            zombienet-linux -p native test ./zombienet_tests/general/block-production.zndsl
+            ```
 
-    - native fee payment
+    - fee payment
+        - fee payment in native tokens
 
-        ```
-        zombienet-linux -p native test ./zombienet_tests/0002-native-fee-payment.zndsl
-        ```
+            ```
+            zombienet-linux -p native test ./zombienet_tests/fee-payment/native-fee-payment.zndsl
+            ```
 
-    - custom fee payment
+        - fee payment in custom assets
 
-        ```
-        zombienet-linux -p native test ./zombienet_tests/0003-custom-fee-payment.zndsl
-        ```
+            ```
+            zombienet-linux -p native test ./zombienet_tests/fee-payment/custom-fee-payment.zndsl
+            ```
 
-    - delegated governance(relay chain token holders)
+    - governance
 
-        ```
-        zombienet-linux -p native test ./zombienet_tests/0004-delegated-governance.zndsl
-        ```
+        - delegated governance(relay chain token holders)
 
-    - native governance(RegionX token holders)
+            ```
+            zombienet-linux -p native test ./zombienet_tests/governance/delegated-governance.zndsl
+            ```
 
-        ```
-        zombienet-linux -p native test ./zombienet_tests/0005-native-governance.zndsl
-        ```
+        - native governance(RegionX token holders)
+
+            ```
+            zombienet-linux -p native test ./zombienet_tests/governance/native-governance.zndsl
+            ```
+    
+    - cross-chain transfer
+
+        - transfer assets
+        
+            ```
+            zombienet-linux -p native test ./zombienet_tests/xc-transfer/asset-transfer.zndsl
+            ```
+
+        - transfer regions
+
+            ```
+            zombienet-linux -p native test ./zombienet_tests/xc-transfer/region-transfer.zndsl
+            ```

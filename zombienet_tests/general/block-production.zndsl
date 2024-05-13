@@ -1,5 +1,5 @@
 Description: Block production smoke test
-Network: ./0001-block-production.toml
+Network: ./block-production.toml
 Creds: config
 
 alice: is up
