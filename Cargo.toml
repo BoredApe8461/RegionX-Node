@@ -152,8 +152,9 @@ orml-xcm-support = { version = "0.7.0", default-features = false }
 # Polytope Labs
 ismp = { version = "0.1.2", default-features = false }
 pallet-ismp = { version = "1.6.2", default-features = false }
+pallet-ismp-rpc = { version = "1.6.2", default-features = false }
 ismp-parachain = { version = "1.6.2", default-features = false }
-ismp-parachain-inherent = { version = "1.6.2", default-features = false }
+ismp-parachain-inherent = { version = "1.6.3", default-features = false }
 pallet-ismp-runtime-api = { version = "1.6.2", default-features = false }
 ismp-parachain-runtime-api = { version = "1.6.2", default-features = false }
 ismp-testsuite = { git="https://github.com/polytope-labs/hyperbridge.git", branch="main", default-features = false }

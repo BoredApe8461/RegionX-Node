@@ -3761,6 +3761,12 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "hex-literal"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
+
+[[package]]
+name = "hex-literal"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
@@ -4209,7 +4215,7 @@ dependencies = [
  "cumulus-primitives-core",
  "frame-support",
  "frame-system",
- "hex-literal",
+ "hex-literal 0.4.1",
  "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log",
  "pallet-ismp",
@@ -6599,6 +6605,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-ismp-rpc"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43a561eaff0904311bfe33926d77f5a8e0afb2a6df8c7be9cd92a3ce20f693cb"
+dependencies = [
+ "anyhow",
+ "frame-system",
+ "hash-db",
+ "hex",
+ "hex-literal 0.3.4",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jsonrpsee",
+ "pallet-ismp",
+ "pallet-ismp-runtime-api",
+ "parity-scale-codec",
+ "sc-client-api",
+ "sc-rpc",
+ "serde",
+ "serde_json",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-mmr-primitives",
+ "sp-runtime",
+ "sp-storage",
+ "sp-trie",
+ "trie-db",
+]
+
+[[package]]
 name = "pallet-ismp-runtime-api"
 version = "1.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8414,7 +8450,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8aefd230a654f5b2aee18ebbd9c081835def0e1898ee6c018501dd77c18f5929"
 dependencies = [
  "bitvec",
- "hex-literal",
+ "hex-literal 0.4.1",
  "parity-scale-codec",
  "polkadot-core-primitives",
  "polkadot-parachain-primitives",
@@ -8598,7 +8634,7 @@ dependencies = [
  "frame-system",
  "frame-system-rpc-runtime-api",
  "futures",
- "hex-literal",
+ "hex-literal 0.4.1",
  "is_executable",
  "kvdb",
  "kvdb-rocksdb",
@@ -9405,6 +9441,8 @@ dependencies = [
  "ismp-parachain-inherent",
  "jsonrpsee",
  "log",
+ "pallet-ismp-rpc",
+ "pallet-ismp-runtime-api",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "polkadot-cli",
@@ -9622,7 +9660,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "hex-literal",
+ "hex-literal 0.4.1",
  "log",
  "pallet-asset-rate",
  "pallet-authority-discovery",
@@ -14188,7 +14226,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "hex-literal",
+ "hex-literal 0.4.1",
  "log",
  "pallet-asset-rate",
  "pallet-authority-discovery",

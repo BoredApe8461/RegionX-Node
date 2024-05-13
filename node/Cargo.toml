@@ -22,6 +22,8 @@ regionx-runtime = { workspace = true }
 regionx-primitives = { workspace = true }
 
 # Polytope Labs
+pallet-ismp-runtime-api = { workspace = true }
+pallet-ismp-rpc = { workspace = true }
 ismp-parachain-inherent = { workspace = true }
 
 # Substrate
