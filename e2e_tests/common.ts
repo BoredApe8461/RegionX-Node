@@ -1,6 +1,8 @@
 import { ApiPromise, Keyring } from '@polkadot/api';
 import { SignerOptions, SubmittableExtrinsic } from '@polkadot/api/types';
 import { KeyringPair } from '@polkadot/keyring/types';
+import { stringToU8a } from '@polkadot/util';
+import { encodeAddress } from '@polkadot/util-crypto';
 
 const RELAY_ASSET_ID = 1;
 
@@ -10,15 +12,15 @@ async function submitExtrinsic(
   options: Partial<SignerOptions>
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const unsub = call.signAndSend(signer, options, (result) => {
-      console.log(`Current status is ${result.status}`);
-      if (result.status.isInBlock) {
-        console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
-      } else if (result.status.isFinalized) {
-        console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+    const unsub = call.signAndSend(signer, options, ({ status, isError }) => {
+      console.log(`Current status is ${status}`);
+      if (status.isInBlock) {
+        console.log(`Transaction included at blockHash ${status.asInBlock}`);
+      } else if (status.isFinalized) {
+        console.log(`Transaction finalized at blockHash ${status.asFinalized}`);
         unsub.then();
         return resolve();
-      } else if (result.isError) {
+      } else if (isError) {
         console.log('Transaction error');
         unsub.then();
         return reject();
@@ -107,4 +109,28 @@ async function sleep(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-export { RELAY_ASSET_ID, setupRelayAsset, sleep, submitExtrinsic, transferRelayAssetToPara };
+const getAddressFromModuleId = (moduleId: string): string => {
+  if (moduleId.length !== 8) {
+    console.log('Module Id must be 8 characters (i.e. `py/trsry`)');
+    return '';
+  }
+  const address = stringToU8a(('modl' + moduleId).padEnd(32, '\0'));
+  return encodeAddress(address);
+};
+
+const getFreeBalance = async (api: ApiPromise, address: string): Promise<bigint> => {
+  const {
+    data: { free },
+  } = (await api.query.system.account(address)).toJSON() as any;
+  return BigInt(free);
+};
+
+export {
+  RELAY_ASSET_ID,
+  setupRelayAsset,
+  sleep,
+  submitExtrinsic,
+  transferRelayAssetToPara,
+  getAddressFromModuleId,
+  getFreeBalance
+};
