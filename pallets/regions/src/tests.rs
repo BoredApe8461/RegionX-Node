@@ -41,7 +41,7 @@ fn nonfungibles_implementation_works() {
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, record: Record::Pending }
+			Region { owner: 2, record: Record::Pending(Default::default()) }
 		);
 
 		// The user is not required to set the region record to withdraw the asset back to the coretime
@@ -132,7 +132,12 @@ fn request_region_record_works() {
 		assert_eq!(key_prefix, REGION_PREFIX_KEY);
 
 		System::assert_last_event(
-			Event::<Test>::RegionRecordRequested { region_id, account: 1 }.into(),
+			Event::<Test>::RegionRecordRequested {
+				region_id,
+				account: 1,
+				request_commitment: Default::default(),
+			}
+			.into(),
 		);
 	});
 }
@@ -177,7 +182,7 @@ fn on_response_works() {
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, record: Record::Pending }
+			Region { owner: 2, record: Record::Pending(Default::default()) }
 		);
 
 		let request = &requests()[0];
@@ -212,7 +217,7 @@ fn on_response_works() {
 					Some(mock_record.clone().encode())
 				)]),
 			})),
-			IsmpCustomError::DecodeFailed
+			IsmpCustomError::KeyDecodeFailed
 		);
 
 		// Fails when invalid region record is passed as response:
@@ -221,7 +226,7 @@ fn on_response_works() {
 				get: get.clone(),
 				values: BTreeMap::from([(get.keys[0].clone(), Some(vec![0x42; 20]))]),
 			})),
-			IsmpCustomError::DecodeFailed
+			IsmpCustomError::ResponseDecodeFailed
 		);
 	});
 }
@@ -257,7 +262,7 @@ fn on_timeout_works() {
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, record: Record::Pending }
+			Region { owner: 2, record: Record::Pending(Default::default()) }
 		);
 
 		let request = &requests()[0];
@@ -277,7 +282,7 @@ fn on_timeout_works() {
 		invalid_get_req.keys.push(vec![0u8; 15]);
 		assert_err!(
 			module.on_timeout(Timeout::Request(Request::Get(invalid_get_req.clone()))),
-			IsmpCustomError::DecodeFailed
+			IsmpCustomError::KeyDecodeFailed
 		);
 
 		// invalid id: region not found

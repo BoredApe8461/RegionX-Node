@@ -18,6 +18,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::fungible::Inspect;
 use pallet_broker::RegionRecord;
 use scale_info::{prelude::format, TypeInfo};
+use sp_core::H256;
 
 pub type BalanceOf<T> = <<T as crate::Config>::NativeCurrency as Inspect<
 	<T as frame_system::Config>::AccountId,
@@ -29,7 +30,9 @@ pub type RegionRecordOf<T> = RegionRecord<<T as frame_system::Config>::AccountId
 #[scale_info(skip_type_params(T))]
 pub enum Record<T: crate::Config> {
 	/// An ISMP request was made to query the region record and we are now anticipating a response.
-	Pending,
+	///
+	/// The hash represents the commitment of the ISMP get request.
+	Pending(H256),
 	/// An ISMP request was made, but we failed to get a response.
 	Unavailable,
 	/// Successfully retrieved the region record.
@@ -38,7 +41,7 @@ pub enum Record<T: crate::Config> {
 
 impl<T: crate::Config> Record<T> {
 	pub fn is_pending(&self) -> bool {
-		matches!(self, Record::Pending)
+		matches!(self, Record::Pending(_))
 	}
 
 	pub fn is_unavailable(&self) -> bool {
@@ -76,8 +79,10 @@ pub struct Region<T: crate::Config> {
 pub enum IsmpCustomError {
 	/// Operation not supported.
 	NotSupported,
-	/// Failed to decode data.
-	DecodeFailed,
+	/// Failed to decode ismp request key.
+	KeyDecodeFailed,
+	/// Failed to decode ismp response.
+	ResponseDecodeFailed,
 	/// Couldn't find the region with the associated `RegionId`
 	RegionNotFound,
 	/// Couldn't find the corresponding value of a key in the ISMP result.
@@ -90,7 +95,8 @@ impl core::fmt::Display for IsmpCustomError {
 	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
 		match self {
 			Self::NotSupported => write!(f, "NotSupported"),
-			Self::DecodeFailed => write!(f, "DecodeFailed"),
+			Self::KeyDecodeFailed => write!(f, "KeyDecodeFailed"),
+			Self::ResponseDecodeFailed => write!(f, "ResponseDecodeFailed"),
 			Self::RegionNotFound => write!(f, "RegionNotFound"),
 			Self::ValueNotFound => write!(f, "ValueNotFound"),
 			Self::EmptyValue => write!(f, "EmptyValue"),

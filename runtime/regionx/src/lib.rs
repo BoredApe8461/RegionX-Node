@@ -596,8 +596,8 @@ impl pallet_collator_selection::Config for Runtime {
 
 pub struct StateMachineHeightProvider;
 impl StateMachineHeightProviderT for StateMachineHeightProvider {
-	fn get_latest_state_machine_height(id: StateMachineId) -> u64 {
-		Ismp::latest_state_machine_height(id).unwrap_or(0) // TODO
+	fn latest_state_machine_height(id: StateMachineId) -> Option<u64> {
+		Ismp::latest_state_machine_height(id)
 	}
 }
 
@@ -612,7 +612,7 @@ impl pallet_regions::Config for Runtime {
 	type CoretimeChain = CoretimeChain;
 	type IsmpDispatcher = Ismp;
 	type StateMachineHeightProvider = StateMachineHeightProvider;
-	type Timeout = ConstU64<1000>; // TODO: FIXME
+	type Timeout = ConstU64<300>; // 5 minutes
 	type WeightInfo = ();
 }
 

@@ -90,8 +90,8 @@ parameter_types! {
 
 pub struct MockStateMachineHeightProvider;
 impl StateMachineHeightProvider for MockStateMachineHeightProvider {
-	fn get_latest_state_machine_height(_id: StateMachineId) -> u64 {
-		0
+	fn latest_state_machine_height(_id: StateMachineId) -> Option<u64> {
+		Some(0)
 	}
 }
 

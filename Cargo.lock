@@ -4233,9 +4233,9 @@ dependencies = [
 
 [[package]]
 name = "ismp-parachain-inherent"
-version = "1.6.2"
+version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01640c48d57c367289df9d4e60ff838569ff7fd7efa7807f28fa0ec01eb6bf42"
+checksum = "1d14a368b3bac5430c081e386d732f463d3c6af47541a29a02eaacd1ea71053d"
 dependencies = [
  "anyhow",
  "async-trait",

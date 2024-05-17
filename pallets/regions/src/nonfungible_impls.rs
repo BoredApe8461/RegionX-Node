@@ -57,7 +57,7 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 
 		// We don't want the region to get trapped, so we will handle the error.
 		let record = match Self::do_request_region_record(region_id, who.clone()) {
-			Ok(_) => Record::Pending,
+			Ok(commitment) => Record::Pending(commitment),
 			Err(_) => {
 				log::error!(
 					target: LOG_TARGET,

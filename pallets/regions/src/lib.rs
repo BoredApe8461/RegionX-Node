@@ -29,6 +29,7 @@ use ismp_parachain::PARACHAIN_CONSENSUS_ID;
 pub use pallet::*;
 use pallet_broker::RegionId;
 use scale_info::prelude::{format, vec, vec::Vec};
+use sp_core::H256;
 use sp_runtime::traits::Zero;
 
 #[cfg(test)]
@@ -135,6 +136,8 @@ pub mod pallet {
 			region_id: RegionId,
 			/// The account who requested the region record.
 			account: T::AccountId,
+			/// The ismp get request commitment.
+			request_commitment: H256,
 		},
 	}
 
@@ -153,6 +156,8 @@ pub mod pallet {
 		NotUnavailable,
 		/// The given region id is not valid.
 		InvalidRegionId,
+		/// Failed to get the latest height of the Coretime chain.
+		LatestHeightInaccessible,
 	}
 
 	#[pallet::call]
@@ -225,7 +230,7 @@ pub mod pallet {
 		pub(crate) fn do_request_region_record(
 			region_id: RegionId,
 			who: <T as frame_system::Config>::AccountId,
-		) -> DispatchResult {
+		) -> Result<H256, DispatchError> {
 			let pallet_hash = sp_io::hashing::twox_128("Broker".as_bytes());
 			let storage_hash = sp_io::hashing::twox_128("Regions".as_bytes());
 			let region_id_hash = sp_io::hashing::blake2_128(&region_id.encode());
@@ -238,32 +243,40 @@ pub mod pallet {
 			let key = [pallet_hash, storage_hash, region_id_hash, region_id_encoded].concat();
 
 			let coretime_chain_height =
-				T::StateMachineHeightProvider::get_latest_state_machine_height(StateMachineId {
+				T::StateMachineHeightProvider::latest_state_machine_height(StateMachineId {
 					state_id: T::CoretimeChain::get(),
 					consensus_state_id: PARACHAIN_CONSENSUS_ID,
-				});
+				})
+				.ok_or(Error::<T>::LatestHeightInaccessible)?;
 
 			// TODO: should requests be coupled in the future?
 			let get = DispatchGet {
 				dest: T::CoretimeChain::get(),
 				from: PALLET_ID.into(),
 				keys: vec![key],
-				height: coretime_chain_height,
+				// We require data following the cross-chain transfer, which will be available in
+				// the subsequent block. However, if the core time chain has a block production rate
+				// of 6 seconds, we will only have the commitment from the block after the next one.
+				height: coretime_chain_height.saturating_add(2),
 				timeout: T::Timeout::get(),
 			};
 
 			let dispatcher = T::IsmpDispatcher::default();
 
-			dispatcher
+			let commitment = dispatcher
 				.dispatch_request(
 					DispatchRequest::Get(get),
 					FeeMetadata { payer: who.clone(), fee: Zero::zero() },
 				)
 				.map_err(|_| Error::<T>::IsmpDispatchError)?;
 
-			Self::deposit_event(Event::RegionRecordRequested { region_id, account: who });
+			Self::deposit_event(Event::RegionRecordRequested {
+				region_id,
+				account: who,
+				request_commitment: commitment,
+			});
 
-			Ok(())
+			Ok(commitment)
 		}
 	}
 }
@@ -293,10 +306,10 @@ impl<T: Config> IsmpModule for IsmpModuleCallback<T> {
 					let mut region_id_encoded = &key[max(0, key.len() as isize - 16) as usize..];
 
 					let region_id = RegionId::decode(&mut region_id_encoded)
-						.map_err(|_| IsmpCustomError::DecodeFailed)?;
+						.map_err(|_| IsmpCustomError::KeyDecodeFailed)?;
 
 					let record = RegionRecordOf::<T>::decode(&mut value.as_slice())
-						.map_err(|_| IsmpCustomError::DecodeFailed)?;
+						.map_err(|_| IsmpCustomError::ResponseDecodeFailed)?;
 
 					crate::Pallet::<T>::set_record(region_id, record)
 						.map_err(|e| IsmpError::Custom(format!("{:?}", e)))?;
@@ -316,7 +329,7 @@ impl<T: Config> IsmpModule for IsmpModuleCallback<T> {
 				let mut region_id_encoded = &key[max(0, key.len() as isize - 16) as usize..];
 
 				let region_id = RegionId::decode(&mut region_id_encoded)
-					.map_err(|_| IsmpCustomError::DecodeFailed)?;
+					.map_err(|_| IsmpCustomError::KeyDecodeFailed)?;
 
 				let Some(mut region) = Regions::<T>::get(region_id) else {
 					return Err(IsmpCustomError::RegionNotFound.into());
