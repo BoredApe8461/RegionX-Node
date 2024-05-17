@@ -184,7 +184,11 @@ pub mod pallet {
 
 			ensure!(region.record.is_unavailable(), Error::<T>::NotUnavailable);
 
-			Self::do_request_region_record(region_id, who)?;
+			let commitment = Self::do_request_region_record(region_id, who.clone())?;
+			Regions::<T>::insert(
+				region_id,
+				Region { owner: who.clone(), record: Record::Pending(commitment) },
+			);
 
 			Ok(())
 		}

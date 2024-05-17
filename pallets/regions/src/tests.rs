@@ -120,6 +120,7 @@ fn request_region_record_works() {
 		});
 
 		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(1), region_id));
+		assert!(region.record.is_pending());
 		let request = &requests()[0];
 		let Request::Get(get) = request.request.clone() else { panic!("Expected GET request") };
 
