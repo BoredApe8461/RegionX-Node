@@ -18,7 +18,7 @@ use crate::{
 	IsmpCustomError, IsmpModuleCallback, Record, Region,
 };
 use frame_support::{
-	assert_err, assert_ok,
+	assert_noop, assert_ok,
 	pallet_prelude::*,
 	traits::nonfungible::{Inspect, Mutate, Transfer as NonFungibleTransfer},
 };
@@ -50,12 +50,12 @@ fn nonfungibles_implementation_works() {
 		// NOTE: Burning occurs when placing the region into the XCM holding registrar at the time of
 		// reserve transfer.
 
-		assert_err!(Regions::burn(&region_id.into(), Some(&1)), Error::<Test>::NotOwner);
+		assert_noop!(Regions::burn(&region_id.into(), Some(&1)), Error::<Test>::NotOwner);
 
 		assert_ok!(Regions::burn(&region_id.into(), Some(&2)));
 		assert!(Regions::regions(&region_id).is_none());
 
-		assert_err!(Regions::burn(&region_id.into(), None), Error::<Test>::UnknownRegion);
+		assert_noop!(Regions::burn(&region_id.into(), None), Error::<Test>::UnknownRegion);
 	});
 }
 
@@ -66,7 +66,7 @@ fn set_record_works() {
 		let record: RegionRecord<u64, u64> = RegionRecord { end: 123600, owner: 1, paid: None };
 
 		// The region with the given `region_id` does not exist.
-		assert_err!(Regions::set_record(region_id, record.clone()), Error::<Test>::UnknownRegion);
+		assert_noop!(Regions::set_record(region_id, record.clone()), Error::<Test>::UnknownRegion);
 
 		// `set_record` succeeds:
 
@@ -87,7 +87,7 @@ fn set_record_works() {
 		assert_eq!(region.record, Record::<Test>::Available(record.clone()));
 
 		// call `set_record` again with the same record
-		assert_err!(Regions::set_record(region_id, record), Error::<Test>::RegionRecordAlreadySet);
+		assert_noop!(Regions::set_record(region_id, record), Error::<Test>::RegionRecordAlreadySet);
 	});
 }
 
@@ -97,7 +97,7 @@ fn request_region_record_works() {
 		let region_id = RegionId { begin: 112830, core: 81, mask: CoreMask::complete() };
 
 		// fails to request unknown regions
-		assert_err!(
+		assert_noop!(
 			Regions::request_region_record(RuntimeOrigin::signed(1), region_id),
 			Error::<Test>::UnknownRegion
 		);
@@ -108,7 +108,7 @@ fn request_region_record_works() {
 		let region = Regions::regions(region_id).unwrap();
 		assert!(region.record.is_pending());
 		// Cannot request if there is already a request pending.
-		assert_err!(
+		assert_noop!(
 			Regions::request_region_record(RuntimeOrigin::signed(1), region_id),
 			Error::<Test>::NotUnavailable
 		);
@@ -150,14 +150,14 @@ fn transfer_works() {
 		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
 		assert!(Regions::regions(region_id).is_none());
 
-		assert_err!(
+		assert_noop!(
 			Regions::transfer(RuntimeOrigin::signed(1), region_id, 2),
 			Error::<Test>::UnknownRegion
 		);
 
 		// only regions owned by the caller are transferable
 		assert_ok!(Regions::mint_into(&region_id.into(), &1));
-		assert_err!(
+		assert_noop!(
 			Regions::transfer(RuntimeOrigin::signed(3), region_id, 2),
 			Error::<Test>::NotOwner
 		);
@@ -210,7 +210,7 @@ fn on_response_works() {
 		// Fails when invalid region id is passed as response:
 		let mut invalid_get_req = get.clone();
 		invalid_get_req.keys[0] = vec![0x23; 15];
-		assert_err!(
+		assert_noop!(
 			module.on_response(Response::Get(GetResponse {
 				get: invalid_get_req.clone(),
 				values: BTreeMap::from([(
@@ -222,7 +222,7 @@ fn on_response_works() {
 		);
 
 		// Fails when invalid region record is passed as response:
-		assert_err!(
+		assert_noop!(
 			module.on_response(Response::Get(GetResponse {
 				get: get.clone(),
 				values: BTreeMap::from([(get.keys[0].clone(), Some(vec![0x42; 20]))]),
@@ -251,7 +251,7 @@ fn on_response_only_handles_get() {
 			timeout_timestamp: Default::default(),
 		});
 
-		assert_err!(module.on_response(mock_response), IsmpCustomError::NotSupported);
+		assert_noop!(module.on_response(mock_response), IsmpCustomError::NotSupported);
 	});
 }
 
@@ -281,7 +281,7 @@ fn on_timeout_works() {
 		// failed to decode region_id
 		let mut invalid_get_req = get.clone();
 		invalid_get_req.keys.push(vec![0u8; 15]);
-		assert_err!(
+		assert_noop!(
 			module.on_timeout(Timeout::Request(Request::Get(invalid_get_req.clone()))),
 			IsmpCustomError::KeyDecodeFailed
 		);
@@ -293,7 +293,7 @@ fn on_timeout_works() {
 				key[i] = key[i].reverse_bits();
 			}
 		}
-		assert_err!(
+		assert_noop!(
 			module.on_timeout(Timeout::Request(Request::Get(invalid_get_req.clone()))),
 			IsmpCustomError::RegionNotFound
 		);
@@ -330,7 +330,7 @@ fn on_accept_works() {
 			data: Default::default(),
 		};
 		let module: IsmpModuleCallback<Test> = IsmpModuleCallback::default();
-		assert_err!(module.on_accept(post), IsmpCustomError::NotSupported);
+		assert_noop!(module.on_accept(post), IsmpCustomError::NotSupported);
 	});
 }
 

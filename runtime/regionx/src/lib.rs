@@ -608,7 +608,7 @@ parameter_types! {
 impl pallet_regions::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
-	type NativeCurrency = Balances;
+	type Currency = Balances;
 	type CoretimeChain = CoretimeChain;
 	type IsmpDispatcher = Ismp;
 	type StateMachineHeightProvider = StateMachineHeightProvider;
