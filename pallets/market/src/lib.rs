@@ -16,6 +16,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::fungible::Inspect;
+use nonfungible_primitives::LockableNonFungible;
 pub use pallet::*;
 use pallet_broker::RegionId;
 
@@ -50,6 +51,9 @@ pub mod pallet {
 
 		/// Currency used for purchasing coretime.
 		type Currency: Mutate<Self::AccountId>;
+
+		/// Type providing a way to lock coretime regions that are listed on sale.
+		type Regions: LockableNonFungible<Self::AccountId, ItemId = RegionId>;
 
 		/// Weight Info
 		type WeightInfo: WeightInfo;

@@ -26,6 +26,7 @@ sp-runtime = { workspace = true, default-features = false }
 pallet-broker = { workspace = true, default-features = false }
 
 # Local
+nonfungible-primitives = { workspace = true, default-features = false }
 pallet-regions = { workspace = true, default-features = false }
 
 [dev-dependencies]
@@ -39,6 +40,7 @@ runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
 std = [
 	"log/std",
 	"codec/std",
+	"nonfungible-primitives/std",
 	"scale-info/std",
 	"sp-io/std",
 	"sp-core/std",

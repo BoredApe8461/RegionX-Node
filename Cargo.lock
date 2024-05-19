@@ -5757,6 +5757,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "nonfungible-primitives"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "normalize-line-endings"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6658,6 +6668,7 @@ dependencies = [
  "frame-system",
  "ismp-testsuite",
  "log",
+ "nonfungible-primitives",
  "pallet-balances",
  "pallet-broker",
  "pallet-regions",
