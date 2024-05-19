@@ -6969,6 +6969,7 @@ dependencies = [
  "ismp-parachain",
  "ismp-testsuite",
  "log",
+ "nonfungible-primitives",
  "pallet-balances",
  "pallet-broker",
  "pallet-ismp",
