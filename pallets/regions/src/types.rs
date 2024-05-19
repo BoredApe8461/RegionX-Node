@@ -20,9 +20,8 @@ use pallet_broker::RegionRecord;
 use scale_info::{prelude::format, TypeInfo};
 use sp_core::H256;
 
-pub type BalanceOf<T> = <<T as crate::Config>::NativeCurrency as Inspect<
-	<T as frame_system::Config>::AccountId,
->>::Balance;
+pub type BalanceOf<T> =
+	<<T as crate::Config>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 pub type RegionRecordOf<T> = RegionRecord<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
 
 /// The request status for getting the region record.

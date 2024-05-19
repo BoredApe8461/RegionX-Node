@@ -80,13 +80,13 @@ pub mod pallet {
 
 		/// Native balance
 		type Balance: Balance
-			+ Into<<Self::NativeCurrency as Inspect<Self::AccountId>>::Balance>
+			+ Into<<Self::Currency as Inspect<Self::AccountId>>::Balance>
 			+ From<u32>;
 
 		/// Native currency implementation
 		//
 		// NOTE: Isn't used since we don't have a reward mechanism for ISMP relayers.
-		type NativeCurrency: Mutate<Self::AccountId>;
+		type Currency: Mutate<Self::AccountId>;
 
 		/// The Coretime chain from which we read region state.
 		type CoretimeChain: Get<StateMachine>;

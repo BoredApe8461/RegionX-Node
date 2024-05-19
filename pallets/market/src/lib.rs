@@ -15,13 +15,26 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::traits::fungible::Inspect;
 pub use pallet::*;
 use pallet_broker::RegionId;
+
+mod types;
+use crate::types::*;
+
+pub type BalanceOf<T> =
+	<<T as crate::Config>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
+	use frame_support::{
+		pallet_prelude::*,
+		traits::{
+			fungible::{Inspect, Mutate},
+			tokens::Balance,
+		},
+	};
 	use frame_system::{pallet_prelude::*, WeightInfo};
 
 	/// The module configuration trait.
@@ -30,12 +43,26 @@ pub mod pallet {
 		/// The overarching event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
+		/// The balance type
+		type Balance: Balance
+			+ Into<<Self::Currency as Inspect<Self::AccountId>>::Balance>
+			+ From<u32>;
+
+		/// Currency used for purchasing coretime.
+		type Currency: Mutate<Self::AccountId>;
+
 		/// Weight Info
 		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
+
+	/// Regions that got listed on sale.
+	#[pallet::storage]
+	#[pallet::getter(fn regions)]
+	pub type Listings<T: Config> =
+		StorageMap<_, Blake2_128Concat, RegionId, Listing<T::AccountId, BalanceOf<T>>, OptionQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
