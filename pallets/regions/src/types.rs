@@ -65,6 +65,10 @@ impl<T: crate::Config> Record<T> {
 pub struct Region<T: crate::Config> {
 	/// Owner of the region.
 	pub owner: T::AccountId,
+	/// Indicates whether the region can be transferred or not.
+	///
+	/// Regions will be locked when listed on the market.
+	pub locked: bool,
 	/// The associated record of the region. If `None`, we still didn't receive a response
 	/// for the ISMP GET request.
 	///

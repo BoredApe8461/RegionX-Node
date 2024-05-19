@@ -158,6 +158,10 @@ pub mod pallet {
 		InvalidRegionId,
 		/// Failed to get the latest height of the Coretime chain.
 		LatestHeightInaccessible,
+		/// Locked regions cannot be transferred.
+		RegionLocked,
+		/// Region isn't locked.
+		RegionNotLocked,
 	}
 
 	#[pallet::call]
@@ -187,7 +191,7 @@ pub mod pallet {
 			let commitment = Self::do_request_region_record(region_id, who.clone())?;
 			Regions::<T>::insert(
 				region_id,
-				Region { owner: who.clone(), record: Record::Pending(commitment) },
+				Region { owner: who.clone(), locked: false, record: Record::Pending(commitment) },
 			);
 
 			Ok(())
@@ -202,6 +206,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let mut region = Regions::<T>::get(region_id).ok_or(Error::<T>::UnknownRegion)?;
 
+			ensure!(!region.locked, Error::<T>::RegionLocked);
 			if let Some(check_owner) = maybe_check_owner {
 				ensure!(check_owner == region.owner, Error::<T>::NotOwner);
 			}
