@@ -1,7 +1,7 @@
 [package]
-name = "pallet-regions"
+name = "pallet-market"
 authors = ["Anonymous"]
-description = "Pallet responsible for handling Coretime regions"
+description = "Pallet containing the Coretime marketplace logic"
 version = "0.1.0"
 license = "GPLv3"
 homepage = "https://substrate.io"
@@ -16,22 +16,19 @@ log = { workspace = true }
 codec = { workspace = true, default-features = false, features = ["derive"] }
 scale-info = {  workspace = true,  default-features = false, features = ["derive"] }
 
-# Polytope labs
-ismp = { workspace = true, default-features = false }
-ismp-parachain = { workspace = true, default-features = false }
-pallet-ismp = { workspace = true, default-features = false }
-
 # Substrate
 frame-benchmarking = { workspace = true, default-features = false, optional = true }
 frame-support = { workspace = true, default-features = false }
 frame-system = {  workspace = true, default-features = false }
-pallet-broker = { workspace = true, default-features = false }
 sp-io = { workspace = true, default-features = false }
 sp-core = { workspace = true, default-features = false }
 sp-runtime = { workspace = true, default-features = false }
+pallet-broker = { workspace = true, default-features = false }
+
+# Local
+pallet-regions = { workspace = true, default-features = false }
 
 [dev-dependencies]
-hex = "0.4.3"
 serde = { workspace = true }
 pallet-balances = { workspace = true, default-features = false }
 ismp-testsuite = { workspace = true }
@@ -42,8 +39,6 @@ runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
 std = [
 	"log/std",
 	"codec/std",
-	"ismp/std",
-	"ismp-parachain/std",
 	"scale-info/std",
 	"sp-io/std",
 	"sp-core/std",
@@ -51,8 +46,7 @@ std = [
 	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
-	"pallet-balances/std",
 	"pallet-broker/std",
-	"pallet-ismp/std",
+	"pallet-regions/std",
 ]
 try-runtime = [ "frame-support/try-runtime" ]

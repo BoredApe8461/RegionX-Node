@@ -6650,6 +6650,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-market"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "ismp-testsuite",
+ "log",
+ "pallet-balances",
+ "pallet-broker",
+ "pallet-regions",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-membership"
 version = "28.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

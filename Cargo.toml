@@ -11,7 +11,7 @@ name = "regionx"
 version = "0.1.0"
 authors = ["Sergej Sakac", "Oliver Lim"]
 description = "RegionX Coretime market Kusama runtime"
-license = "Apache-2.0"
+license = "GPLv3"
 homepage = "https://regionx.tech/"
 repository = "https://github.com/RegionX-Labs/RegionX-Node"
 edition = "2021"
@@ -163,3 +163,4 @@ ismp-testsuite = { git="https://github.com/polytope-labs/hyperbridge.git", branc
 regionx-primitives = { path = "./runtime/primitives", default-features = false }
 regionx-runtime = { path = "./runtime/regionx", default-features = false }
 pallet-regions = { path = "./pallets/regions", default-features = false }
+pallet-market = { path = "./pallets/market", default-features = false }
