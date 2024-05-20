@@ -36,7 +36,6 @@ pub mod pallet {
 		pallet_prelude::*,
 		traits::{
 			fungible::{Inspect, Mutate},
-			nonfungible,
 			tokens::Balance,
 		},
 	};
@@ -96,6 +95,10 @@ pub mod pallet {
 			/// The sale revenue recipient.
 			sale_recipient: T::AccountId,
 		},
+		Unlisted {
+			/// The region that got unlisted.
+			region_id: RegionId,
+		},
 	}
 
 	#[pallet::error]
@@ -105,6 +108,12 @@ pub mod pallet {
 		AlreadyListed,
 		/// Caller tried to unlist a region which is not listed.
 		NotListed,
+		/// Region not found.
+		UnknownRegion,
+		/// The specified region is expired.
+		RegionExpired,
+		/// The caller is not allowed to perform a certain action.
+		NotAllowed,
 	}
 
 	#[pallet::call]
@@ -127,6 +136,12 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			ensure!(Listings::<T>::get(region_id).is_none(), Error::<T>::AlreadyListed);
+			let record = T::Regions::record(region_id).ok_or(Error::<T>::UnknownRegion)?;
+
+			// It doesn't make sense to list a region that expired.
+			let current_timeslice = Self::current_timeslice();
+			ensure!(record.end > current_timeslice, Error::<T>::RegionExpired);
+
 			T::Regions::lock(&region_id, Some(who.clone()))?;
 
 			let sale_recipient = sale_recipient.unwrap_or(who.clone());
@@ -158,10 +173,20 @@ pub mod pallet {
 		pub fn unlist_region(origin: OriginFor<T>, region_id: RegionId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			ensure!(Listings::<T>::get(region_id).is_some(), Error::<T>::NotListed);
+			let Some(listing) = Listings::<T>::get(region_id) else {
+				return Err(Error::<T>::NotListed.into())
+			};
+
+			let record = T::Regions::record(region_id).ok_or(Error::<T>::UnknownRegion)?;
 
 			// If the region expired anyone can remove it from the market.
 			let current_timeslice = Self::current_timeslice();
+			if current_timeslice < record.end {
+				ensure!(who == listing.seller, Error::<T>::NotAllowed);
+			};
+
+			Listings::<T>::remove(region_id);
+			Self::deposit_event(Event::Unlisted { region_id });
 
 			Ok(())
 		}
