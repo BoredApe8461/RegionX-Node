@@ -20,6 +20,7 @@ use frame_system::pallet_prelude::BlockNumberFor;
 use nonfungible_primitives::LockableNonFungible;
 pub use pallet::*;
 use pallet_broker::{RegionId, Timeslice};
+use region_primitives::RegionInspect;
 use sp_runtime::{traits::BlockNumberProvider, SaturatedConversion};
 
 mod types;
@@ -57,7 +58,7 @@ pub mod pallet {
 
 		/// Type providing a way to lock coretime regions that are listed on sale.
 		type Regions: LockableNonFungible<Self::AccountId, ItemId = RegionId>
-			+ nonfungible::Inspect<Self::AccountId, ItemId = RegionId>;
+			+ RegionInspect<Self::AccountId, BalanceOf<Self>>;
 
 		/// A means of getting the current relay chain block.
 		///

@@ -21,6 +21,7 @@ use frame_support::{
 	traits::nonfungible::{Inspect, Mutate, Transfer},
 };
 use nonfungible_primitives::LockableNonFungible;
+use region_primitives::RegionInspect;
 
 impl<T: Config> Inspect<T::AccountId> for Pallet<T> {
 	type ItemId = u128;
@@ -89,6 +90,13 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 		Regions::<T>::remove(region_id);
 
 		Ok(())
+	}
+}
+
+impl<T: Config> RegionInspect<T::AccountId, BalanceOf<T>> for Pallet<T> {
+	fn record(region_id: RegionId) -> Option<RegionRecordOf<T>> {
+		let region = Regions::<T>::get(region_id)?;
+		region.record.get()
 	}
 }
 

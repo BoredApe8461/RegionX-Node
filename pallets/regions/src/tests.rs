@@ -28,6 +28,7 @@ use ismp::{
 };
 use nonfungible_primitives::LockableNonFungible;
 use pallet_broker::{CoreMask, RegionId, RegionRecord};
+use region_primitives::RegionInspect;
 use std::collections::BTreeMap;
 
 // pallet hash + storage item hash
@@ -480,6 +481,23 @@ fn region_unlocking_works() {
 			),
 		);
 		assert_eq!(Regions::owner(&region_id.into()), Some(2));
+	});
+}
+
+#[test]
+fn region_inspect_works() {
+	new_test_ext().execute_with(|| {
+		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
+		assert!(Regions::record(region_id).is_none());
+
+		assert_ok!(Regions::mint_into(&region_id.into(), &1));
+		// the record is still not available so it will return `None`.
+		assert!(Regions::record(region_id).is_none());
+
+		let record: RegionRecord<u64, u64> = RegionRecord { end: 123600, owner: 1, paid: None };
+		assert_ok!(Regions::set_record(region_id, record.clone()));
+
+		assert_eq!(Regions::record(region_id), Some(record));
 	});
 }
 
