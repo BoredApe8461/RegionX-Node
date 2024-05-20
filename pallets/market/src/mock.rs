@@ -143,11 +143,15 @@ impl pallet_regions::Config for Test {
 	type WeightInfo = ();
 }
 
+parameter_types! {
+	pub static RelayBlockNumber: u64 = 0;
+}
+
 pub struct RelayBlockNumberProvider;
 impl BlockNumberProvider for RelayBlockNumberProvider {
 	type BlockNumber = u64;
 	fn current_block_number() -> Self::BlockNumber {
-		0
+		RelayBlockNumber::get()
 	}
 }
 

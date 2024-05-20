@@ -21,11 +21,45 @@ fn calculate_region_price_works() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(
 			Market::calculate_region_price(
-				RegionId { begin: 2, core: 0, mask: CoreMask::complete() },
-				RegionRecordOf::<u64, u64> { end: 10, owner: 1, paid: None },
+				RegionId { begin: 0, core: 0, mask: CoreMask::complete() },
+				RegionRecordOf::<u64, u64> { end: 8, owner: 1, paid: None },
 				10 // timeslice price
 			),
 			80 // 8 * 10
+		);
+
+		// Remains same until a timeslice passes:
+		RelayBlockNumber::set(79);
+		assert_eq!(
+			Market::calculate_region_price(
+				RegionId { begin: 0, core: 0, mask: CoreMask::complete() },
+				RegionRecordOf::<u64, u64> { end: 8, owner: 1, paid: None },
+				10 // timeslice price
+			),
+			80 // 8 * 10
+		);
+
+		RelayBlockNumber::set(80);
+
+		// Reduced by one after a timeslice elapses:
+		assert_eq!(
+			Market::calculate_region_price(
+				RegionId { begin: 0, core: 0, mask: CoreMask::complete() },
+				RegionRecordOf::<u64, u64> { end: 8, owner: 1, paid: None },
+				10 // timeslice price
+			),
+			70 // 7 * 10
+		);
+
+		RelayBlockNumber::set(8 * 80);
+		// Expired region has no value:
+		assert_eq!(
+			Market::calculate_region_price(
+				RegionId { begin: 0, core: 0, mask: CoreMask::complete() },
+				RegionRecordOf::<u64, u64> { end: 8, owner: 1, paid: None },
+				10 // timeslice price
+			),
+			0
 		);
 	});
 }
