@@ -32,6 +32,7 @@ sp-runtime = { workspace = true, default-features = false }
 
 # Local
 nonfungible-primitives = { workspace = true, default-features = false }
+region-primitives = { workspace =true, default-features = false }
 
 [dev-dependencies]
 hex = "0.4.3"
@@ -48,6 +49,7 @@ std = [
 	"ismp/std",
 	"ismp-parachain/std",
 	"nonfungible-primitives/std",
+	"region-primitives/std",
 	"scale-info/std",
 	"sp-io/std",
 	"sp-core/std",

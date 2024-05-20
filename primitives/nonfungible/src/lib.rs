@@ -18,11 +18,11 @@ use frame_support::{pallet_prelude::DispatchResult, traits::nonfungible::Inspect
 /// Nonfungible implementation which can be locked.
 pub trait LockableNonFungible<AccountId>: Inspect<AccountId> {
 	/// Lock an item. This will restrict transfers.
-	fn lock(item: &Self::ItemId) -> DispatchResult;
+	fn lock(item: &Self::ItemId, check_owner: Option<AccountId>) -> DispatchResult;
 
 	/// Unlock an item.
 	///
 	/// Should fail if the item wasn't previously locked. This will make the item transferable
 	/// again.
-	fn unlock(item: &Self::ItemId) -> DispatchResult;
+	fn unlock(item: &Self::ItemId, check_owner: Option<AccountId>) -> DispatchResult;
 }

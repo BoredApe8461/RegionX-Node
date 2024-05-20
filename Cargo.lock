@@ -6671,8 +6671,8 @@ dependencies = [
  "nonfungible-primitives",
  "pallet-balances",
  "pallet-broker",
- "pallet-regions",
  "parity-scale-codec",
+ "region-primitives",
  "scale-info",
  "serde",
  "sp-core",
@@ -6974,6 +6974,7 @@ dependencies = [
  "pallet-broker",
  "pallet-ismp",
  "parity-scale-codec",
+ "region-primitives",
  "scale-info",
  "serde",
  "sp-core",
@@ -9450,6 +9451,18 @@ name = "regex-syntax"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
+
+[[package]]
+name = "region-primitives"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "log",
+ "pallet-broker",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
 
 [[package]]
 name = "regionx-node"

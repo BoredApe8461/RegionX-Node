@@ -28,6 +28,7 @@ use ismp::{
 use ismp_parachain::PARACHAIN_CONSENSUS_ID;
 pub use pallet::*;
 use pallet_broker::RegionId;
+use region_primitives::{Record, Region};
 use scale_info::prelude::{format, vec, vec::Vec};
 use sp_core::H256;
 use sp_runtime::traits::Zero;
@@ -111,7 +112,13 @@ pub mod pallet {
 	/// Regions that got cross-chain transferred to the RegionX parachain.
 	#[pallet::storage]
 	#[pallet::getter(fn regions)]
-	pub type Regions<T> = StorageMap<_, Blake2_128Concat, RegionId, Region<T>, OptionQuery>;
+	pub type Regions<T> = StorageMap<
+		_,
+		Blake2_128Concat,
+		RegionId,
+		Region<<T as frame_system::Config>::AccountId, BalanceOf<T>>,
+		OptionQuery,
+	>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]

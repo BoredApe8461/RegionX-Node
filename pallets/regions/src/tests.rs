@@ -85,7 +85,7 @@ fn set_record_works() {
 		let region = Regions::regions(region_id).unwrap();
 		assert!(region.record.is_available());
 		assert_eq!(region.owner, 2);
-		assert_eq!(region.record, Record::<Test>::Available(record.clone()));
+		assert_eq!(region.record, Record::Available(record.clone()));
 
 		// call `set_record` again with the same record
 		assert_noop!(Regions::set_record(region_id, record), Error::<Test>::RegionRecordAlreadySet);

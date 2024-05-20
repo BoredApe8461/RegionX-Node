@@ -27,7 +27,7 @@ pallet-broker = { workspace = true, default-features = false }
 
 # Local
 nonfungible-primitives = { workspace = true, default-features = false }
-pallet-regions = { workspace = true, default-features = false }
+region-primitives = { workspace = true, default-features = false }
 
 [dev-dependencies]
 serde = { workspace = true }
@@ -41,6 +41,7 @@ std = [
 	"log/std",
 	"codec/std",
 	"nonfungible-primitives/std",
+	"region-primitives/std",
 	"scale-info/std",
 	"sp-io/std",
 	"sp-core/std",
@@ -49,6 +50,5 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-broker/std",
-	"pallet-regions/std",
 ]
 try-runtime = [ "frame-support/try-runtime" ]

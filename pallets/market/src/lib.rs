@@ -35,6 +35,7 @@ pub mod pallet {
 		pallet_prelude::*,
 		traits::{
 			fungible::{Inspect, Mutate},
+			nonfungible,
 			tokens::Balance,
 		},
 	};
@@ -55,7 +56,8 @@ pub mod pallet {
 		type Currency: Mutate<Self::AccountId>;
 
 		/// Type providing a way to lock coretime regions that are listed on sale.
-		type Regions: LockableNonFungible<Self::AccountId, ItemId = RegionId>;
+		type Regions: LockableNonFungible<Self::AccountId, ItemId = RegionId>
+			+ nonfungible::Inspect<Self::AccountId, ItemId = RegionId>;
 
 		/// A means of getting the current relay chain block.
 		///
