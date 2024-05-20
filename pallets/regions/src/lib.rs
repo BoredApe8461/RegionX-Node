@@ -84,7 +84,7 @@ pub mod pallet {
 			+ Into<<Self::Currency as Inspect<Self::AccountId>>::Balance>
 			+ From<u32>;
 
-		/// Native currency implementation
+		/// Currency implementation
 		//
 		// NOTE: Isn't used since we don't have a reward mechanism for ISMP relayers.
 		type Currency: Mutate<Self::AccountId>;
