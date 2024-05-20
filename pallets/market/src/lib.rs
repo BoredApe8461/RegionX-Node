@@ -26,6 +26,12 @@ use sp_runtime::{traits::BlockNumberProvider, SaturatedConversion, Saturating};
 mod types;
 use crate::types::*;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 pub type BalanceOf<T> =
 	<<T as crate::Config>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
@@ -100,6 +106,14 @@ pub mod pallet {
 		Unlisted {
 			/// The region that got unlisted.
 			region_id: RegionId,
+		},
+		Purchased {
+			/// The region that got purchased.
+			region_id: RegionId,
+			/// The buyer of the region.
+			buyer: T::AccountId,
+			/// The total price paid for the listed region.
+			total_price: BalanceOf<T>,
 		},
 	}
 
@@ -227,6 +241,8 @@ pub mod pallet {
 			T::Regions::unlock(&region_id.into(), None)?;
 
 			T::Regions::transfer(&region_id.into(), &who)?;
+
+			Self::deposit_event(Event::Purchased { region_id, buyer: who, total_price: price });
 
 			Ok(())
 		}

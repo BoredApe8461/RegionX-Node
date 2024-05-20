@@ -94,8 +94,8 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 }
 
 impl<T: Config> RegionInspect<T::AccountId, BalanceOf<T>> for Pallet<T> {
-	type ItemId = Self::ItemId;
-	fn record(item: &ItemId) -> Option<RegionRecordOf<T>> {
+	type ItemId = u128;
+	fn record(item: &Self::ItemId) -> Option<RegionRecordOf<T>> {
 		let region_id: RegionId = (*item).into();
 		let region = Regions::<T>::get(region_id)?;
 		region.record.get()

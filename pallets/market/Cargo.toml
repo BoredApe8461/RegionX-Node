@@ -31,7 +31,9 @@ region-primitives = { workspace = true, default-features = false }
 
 [dev-dependencies]
 serde = { workspace = true }
+pallet-regions = { workspace = true, default-features = false }
 pallet-balances = { workspace = true, default-features = false }
+ismp = { workspace = true, default-features = false }
 ismp-testsuite = { workspace = true }
 
 [features]
@@ -50,5 +52,8 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-broker/std",
+	"pallet-balances/std",
+	"pallet-regions/std",
+	"ismp/std",
 ]
 try-runtime = [ "frame-support/try-runtime" ]
