@@ -15,13 +15,13 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::fungible::Inspect;
+use frame_support::traits::{fungible::Inspect, nonfungible::Transfer, tokens::Preservation};
 use frame_system::pallet_prelude::BlockNumberFor;
 use nonfungible_primitives::LockableNonFungible;
 pub use pallet::*;
 use pallet_broker::{RegionId, Timeslice};
-use region_primitives::RegionInspect;
-use sp_runtime::{traits::BlockNumberProvider, SaturatedConversion};
+use region_primitives::{RegionInspect, RegionRecordOf};
+use sp_runtime::{traits::BlockNumberProvider, SaturatedConversion, Saturating};
 
 mod types;
 use crate::types::*;
@@ -56,8 +56,10 @@ pub mod pallet {
 		type Currency: Mutate<Self::AccountId>;
 
 		/// Type providing a way to lock coretime regions that are listed on sale.
-		type Regions: LockableNonFungible<Self::AccountId, ItemId = RegionId>
-			+ RegionInspect<Self::AccountId, BalanceOf<Self>>;
+		type Regions: Transfer<Self::AccountId, ItemId = u128>
+			+ LockableNonFungible<Self::AccountId, ItemId = u128>
+			+ RegionInspect<Self::AccountId, BalanceOf<Self>, ItemId = u128>;
+		// The item id is `u128` encoded RegionId.
 
 		/// A means of getting the current relay chain block.
 		///
@@ -114,6 +116,8 @@ pub mod pallet {
 		RegionExpired,
 		/// The caller is not allowed to perform a certain action.
 		NotAllowed,
+		/// The price of the region is higher than what the buyer is willing to pay.
+		PriceTooHigh,
 	}
 
 	#[pallet::call]
@@ -136,13 +140,13 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			ensure!(Listings::<T>::get(region_id).is_none(), Error::<T>::AlreadyListed);
-			let record = T::Regions::record(region_id).ok_or(Error::<T>::UnknownRegion)?;
+			let record = T::Regions::record(&region_id.into()).ok_or(Error::<T>::UnknownRegion)?;
 
 			// It doesn't make sense to list a region that expired.
 			let current_timeslice = Self::current_timeslice();
 			ensure!(record.end > current_timeslice, Error::<T>::RegionExpired);
 
-			T::Regions::lock(&region_id, Some(who.clone()))?;
+			T::Regions::lock(&region_id.into(), Some(who.clone()))?;
 
 			let sale_recipient = sale_recipient.unwrap_or(who.clone());
 			Listings::<T>::insert(
@@ -173,11 +177,8 @@ pub mod pallet {
 		pub fn unlist_region(origin: OriginFor<T>, region_id: RegionId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			let Some(listing) = Listings::<T>::get(region_id) else {
-				return Err(Error::<T>::NotListed.into())
-			};
-
-			let record = T::Regions::record(region_id).ok_or(Error::<T>::UnknownRegion)?;
+			let listing = Listings::<T>::get(region_id).ok_or(Error::<T>::NotListed)?;
+			let record = T::Regions::record(&region_id.into()).ok_or(Error::<T>::UnknownRegion)?;
 
 			// If the region expired anyone can remove it from the market.
 			let current_timeslice = Self::current_timeslice();
@@ -190,9 +191,69 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+		#[pallet::call_index(2)]
+		#[pallet::weight(10_000)] // TODO
+		pub fn update_region_price(
+			origin: OriginFor<T>,
+			_region_id: RegionId,
+			_new_timeslice_price: BalanceOf<T>,
+		) -> DispatchResult {
+			let _who = ensure_signed(origin)?;
+
+			todo!()
+		}
+
+		#[pallet::call_index(3)]
+		#[pallet::weight(10_000)] // TODO
+		pub fn purchase_region(
+			origin: OriginFor<T>,
+			region_id: RegionId,
+			max_price: BalanceOf<T>,
+		) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			let listing = Listings::<T>::get(region_id).ok_or(Error::<T>::NotListed)?;
+			let record = T::Regions::record(&region_id.into()).ok_or(Error::<T>::UnknownRegion)?;
+
+			let price = Self::calculate_region_price(region_id, record, listing.timeslice_price);
+			if price > max_price {
+				return Err(Error::<T>::PriceTooHigh.into());
+			}
+			T::Currency::transfer(&who, &listing.sale_recipient, price, Preservation::Preserve)?;
+
+			// Remove the region from sale:
+			Listings::<T>::remove(region_id);
+			T::Regions::unlock(&region_id.into(), None)?;
+
+			T::Regions::transfer(&region_id.into(), &who)?;
+
+			Ok(())
+		}
 	}
 
 	impl<T: Config> Pallet<T> {
+		pub(crate) fn calculate_region_price(
+			region_id: RegionId,
+			record: RegionRecordOf<T::AccountId, BalanceOf<T>>,
+			timeslice_price: BalanceOf<T>,
+		) -> BalanceOf<T> {
+			let current_timeslice = Self::current_timeslice();
+			let duration = record.end.saturating_sub(region_id.begin);
+
+			if current_timeslice < region_id.begin {
+				// The region didn't start yet, so there is no value lost.
+				let price = timeslice_price.saturating_mul(duration.into());
+
+				return price;
+			}
+
+			let remaining_timeslices = record.end.saturating_sub(current_timeslice);
+			let price = timeslice_price.saturating_mul(remaining_timeslices.into());
+
+			price
+		}
+
 		pub(crate) fn current_timeslice() -> Timeslice {
 			let latest_rc_block = T::RelayChainBlockNumber::current_block_number();
 			let timeslice_period = T::TimeslicePeriod::get();

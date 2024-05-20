@@ -13,7 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 use codec::{Decode, Encode, MaxEncodedLen};
-use pallet_broker::{RegionId, RegionRecord};
+use frame_support::Parameter;
+use pallet_broker::RegionRecord;
 use scale_info::TypeInfo;
 use sp_core::H256;
 
@@ -71,8 +72,11 @@ pub struct Region<AccountId: Clone, Balance: Clone> {
 }
 
 pub trait RegionInspect<AccountId: Clone, Balance: Clone> {
+	/// Type for identifying the region.
+	type ItemId: Parameter;
+
 	/// Get the associated record of a region.
 	///
 	/// If `None` the region record was not found.
-	fn record(region_id: RegionId) -> Option<RegionRecordOf<AccountId, Balance>>;
+	fn record(region_id: &Self::ItemId) -> Option<RegionRecordOf<AccountId, Balance>>;
 }
