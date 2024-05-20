@@ -411,7 +411,7 @@ fn region_locking_works() {
 	new_test_ext().execute_with(|| {
 		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
 
-		assert_noop!(Regions::lock(&region_id.into()), Error::<Test>::UnknownRegion);
+		assert_noop!(Regions::lock(&region_id.into(), Some(1)), Error::<Test>::UnknownRegion);
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &1));
 		assert_eq!(Regions::owner(&region_id.into()), Some(1));
@@ -420,13 +420,16 @@ fn region_locking_works() {
 			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }
 		);
 
-		assert_ok!(Regions::lock(&region_id.into()));
+		// Must be the region owner:
+		assert_noop!(Regions::lock(&region_id.into(), Some(2)), Error::<Test>::NotOwner);
+
+		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: true, record: Record::Pending(Default::default()) }
 		);
 
-		assert_noop!(Regions::lock(&region_id.into()), Error::<Test>::RegionLocked);
+		assert_noop!(Regions::lock(&region_id.into(), Some(1)), Error::<Test>::RegionLocked);
 
 		// Can't transfer locked region:
 		assert_noop!(
@@ -444,7 +447,7 @@ fn region_unlocking_works() {
 	new_test_ext().execute_with(|| {
 		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
 
-		assert_noop!(Regions::unlock(&region_id.into()), Error::<Test>::UnknownRegion);
+		assert_noop!(Regions::unlock(&region_id.into(), Some(1)), Error::<Test>::UnknownRegion);
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &1));
 		assert_eq!(Regions::owner(&region_id.into()), Some(1));
@@ -452,15 +455,18 @@ fn region_unlocking_works() {
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }
 		);
-		assert_noop!(Regions::unlock(&region_id.into()), Error::<Test>::RegionNotLocked);
+		assert_noop!(Regions::unlock(&region_id.into(), Some(1)), Error::<Test>::RegionNotLocked);
 
-		assert_ok!(Regions::lock(&region_id.into()));
+		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: true, record: Record::Pending(Default::default()) }
 		);
 
-		assert_ok!(Regions::unlock(&region_id.into()));
+		// Must be the region owner:
+		assert_noop!(Regions::unlock(&region_id.into(), Some(2)), Error::<Test>::NotOwner);
+
+		assert_ok!(Regions::unlock(&region_id.into(), Some(1)));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }

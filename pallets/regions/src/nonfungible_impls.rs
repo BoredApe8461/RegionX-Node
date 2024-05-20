@@ -93,21 +93,28 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 }
 
 impl<T: Config> LockableNonFungible<T::AccountId> for Pallet<T> {
-	fn lock(item: &Self::ItemId) -> DispatchResult {
+	fn lock(item: &Self::ItemId, maybe_check_owner: Option<T::AccountId>) -> DispatchResult {
 		let region_id: RegionId = (*item).into();
 		let mut region = Regions::<T>::get(region_id).ok_or(Error::<T>::UnknownRegion)?;
 
+		if let Some(owner) = maybe_check_owner {
+			ensure!(owner.clone() == region.owner, Error::<T>::NotOwner);
+		}
 		ensure!(!region.locked, Error::<T>::RegionLocked);
+
 		region.locked = true;
 		Regions::<T>::insert(region_id, region);
 
 		Ok(())
 	}
 
-	fn unlock(item: &Self::ItemId) -> DispatchResult {
+	fn unlock(item: &Self::ItemId, maybe_check_owner: Option<T::AccountId>) -> DispatchResult {
 		let region_id: RegionId = (*item).into();
 		let mut region = Regions::<T>::get(region_id).ok_or(Error::<T>::UnknownRegion)?;
 
+		if let Some(owner) = maybe_check_owner {
+			ensure!(owner.clone() == region.owner, Error::<T>::NotOwner);
+		}
 		ensure!(region.locked, Error::<T>::RegionNotLocked);
 
 		region.locked = false;

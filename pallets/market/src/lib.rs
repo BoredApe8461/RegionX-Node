@@ -98,8 +98,10 @@ pub mod pallet {
 	#[pallet::error]
 	#[derive(PartialEq)]
 	pub enum Error<T> {
-		/// The given region identity is not known.
-		UnknownRegion,
+		/// Caller tried to list a region which is already listed.
+		AlreadyListed,
+		/// Caller tried to unlist a region which is not listed.
+		NotListed,
 	}
 
 	#[pallet::call]
@@ -121,7 +123,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			T::Regions::lock(&region_id)?;
+			ensure!(Listings::<T>::get(region_id).is_none(), Error::<T>::AlreadyListed);
+			T::Regions::lock(&region_id, Some(who.clone()))?;
 
 			let sale_recipient = sale_recipient.unwrap_or(who.clone());
 			Listings::<T>::insert(
@@ -139,6 +142,23 @@ pub mod pallet {
 				seller: who,
 				sale_recipient,
 			});
+
+			Ok(())
+		}
+
+		/// A function for unlisting a region on sale.
+		///
+		/// ## Arguments:
+		/// - `region_id`: The region that the caller intends to unlist from sale.
+		#[pallet::call_index(1)]
+		#[pallet::weight(10_000)] // TODO
+		pub fn unlist_region(origin: OriginFor<T>, region_id: RegionId) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			ensure!(Listings::<T>::get(region_id).is_some(), Error::<T>::NotListed);
+
+			// If the region expired anyone can remove it from the market.
+			let current_timeslice = Self::current_timeslice();
 
 			Ok(())
 		}
