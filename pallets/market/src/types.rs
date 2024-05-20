@@ -25,5 +25,5 @@ pub struct Listing<AccountId, Balance> {
 	/// The `AccountId` receiving the payment from the sale.
 	///
 	/// This will usually be the seller account.
-	pub sale_recepient: AccountId,
+	pub sale_recipient: AccountId,
 }
