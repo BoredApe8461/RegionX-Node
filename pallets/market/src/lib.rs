@@ -62,10 +62,11 @@ pub mod pallet {
 		type Currency: Mutate<Self::AccountId>;
 
 		/// Type providing a way to lock coretime regions that are listed on sale.
+		//
+		// The item id is `u128` encoded RegionId.
 		type Regions: Transfer<Self::AccountId, ItemId = u128>
 			+ LockableNonFungible<Self::AccountId, ItemId = u128>
 			+ RegionInspect<Self::AccountId, BalanceOf<Self>, ItemId = u128>;
-		// The item id is `u128` encoded RegionId.
 
 		/// A means of getting the current relay chain block.
 		///
