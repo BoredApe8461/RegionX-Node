@@ -250,10 +250,11 @@ pub mod pallet {
 			let listing = Listings::<T>::get(region_id).ok_or(Error::<T>::NotListed)?;
 			let record = T::Regions::record(&region_id.into()).ok_or(Error::<T>::UnknownRegion)?;
 
+			ensure!(who != listing.seller, Error::<T>::NotAllowed);
+			ensure!(who != listing.sale_recipient, Error::<T>::NotAllowed);
+
 			let price = Self::calculate_region_price(region_id, record, listing.timeslice_price);
-			if price > max_price {
-				return Err(Error::<T>::PriceTooHigh.into());
-			}
+			ensure!(price <= max_price, Error::<T>::PriceTooHigh);
 			T::Currency::transfer(&who, &listing.sale_recipient, price, Preservation::Preserve)?;
 
 			// Remove the region from sale:
