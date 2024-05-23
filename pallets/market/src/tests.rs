@@ -14,7 +14,9 @@
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{mock::*, *};
-use pallet_broker::CoreMask;
+use frame_support::assert_ok;
+use pallet_broker::{CoreMask, RegionRecord};
+use frame_support::traits::nonfungible::Mutate;
 
 #[test]
 fn calculate_region_price_works() {
@@ -61,5 +63,18 @@ fn calculate_region_price_works() {
 			),
 			0
 		);
+	});
+}
+
+#[test]
+fn list_region_works() {
+	new_test_ext().execute_with(|| {
+		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
+
+		assert!(Regions::regions(&region_id).is_none());
+		assert_ok!(Regions::mint_into(&region_id.into(), &2));
+
+		let record: RegionRecord<u64, u64> = RegionRecord { end: 8, owner: 1, paid: None };
+		assert_ok!(Regions::set_record(region_id, record.clone()));
 	});
 }
