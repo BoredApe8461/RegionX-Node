@@ -119,8 +119,8 @@ pub mod pallet {
 		PriceUpdated {
 			/// The region for which the sale price was updated.
 			region_id: RegionId,
-			/// New price
-			new_price: BalanceOf<T>,
+			/// New timeslice price
+			new_timeslice_price: BalanceOf<T>,
 		},
 	}
 
@@ -234,7 +234,7 @@ pub mod pallet {
 			listing.timeslice_price = new_timeslice_price;
 			Listings::<T>::insert(region_id, listing);
 
-			Self::deposit_event(Event::PriceUpdated { region_id, new_price: new_timeslice_price });
+			Self::deposit_event(Event::PriceUpdated { region_id, new_timeslice_price });
 			Ok(())
 		}
 
