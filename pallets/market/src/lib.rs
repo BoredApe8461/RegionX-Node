@@ -121,7 +121,7 @@ pub mod pallet {
 			region_id: RegionId,
 			/// New price
 			new_price: BalanceOf<T>,
-		}
+		},
 	}
 
 	#[pallet::error]
@@ -223,10 +223,10 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			let mut listing = Listings::<T>::get(region_id).ok_or(Error::<T>::NotListed)?;
-			
+
 			// Only the seller can update the price
 			ensure!(who == listing.seller, Error::<T>::NotAllowed);
-			
+
 			listing.timeslice_price = new_timeslice_price;
 			Listings::<T>::insert(&region_id, listing);
 
