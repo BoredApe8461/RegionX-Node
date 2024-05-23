@@ -86,7 +86,7 @@ pub mod pallet {
 
 	/// Regions that got listed on sale.
 	#[pallet::storage]
-	#[pallet::getter(fn regions)]
+	#[pallet::getter(fn listings)]
 	pub type Listings<T: Config> =
 		StorageMap<_, Blake2_128Concat, RegionId, Listing<T::AccountId, BalanceOf<T>>, OptionQuery>;
 
@@ -116,6 +116,12 @@ pub mod pallet {
 			/// The total price paid for the listed region.
 			total_price: BalanceOf<T>,
 		},
+		PriceUpdated {
+			/// The region that the sale price was updated.
+			region_id: RegionId,
+			/// New price
+			new_price: BalanceOf<T>,
+		}
 	}
 
 	#[pallet::error]
@@ -211,12 +217,21 @@ pub mod pallet {
 		#[pallet::weight(10_000)] // TODO
 		pub fn update_region_price(
 			origin: OriginFor<T>,
-			_region_id: RegionId,
-			_new_timeslice_price: BalanceOf<T>,
+			region_id: RegionId,
+			new_timeslice_price: BalanceOf<T>,
 		) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
+			let who = ensure_signed(origin)?;
 
-			todo!()
+			let mut listing = Listings::<T>::get(region_id).ok_or(Error::<T>::NotListed)?;
+			
+			// Only the seller can update the price
+			ensure!(who == listing.seller, Error::<T>::NotAllowed);
+			
+			listing.timeslice_price = new_timeslice_price;
+			Listings::<T>::insert(&region_id, listing);
+
+			Self::deposit_event(Event::PriceUpdated { region_id, new_price: new_timeslice_price });
+			Ok(())
 		}
 
 		#[pallet::call_index(3)]
