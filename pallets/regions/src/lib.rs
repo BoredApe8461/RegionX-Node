@@ -229,7 +229,7 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
-		pub(crate) fn set_record(region_id: RegionId, record: RegionRecordOf<T>) -> DispatchResult {
+		pub fn set_record(region_id: RegionId, record: RegionRecordOf<T>) -> DispatchResult {
 			let Some(mut region) = Regions::<T>::get(region_id) else {
 				return Err(Error::<T>::UnknownRegion.into());
 			};
