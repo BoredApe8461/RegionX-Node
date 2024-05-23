@@ -72,56 +72,54 @@ fn calculate_region_price_works() {
 fn list_region_works() {
 	new_test_ext().execute_with(|| {
 		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
-		let signer = 2;
+		let seller = 2;
+		let signer = RuntimeOrigin::signed(seller);
 
 		assert!(Regions::regions(&region_id).is_none());
-		assert_ok!(Regions::mint_into(&region_id.into(), &signer));
+		assert_ok!(Regions::mint_into(&region_id.into(), &seller));
 
 		let record: RegionRecord<u64, u64> = RegionRecord { end: 8, owner: 1, paid: None };
-		assert_ok!(Regions::set_record(region_id, record.clone()));
-
 		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
+		let price = 1_000_000;
+		let recipient = 1;
+
+		// Failure: Unknown region
+
+		assert_err!(
+			Market::list_region(signer.clone(), region_id, price, None),
+			Error::<Test>::UnknownRegion
+		);
+
+		assert_ok!(Regions::set_record(region_id, record.clone()));
 
 		// Failure: Region expired
 		RelayBlockNumber::set(10 * timeslice);
 
-		let price = 1_000_000;
-		let recipient = 1;
 		assert_err!(
-			Market::list_region(RuntimeOrigin::signed(signer), region_id, price, None),
+			Market::list_region(signer.clone(), region_id, price, None),
 			Error::<Test>::RegionExpired
 		);
 
 		// Should be working
 		RelayBlockNumber::set(1 * timeslice);
-		assert_ok!(Market::list_region(
-			RuntimeOrigin::signed(signer),
-			region_id,
-			price,
-			Some(recipient)
-		));
+		assert_ok!(Market::list_region(signer.clone(), region_id, price, Some(recipient)));
 
 		// Failure: Already listed
 		assert_err!(
-			Market::list_region(RuntimeOrigin::signed(signer), region_id, price, None),
+			Market::list_region(signer, region_id, price, None),
 			Error::<Test>::AlreadyListed
 		);
 
 		// Check storage items
 		assert_eq!(
 			Market::listings(region_id),
-			Some(Listing { seller: signer, timeslice_price: price, sale_recipient: recipient })
+			Some(Listing { seller, timeslice_price: price, sale_recipient: recipient })
 		);
 
 		// Check events
 		System::assert_last_event(
-			Event::Listed {
-				region_id,
-				timeslice_price: price,
-				seller: signer,
-				sale_recipient: recipient,
-			}
-			.into(),
+			Event::Listed { region_id, timeslice_price: price, seller, sale_recipient: recipient }
+				.into(),
 		);
 	});
 }
