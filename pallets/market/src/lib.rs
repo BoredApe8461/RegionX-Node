@@ -117,7 +117,7 @@ pub mod pallet {
 			total_price: BalanceOf<T>,
 		},
 		PriceUpdated {
-			/// The region that the sale price was updated.
+			/// The region for which the sale price was updated.
 			region_id: RegionId,
 			/// New price
 			new_price: BalanceOf<T>,
