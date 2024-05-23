@@ -232,7 +232,7 @@ pub mod pallet {
 			ensure!(current_timeslice < record.end, Error::<T>::RegionExpired);
 
 			listing.timeslice_price = new_timeslice_price;
-			Listings::<T>::insert(&region_id, listing);
+			Listings::<T>::insert(region_id, listing);
 
 			Self::deposit_event(Event::PriceUpdated { region_id, new_price: new_timeslice_price });
 			Ok(())
@@ -285,9 +285,7 @@ pub mod pallet {
 			}
 
 			let remaining_timeslices = record.end.saturating_sub(current_timeslice);
-			let price = timeslice_price.saturating_mul(remaining_timeslices.into());
-
-			price
+			timeslice_price.saturating_mul(remaining_timeslices.into())
 		}
 
 		pub(crate) fn current_timeslice() -> Timeslice {
