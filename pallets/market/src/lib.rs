@@ -223,9 +223,13 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			let mut listing = Listings::<T>::get(region_id).ok_or(Error::<T>::NotListed)?;
+			let record = T::Regions::record(&region_id.into()).ok_or(Error::<T>::UnknownRegion)?;
 
 			// Only the seller can update the price
 			ensure!(who == listing.seller, Error::<T>::NotAllowed);
+
+			let current_timeslice = Self::current_timeslice();
+			ensure!(current_timeslice < record.end, Error::<T>::RegionExpired);
 
 			listing.timeslice_price = new_timeslice_price;
 			Listings::<T>::insert(&region_id, listing);
