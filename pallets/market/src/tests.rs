@@ -19,6 +19,7 @@ use frame_support::{
 	traits::{nonfungible::Mutate, Get},
 };
 use pallet_broker::{CoreMask, RegionRecord};
+use sp_runtime::{DispatchError::Token, TokenError};
 
 #[test]
 fn calculate_region_price_works() {
@@ -280,7 +281,7 @@ fn purchase_region_works() {
 		));
 		assert_noop!(
 			Market::purchase_region(RuntimeOrigin::signed(buyer), region_id, 8 * timeslice_price),
-			Error::<Test>::InsufficientBalance
+			Token(TokenError::FundsUnavailable)
 		);
 		assert_ok!(Balances::transfer_keep_alive(
 			RuntimeOrigin::signed(seller),
