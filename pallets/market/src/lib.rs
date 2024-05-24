@@ -139,6 +139,8 @@ pub mod pallet {
 		NotAllowed,
 		/// The price of the region is higher than what the buyer is willing to pay.
 		PriceTooHigh,
+		/// The buyer doesn't have enough balance to purchase a region
+		InsufficientBalance,
 	}
 
 	#[pallet::call]
@@ -208,6 +210,7 @@ pub mod pallet {
 			};
 
 			Listings::<T>::remove(region_id);
+			T::Regions::unlock(&region_id.into(), None)?;
 			Self::deposit_event(Event::Unlisted { region_id });
 
 			Ok(())
@@ -254,7 +257,11 @@ pub mod pallet {
 
 			let price = Self::calculate_region_price(region_id, record, listing.timeslice_price);
 			ensure!(price <= max_price, Error::<T>::PriceTooHigh);
-			T::Currency::transfer(&who, &listing.sale_recipient, price, Preservation::Preserve)?;
+			ensure!(
+				T::Currency::transfer(&who, &listing.sale_recipient, price, Preservation::Preserve)
+					.is_ok(),
+				Error::<T>::InsufficientBalance
+			);
 
 			// Remove the region from sale:
 			Listings::<T>::remove(region_id);
