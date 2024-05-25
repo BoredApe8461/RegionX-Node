@@ -83,5 +83,29 @@ mod benchmarks {
 		Ok(())
 	}
 
+	#[benchmark]
+	fn update_region_price() -> Result<(), BenchmarkError> {
+		let caller: T::AccountId = whitelisted_caller();
+
+		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
+		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: caller.clone(), paid: None };
+		T::BenchmarkHelper::create_region(region_id, record, caller.clone())?;
+
+		crate::Pallet::<T>::list_region(
+			RawOrigin::Signed(caller.clone()).into(),
+			region_id,
+			1_000u32.saturated_into(),
+			None,
+		)?;
+
+		let new_timeslice_price = 2_000u32.saturated_into();
+		#[extrinsic_call]
+		_(RawOrigin::Signed(caller.clone()), region_id, new_timeslice_price);
+
+		assert_last_event::<T>(Event::PriceUpdated { region_id, new_timeslice_price }.into());
+
+		Ok(())
+	}
+
 	impl_benchmark_test_suite!(Pallet, crate::mock::new_test_ext(), crate::mock::Test);
 }
