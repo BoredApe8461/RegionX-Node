@@ -175,3 +175,25 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 		}
 	}
 }
+
+#[cfg(feature = "runtime-benchmarks")]
+pub mod benchmarks {
+	use crate::*;
+	use pallet_market::RegionRecordOf;
+	use sp_runtime::DispatchResult;
+	use frame_support::traits::nonfungible::Mutate;
+	use pallet_broker::RegionId;
+
+	pub struct RegionFactory;
+	impl pallet_market::RegionFactory<Runtime> for RegionFactory {
+		fn create_region(
+			region_id: RegionId,
+			record: RegionRecordOf<Runtime>,
+			owner: <Runtime as frame_system::Config>::AccountId,
+		) -> DispatchResult {
+			Regions::mint_into(&region_id.into(), &owner)?;
+			Regions::set_record(region_id, record.clone())?;
+			Ok(())
+		}
+	}
+}

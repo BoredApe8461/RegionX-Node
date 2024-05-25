@@ -61,13 +61,14 @@ mod benchmarks {
 		// Create a region with an unavailable record, allowing us to re-request the record.
 		crate::Regions::<T>::insert(
 			region_id,
-			Region { owner: caller.clone(), record: Record::<T>::Unavailable },
+			Region { owner: caller.clone(), record: Record::Unavailable, locked: false },
 		);
 
 		#[extrinsic_call]
 		_(RawOrigin::Signed(caller.clone()), region_id);
 
-		assert_last_event::<T>(Event::RegionRecordRequested { region_id, account: caller }.into());
+		let region = crate::Pallet::<T>::regions(region_id).unwrap();
+		assert!(region.record.is_pending());
 
 		Ok(())
 	}

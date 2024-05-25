@@ -46,11 +46,11 @@ parameter_types! {
 impl pallet_conviction_voting::Config<DelegatedConvictionVotingInstance> for Runtime {
 	type WeightInfo = ();
 	type RuntimeEvent = RuntimeEvent;
-	type Currency = RelayChainCurrency;
+	type Currency = RelaychainCurrency;
 	type VoteLockingPeriod = VoteLockingPeriod;
 	type MaxVotes = ConstU32<512>;
 	type MaxTurnout = frame_support::traits::tokens::currency::ActiveIssuanceOf<
-		RelayChainCurrency,
+		RelaychainCurrency,
 		Self::AccountId,
 	>;
 	type Polls = DelegatedReferenda;
@@ -79,7 +79,7 @@ impl pallet_referenda::Config<DelegatedReferendaInstance> for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type Scheduler = Scheduler;
-	type Currency = RelayChainCurrency;
+	type Currency = RelaychainCurrency;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
 	type CancelOrigin =
 		EitherOfDiverse<EnsureTwoThirdTechnicalCommittee, EnsureTwoThirdGeneralCouncil>;

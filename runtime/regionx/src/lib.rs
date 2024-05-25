@@ -57,6 +57,7 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
+use cumulus_pallet_parachain_system::RelaychainDataProvider;
 
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -145,7 +146,7 @@ pub type Executive = frame_executive::Executive<
 >;
 
 /// The relay chain currency on the RegionX parachain.
-pub type RelayChainCurrency = CurrencyAdapter<Runtime, ConstU32<RELAY_CHAIN_ASSET_ID>>;
+pub type RelaychainCurrency = CurrencyAdapter<Runtime, ConstU32<RELAY_CHAIN_ASSET_ID>>;
 
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 /// node's balance type.
@@ -744,6 +745,18 @@ impl pallet_treasury::Config for Runtime {
 	type BenchmarkHelper = ();
 }
 
+impl pallet_market::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type Currency = RelaychainCurrency;
+	type Regions = Regions;
+	type RelayChainBlockNumber = RelaychainDataProvider<Self>;
+	type TimeslicePeriod = ConstU32<80>;
+	type WeightInfo = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = impls::benchmarks::RegionFactory;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime
@@ -806,6 +819,7 @@ construct_runtime!(
 
 		// Main stage:
 		Regions: pallet_regions = 90,
+		Market: pallet_market = 91,
 	}
 );
 
@@ -825,6 +839,7 @@ mod benches {
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_regions, Regions]
+		[pallet_market, Market]
 		[pallet_referenda, NativeReferenda]
 		[pallet_referenda, DelegatedReferenda]
 		[pallet_conviction_voting, NativeConvictionVoting]

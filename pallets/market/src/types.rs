@@ -14,7 +14,6 @@
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 use crate::{BalanceOf, RegionId};
 use codec::{Decode, Encode, MaxEncodedLen};
-use pallet_broker::RegionRecord;
 use scale_info::TypeInfo;
 use sp_runtime::DispatchResult;
 

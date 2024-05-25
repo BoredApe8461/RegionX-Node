@@ -21,7 +21,6 @@ use super::*;
 
 use frame_benchmarking::v2::*;
 use frame_support::{
-	assert_ok,
 	traits::{fungible::Mutate, nonfungible::Mutate as NonFungibleMutate},
 };
 use frame_system::RawOrigin;
@@ -45,7 +44,7 @@ mod benchmarks {
 		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: caller.clone(), paid: None };
 		T::BenchmarkHelper::create_region(region_id, record, caller.clone())?;
 
-		let timeslice_price: BalanceOf<T> = 1_000u32.saturated_into();
+		let timeslice_price: BalanceOf<T> = 1_000u32.into();
 		#[extrinsic_call]
 		_(RawOrigin::Signed(caller.clone()), region_id, timeslice_price, None);
 
@@ -70,7 +69,7 @@ mod benchmarks {
 		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: caller.clone(), paid: None };
 		T::BenchmarkHelper::create_region(region_id, record, caller.clone())?;
 
-		let timeslice_price: BalanceOf<T> = 1_000u32.saturated_into();
+		let timeslice_price: BalanceOf<T> = 1_000u32.into();
 		crate::Pallet::<T>::list_region(
 			RawOrigin::Signed(caller.clone()).into(),
 			region_id,
@@ -97,11 +96,11 @@ mod benchmarks {
 		crate::Pallet::<T>::list_region(
 			RawOrigin::Signed(caller.clone()).into(),
 			region_id,
-			1_000u32.saturated_into(),
+			1_000u32.into(),
 			None,
 		)?;
 
-		let new_timeslice_price = 2_000u32.saturated_into();
+		let new_timeslice_price = 2_000u32.into();
 		#[extrinsic_call]
 		_(RawOrigin::Signed(caller.clone()), region_id, new_timeslice_price);
 
@@ -121,17 +120,17 @@ mod benchmarks {
 
 		T::Currency::set_balance(
 			&caller.clone(),
-			T::Currency::minimum_balance().saturating_add(u32::MAX.saturated_into()),
+			T::Currency::minimum_balance().saturating_add(u32::MAX.into()),
 		);
 
 		crate::Pallet::<T>::list_region(
 			RawOrigin::Signed(alice).into(),
 			region_id,
-			1_000u32.saturated_into(),
+			1_000u32.into(),
 			None,
 		)?;
 
-		let max_price = 8000u32.saturated_into();
+		let max_price = 8000u32.into();
 		#[extrinsic_call]
 		_(RawOrigin::Signed(caller.clone()), region_id, max_price);
 
