@@ -44,7 +44,7 @@ mod benchmarks {
 
 		let timeslice_price: BalanceOf<T> = 1_000u32.saturated_into();
 		#[extrinsic_call]
-		_(RawOrigin::Signed(caller.clone()), region_id, 1_000u32.saturated_into(), None);
+		_(RawOrigin::Signed(caller.clone()), region_id, timeslice_price, None);
 
 		assert_last_event::<T>(
 			Event::Listed {
@@ -55,6 +55,30 @@ mod benchmarks {
 			}
 			.into(),
 		);
+
+		Ok(())
+	}
+
+	#[benchmark]
+	fn unlist_region() -> Result<(), BenchmarkError> {
+		let caller: T::AccountId = whitelisted_caller();
+
+		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
+		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: caller.clone(), paid: None };
+		T::BenchmarkHelper::create_region(region_id, record, caller.clone())?;
+
+		let timeslice_price: BalanceOf<T> = 1_000u32.saturated_into();
+		crate::Pallet::<T>::list_region(
+			RawOrigin::Signed(caller.clone()).into(),
+			region_id,
+			timeslice_price,
+			None,
+		)?;
+
+		#[extrinsic_call]
+		_(RawOrigin::Signed(caller.clone()), region_id);
+
+		assert_last_event::<T>(Event::Unlisted { region_id }.into());
 
 		Ok(())
 	}
