@@ -20,7 +20,10 @@
 use super::*;
 
 use frame_benchmarking::v2::*;
-use frame_support::{assert_ok, traits::nonfungible::Mutate};
+use frame_support::{
+	assert_ok,
+	traits::{fungible::Mutate, nonfungible::Mutate as NonFungibleMutate},
+};
 use frame_system::RawOrigin;
 use pallet_broker::{CoreMask, RegionId, RegionRecord};
 
@@ -103,6 +106,38 @@ mod benchmarks {
 		_(RawOrigin::Signed(caller.clone()), region_id, new_timeslice_price);
 
 		assert_last_event::<T>(Event::PriceUpdated { region_id, new_timeslice_price }.into());
+
+		Ok(())
+	}
+
+	#[benchmark]
+	fn purchase_region() -> Result<(), BenchmarkError> {
+		let caller: T::AccountId = whitelisted_caller();
+		let alice: T::AccountId = account("alice", 0, SEED);
+
+		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
+		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: alice.clone(), paid: None };
+		T::BenchmarkHelper::create_region(region_id, record, alice.clone())?;
+
+		T::Currency::set_balance(
+			&caller.clone(),
+			T::Currency::minimum_balance().saturating_add(u32::MAX.saturated_into()),
+		);
+
+		crate::Pallet::<T>::list_region(
+			RawOrigin::Signed(alice).into(),
+			region_id,
+			1_000u32.saturated_into(),
+			None,
+		)?;
+
+		let max_price = 8000u32.saturated_into();
+		#[extrinsic_call]
+		_(RawOrigin::Signed(caller.clone()), region_id, max_price);
+
+		assert_last_event::<T>(
+			Event::Purchased { region_id, total_price: max_price, buyer: caller }.into(),
+		);
 
 		Ok(())
 	}
