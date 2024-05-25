@@ -15,22 +15,25 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{fungible::Inspect, nonfungible::Transfer, tokens::Preservation};
+use frame_support::traits::{fungible::Inspect, tokens::Preservation};
 use frame_system::pallet_prelude::BlockNumberFor;
 use nonfungible_primitives::LockableNonFungible;
 pub use pallet::*;
 use pallet_broker::{RegionId, Timeslice};
-use region_primitives::{RegionInspect, RegionRecordOf};
+use region_primitives::RegionInspect;
 use sp_runtime::{traits::BlockNumberProvider, SaturatedConversion, Saturating};
 
 mod types;
-use crate::types::*;
+pub use crate::types::*;
 
 #[cfg(test)]
 mod mock;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 pub type BalanceOf<T> =
 	<<T as crate::Config>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
@@ -42,6 +45,7 @@ pub mod pallet {
 		pallet_prelude::*,
 		traits::{
 			fungible::{Inspect, Mutate},
+			nonfungible::Transfer,
 			tokens::Balance,
 		},
 	};
@@ -79,6 +83,9 @@ pub mod pallet {
 
 		/// Weight Info
 		type WeightInfo: WeightInfo;
+
+		#[cfg(feature = "runtime-benchmarks")]
+		type BenchmarkHelper: RegionFactory<Self>;
 	}
 
 	#[pallet::pallet]
@@ -272,7 +279,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		pub(crate) fn calculate_region_price(
 			region_id: RegionId,
-			record: RegionRecordOf<T::AccountId, BalanceOf<T>>,
+			record: RegionRecordOf<T>,
 			timeslice_price: BalanceOf<T>,
 		) -> BalanceOf<T> {
 			let current_timeslice = Self::current_timeslice();

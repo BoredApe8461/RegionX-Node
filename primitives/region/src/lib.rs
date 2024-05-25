@@ -18,8 +18,6 @@ use pallet_broker::RegionRecord;
 use scale_info::TypeInfo;
 use sp_core::H256;
 
-pub type RegionRecordOf<AccountId, Balance> = RegionRecord<AccountId, Balance>;
-
 /// The request status for getting the region record.
 #[derive(Encode, Decode, Debug, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 pub enum Record<AccountId: Clone, Balance: Clone> {
@@ -30,7 +28,7 @@ pub enum Record<AccountId: Clone, Balance: Clone> {
 	/// An ISMP request was made, but we failed to get a response.
 	Unavailable,
 	/// Successfully retrieved the region record.
-	Available(RegionRecordOf<AccountId, Balance>),
+	Available(RegionRecord<AccountId, Balance>),
 }
 
 impl<AccountId: Clone, Balance: Clone> Record<AccountId, Balance> {
@@ -46,7 +44,7 @@ impl<AccountId: Clone, Balance: Clone> Record<AccountId, Balance> {
 		matches!(self, Record::Available(_))
 	}
 
-	pub fn get(&self) -> Option<RegionRecordOf<AccountId, Balance>> {
+	pub fn get(&self) -> Option<RegionRecord<AccountId, Balance>> {
 		match self {
 			Self::Available(r) => Some(r.clone()),
 			_ => None,
@@ -78,5 +76,5 @@ pub trait RegionInspect<AccountId: Clone, Balance: Clone> {
 	/// Get the associated record of a region.
 	///
 	/// If `None` the region record was not found.
-	fn record(region_id: &Self::ItemId) -> Option<RegionRecordOf<AccountId, Balance>>;
+	fn record(region_id: &Self::ItemId) -> Option<RegionRecord<AccountId, Balance>>;
 }

@@ -14,8 +14,8 @@
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	ismp_mock::requests, mock::*, pallet::Regions as RegionsStorage, utils, Error, Event,
-	IsmpCustomError, IsmpModuleCallback, Record, Region,
+	ismp_mock::requests, mock::*, pallet::Regions as RegionsStorage, types::RegionRecordOf, utils,
+	Error, Event, IsmpCustomError, IsmpModuleCallback, Record, Region,
 };
 use frame_support::{
 	assert_noop, assert_ok,
@@ -65,7 +65,7 @@ fn nonfungibles_implementation_works() {
 fn set_record_works() {
 	new_test_ext().execute_with(|| {
 		let region_id = RegionId { begin: 112830, core: 81, mask: CoreMask::complete() };
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 123600, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 123600, owner: 1, paid: None };
 
 		// The region with the given `region_id` does not exist.
 		assert_noop!(Regions::set_record(region_id, record.clone()), Error::<Test>::UnknownRegion);
@@ -193,8 +193,7 @@ fn on_response_works() {
 
 		assert_eq!(request.who, 2);
 
-		let mock_record: RegionRecord<u64, u64> =
-			RegionRecord { end: 113000, owner: 1, paid: None };
+		let mock_record: RegionRecordOf<Test> = RegionRecord { end: 113000, owner: 1, paid: None };
 
 		let mock_response = Response::Get(GetResponse {
 			get: get.clone(),
@@ -352,7 +351,7 @@ fn nonfungible_owner_works() {
 fn nonfungible_attribute_works() {
 	new_test_ext().execute_with(|| {
 		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 123600, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 123600, owner: 1, paid: None };
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &1));
 		assert_ok!(Regions::set_record(region_id, record.clone()));
@@ -494,7 +493,7 @@ fn region_inspect_works() {
 		// the record is still not available so it will return `None`.
 		assert!(Regions::record(&region_id.into()).is_none());
 
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 123600, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 123600, owner: 1, paid: None };
 		assert_ok!(Regions::set_record(region_id, record.clone()));
 
 		assert_eq!(Regions::record(&region_id.into()), Some(record));

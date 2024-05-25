@@ -27,7 +27,7 @@ fn calculate_region_price_works() {
 		assert_eq!(
 			Market::calculate_region_price(
 				RegionId { begin: 0, core: 0, mask: CoreMask::complete() },
-				RegionRecordOf::<u64, u64> { end: 8, owner: 1, paid: None },
+				RegionRecordOf::<Test> { end: 8, owner: 1, paid: None },
 				10 // timeslice price
 			),
 			80 // 8 * 10
@@ -38,7 +38,7 @@ fn calculate_region_price_works() {
 		assert_eq!(
 			Market::calculate_region_price(
 				RegionId { begin: 0, core: 0, mask: CoreMask::complete() },
-				RegionRecordOf::<u64, u64> { end: 8, owner: 1, paid: None },
+				RegionRecordOf::<Test> { end: 8, owner: 1, paid: None },
 				10 // timeslice price
 			),
 			80 // 8 * 10
@@ -50,7 +50,7 @@ fn calculate_region_price_works() {
 		assert_eq!(
 			Market::calculate_region_price(
 				RegionId { begin: 0, core: 0, mask: CoreMask::complete() },
-				RegionRecordOf::<u64, u64> { end: 8, owner: 1, paid: None },
+				RegionRecordOf::<Test> { end: 8, owner: 1, paid: None },
 				10 // timeslice price
 			),
 			70 // 7 * 10
@@ -61,7 +61,7 @@ fn calculate_region_price_works() {
 		assert_eq!(
 			Market::calculate_region_price(
 				RegionId { begin: 0, core: 0, mask: CoreMask::complete() },
-				RegionRecordOf::<u64, u64> { end: 8, owner: 1, paid: None },
+				RegionRecordOf::<Test> { end: 8, owner: 1, paid: None },
 				10 // timeslice price
 			),
 			0
@@ -79,7 +79,7 @@ fn list_region_works() {
 		assert!(Regions::regions(&region_id).is_none());
 		assert_ok!(Regions::mint_into(&region_id.into(), &seller));
 
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 8, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 8, owner: 1, paid: None };
 		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
 		let price = 1_000_000;
 		let recipient = 1;
@@ -136,7 +136,7 @@ fn unlist_region_works() {
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &seller));
 
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 8, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 8, owner: 1, paid: None };
 		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
 		let price = 1_000_000;
 		let recipient = 1;
@@ -176,7 +176,7 @@ fn update_region_price_works() {
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &seller));
 
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 8, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 8, owner: 1, paid: None };
 		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
 		let price = 1_000_000;
 		let recipient = 1;
@@ -235,7 +235,7 @@ fn purchase_region_works() {
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &seller));
 
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 8, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 8, owner: 1, paid: None };
 		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
 		let timeslice_price = 1_000_000;
 		let recipient = 1;

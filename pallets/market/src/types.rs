@@ -12,8 +12,14 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
+use crate::{BalanceOf, RegionId};
 use codec::{Decode, Encode, MaxEncodedLen};
+use pallet_broker::RegionRecord;
 use scale_info::TypeInfo;
+use sp_runtime::DispatchResult;
+
+pub type RegionRecordOf<T> =
+	pallet_broker::RegionRecord<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
 
 /// The information we store about a region that got listed on sale.
 #[derive(Encode, Decode, Debug, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
@@ -26,4 +32,13 @@ pub struct Listing<AccountId, Balance> {
 	///
 	/// This will usually be the seller account.
 	pub sale_recipient: AccountId,
+}
+
+/// Trait for creating regions. Used for benchmarking.
+pub trait RegionFactory<T: crate::Config> {
+	fn create_region(
+		region_id: RegionId,
+		record: RegionRecordOf<T>,
+		owner: T::AccountId,
+	) -> DispatchResult;
 }

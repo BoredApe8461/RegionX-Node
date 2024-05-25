@@ -22,7 +22,7 @@ pub type BalanceOf<T> =
 	<<T as crate::Config>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
 pub type RegionRecordOf<T> =
-	region_primitives::RegionRecordOf<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
+	pallet_broker::RegionRecord<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
 
 /// ISMP errors specific to the RegionX project.
 #[derive(Encode, Decode, Debug, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
