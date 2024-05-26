@@ -179,10 +179,10 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarks {
 	use crate::*;
-	use pallet_market::RegionRecordOf;
-	use sp_runtime::DispatchResult;
 	use frame_support::traits::nonfungible::Mutate;
 	use pallet_broker::RegionId;
+	use pallet_market::RegionRecordOf;
+	use sp_runtime::DispatchResult;
 
 	pub struct RegionFactory;
 	impl pallet_market::RegionFactory<Runtime> for RegionFactory {

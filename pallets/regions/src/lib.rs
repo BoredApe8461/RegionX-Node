@@ -29,8 +29,8 @@ use ismp::{
 use ismp_parachain::PARACHAIN_CONSENSUS_ID;
 pub use pallet::*;
 use pallet_broker::RegionId;
-use region_primitives::{Record, Region};
 use pallet_ismp::{weights::IsmpModuleWeight, ModuleId};
+use region_primitives::{Record, Region};
 use scale_info::prelude::{format, vec, vec::Vec};
 use sp_core::H256;
 use sp_runtime::traits::Zero;

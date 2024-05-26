@@ -38,7 +38,9 @@ mod ismp;
 
 use impls::*;
 
-use cumulus_pallet_parachain_system::{RelayChainState, RelayNumberStrictlyIncreases};
+use cumulus_pallet_parachain_system::{
+	RelayChainState, RelayNumberStrictlyIncreases, RelaychainDataProvider,
+};
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use frame_support::traits::{
 	fungible::HoldConsideration,
@@ -57,7 +59,6 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
-use cumulus_pallet_parachain_system::RelaychainDataProvider;
 
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
