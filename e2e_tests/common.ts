@@ -132,5 +132,5 @@ export {
   submitExtrinsic,
   transferRelayAssetToPara,
   getAddressFromModuleId,
-  getFreeBalance
+  getFreeBalance,
 };

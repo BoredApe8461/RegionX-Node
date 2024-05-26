@@ -204,7 +204,7 @@ runtime-benchmarks = [
 	"pallet-collective/runtime-benchmarks",
 	"pallet-conviction-voting/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
-	"pallet-membership/std",
+	"pallet-membership/runtime-benchmarks",
 	"pallet-message-queue/runtime-benchmarks",
   	"pallet-multisig/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",

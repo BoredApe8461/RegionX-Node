@@ -23,7 +23,7 @@ use frame_support::{pallet_prelude::Get, parameter_types};
 use frame_system::EnsureRoot;
 use ismp::{error::Error, host::StateMachine, module::IsmpModule, router::IsmpRouter};
 use ismp_parachain::ParachainConsensusClient;
-use pallet_ismp::NoOpMmrTree;
+use pallet_ismp::{weights::IsmpModuleWeight, ModuleId, NoOpMmrTree};
 use sp_std::prelude::*;
 
 pub struct HostStateMachine;
@@ -44,6 +44,17 @@ impl ismp_parachain::Config for Runtime {
 	type IsmpHost = Ismp;
 }
 
+pub struct WeightProvider;
+impl pallet_ismp::weights::WeightProvider for WeightProvider {
+	fn module_callback(id: ModuleId) -> Option<Box<dyn IsmpModuleWeight>> {
+		match id {
+			pallet_regions::PALLET_ID =>
+				Some(Box::<pallet_regions::IsmpRegionsModuleWeight<Runtime>>::default()),
+			_ => None,
+		}
+	}
+}
+
 impl pallet_ismp::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AdminOrigin = EnsureRoot<AccountId>;
@@ -56,15 +67,15 @@ impl pallet_ismp::Config for Runtime {
 	type ConsensusClients = (ParachainConsensusClient<Runtime, IsmpParachain>,);
 
 	type Mmr = NoOpMmrTree<Self>;
-	type WeightProvider = ();
+	type WeightProvider = WeightProvider;
 }
 
 #[derive(Default)]
 pub struct Router;
 impl IsmpRouter for Router {
 	fn module_for_id(&self, id: Vec<u8>) -> Result<Box<dyn IsmpModule>, Error> {
-		let module = match id.as_slice() {
-			pallet_regions::PALLET_ID =>
+		let module = match ModuleId::from_bytes(&id) {
+			Ok(pallet_regions::PALLET_ID) =>
 				Box::<pallet_regions::IsmpModuleCallback<Runtime>>::default(),
 			_ => Err(Error::ModuleNotFound(id))?,
 		};

@@ -597,7 +597,14 @@ impl pallet_collator_selection::Config for Runtime {
 pub struct StateMachineHeightProvider;
 impl StateMachineHeightProviderT for StateMachineHeightProvider {
 	fn latest_state_machine_height(id: StateMachineId) -> Option<u64> {
-		Ismp::latest_state_machine_height(id)
+		#[cfg(not(feature = "runtime-benchmarks"))]
+		{
+			Ismp::latest_state_machine_height(id)
+		}
+		#[cfg(feature = "runtime-benchmarks")]
+		{
+			Some(Ismp::latest_state_machine_height(id).unwrap_or(0))
+		}
 	}
 }
 

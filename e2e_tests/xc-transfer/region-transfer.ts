@@ -46,6 +46,8 @@ async function run(_nodeName: any, networkInfo: any, _jsArgs: any) {
   const txSetBalance = coretimeApi.tx.balances.forceSetBalance(alice.address, 1000 * UNIT);
   await submitExtrinsic(alice, coretimeApi.tx.sudo.sudo(txSetBalance), {});
 
+  await ismpAddParachain(alice, regionXApi);
+
   const regionId = await purchaseRegion(coretimeApi, alice);
   if (!regionId) throw new Error('RegionId not found');
 
@@ -107,7 +109,9 @@ async function run(_nodeName: any, networkInfo: any, _jsArgs: any) {
   let regions = await regionXApi.query.regions.regions.entries();
   assert.equal(regions.length, 1);
   assert.deepStrictEqual(regions[0][0].toHuman(), [regionId]);
-  assert.deepStrictEqual(regions[0][1].toHuman(), { owner: alice.address, record: 'Pending' });
+  // record is unavailable because we did not setup ismp.
+  assert((regions[0][1].toHuman() as any).owner == alice.address);
+  assert(typeof (regions[0][1].toHuman() as any).record.Pending === 'string');
 
   regions = await coretimeApi.query.broker.regions.entries();
   assert.equal(regions.length, 1);
@@ -171,6 +175,12 @@ async function run(_nodeName: any, networkInfo: any, _jsArgs: any) {
   assert.equal(regions.length, 1);
   assert.deepStrictEqual(regions[0][0].toHuman(), [regionId]);
   assert.equal((regions[0][1].toHuman() as any).owner, alice.address);
+}
+
+async function ismpAddParachain(signer: KeyringPair, regionXApi: ApiPromise) {
+  const addParaCall = regionXApi.tx.ismpParachain.addParachain([1005]);
+  const sudoCall = regionXApi.tx.sudo.sudo(addParaCall);
+  return submitExtrinsic(signer, sudoCall, {});
 }
 
 async function openHrmpChannel(
