@@ -32,6 +32,9 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+pub mod weights;
+pub use weights::WeightInfo;
+
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
@@ -49,7 +52,7 @@ pub mod pallet {
 			tokens::Balance,
 		},
 	};
-	use frame_system::{pallet_prelude::*, WeightInfo};
+	use frame_system::pallet_prelude::*;
 
 	/// The module configuration trait.
 	#[pallet::config]
@@ -158,7 +161,7 @@ pub mod pallet {
 		/// - `sale_recipient`: The `AccountId` receiving the payment from the sale. If not
 		///   specified this will be the caller.
 		#[pallet::call_index(0)]
-		#[pallet::weight(10_000)] // TODO
+		#[pallet::weight(T::WeightInfo::list_region())]
 		pub fn list_region(
 			origin: OriginFor<T>,
 			region_id: RegionId,
@@ -201,7 +204,7 @@ pub mod pallet {
 		/// ## Arguments:
 		/// - `region_id`: The region that the caller intends to unlist from sale.
 		#[pallet::call_index(1)]
-		#[pallet::weight(10_000)] // TODO
+		#[pallet::weight(T::WeightInfo::unlist_region())]
 		pub fn unlist_region(origin: OriginFor<T>, region_id: RegionId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -222,7 +225,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(2)]
-		#[pallet::weight(10_000)] // TODO
+		#[pallet::weight(T::WeightInfo::update_region_price())]
 		pub fn update_region_price(
 			origin: OriginFor<T>,
 			region_id: RegionId,
@@ -247,7 +250,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(3)]
-		#[pallet::weight(10_000)] // TODO
+		#[pallet::weight(T::WeightInfo::purchase_region())]
 		pub fn purchase_region(
 			origin: OriginFor<T>,
 			region_id: RegionId,

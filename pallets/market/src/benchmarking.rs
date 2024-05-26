@@ -20,7 +20,7 @@
 use super::*;
 
 use frame_benchmarking::v2::*;
-use frame_support::traits::{fungible::Mutate, nonfungible::Mutate as NonFungibleMutate};
+use frame_support::traits::fungible::Mutate;
 use frame_system::RawOrigin;
 use pallet_broker::{CoreMask, RegionId, RegionRecord};
 
