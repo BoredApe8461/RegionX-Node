@@ -756,6 +756,14 @@ impl pallet_treasury::Config for Runtime {
 impl pallet_market::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
+	// To make benchmarking easier we use the native currency for coretime purchases.
+	//
+	// In production we use the relay chain asset.
+	#[cfg(feature = "runtime-benchmarks")]
+	// NOTE: due to this the weights might be slightly inaccurate.
+	// TODO: check whether this difference is reasonable.
+	type Currency = Balances;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type Currency = RelaychainCurrency;
 	type Regions = Regions;
 	type RelayChainBlockNumber = RelaychainDataProvider<Self>;
