@@ -32,7 +32,7 @@ sp-runtime = { workspace = true, default-features = false }
 
 # Local
 nonfungible-primitives = { workspace = true, default-features = false }
-region-primitives = { workspace =true, default-features = false }
+region-primitives = { workspace = true, default-features = false }
 
 [dev-dependencies]
 hex = "0.4.3"

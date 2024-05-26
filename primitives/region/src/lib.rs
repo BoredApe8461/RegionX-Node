@@ -12,6 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
+#![cfg_attr(not(feature = "std"), no_std)]
+
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::Parameter;
 use pallet_broker::RegionRecord;
