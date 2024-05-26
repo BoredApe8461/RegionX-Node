@@ -16,62 +16,13 @@
 use crate::IsmpError;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::fungible::Inspect;
-use pallet_broker::RegionRecord;
 use scale_info::{prelude::format, TypeInfo};
-use sp_core::H256;
 
 pub type BalanceOf<T> =
 	<<T as crate::Config>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
-pub type RegionRecordOf<T> = RegionRecord<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
 
-/// The request status for getting the region record.
-#[derive(Encode, Decode, Debug, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
-#[scale_info(skip_type_params(T))]
-pub enum Record<T: crate::Config> {
-	/// An ISMP request was made to query the region record and we are now anticipating a response.
-	///
-	/// The hash represents the commitment of the ISMP get request.
-	Pending(H256),
-	/// An ISMP request was made, but we failed to get a response.
-	Unavailable,
-	/// Successfully retrieved the region record.
-	Available(RegionRecordOf<T>),
-}
-
-impl<T: crate::Config> Record<T> {
-	pub fn is_pending(&self) -> bool {
-		matches!(self, Record::Pending(_))
-	}
-
-	pub fn is_unavailable(&self) -> bool {
-		matches!(self, Record::Unavailable)
-	}
-
-	pub fn is_available(&self) -> bool {
-		matches!(self, Record::Available(_))
-	}
-
-	pub fn get(&self) -> Option<RegionRecordOf<T>> {
-		match self {
-			Self::Available(r) => Some(r.clone()),
-			_ => None,
-		}
-	}
-}
-
-/// Region that got cross-chain transferred from the Coretime chain.
-#[derive(Encode, Decode, Debug, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
-#[scale_info(skip_type_params(T))]
-pub struct Region<T: crate::Config> {
-	/// Owner of the region.
-	pub owner: T::AccountId,
-	/// The associated record of the region. If `None`, we still didn't receive a response
-	/// for the ISMP GET request.
-	///
-	/// NOTE: The owner inside the record is the sovereign account of the parachain, so there
-	/// isn't really a point to using it.
-	pub record: Record<T>,
-}
+pub type RegionRecordOf<T> =
+	pallet_broker::RegionRecord<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
 
 /// ISMP errors specific to the RegionX project.
 #[derive(Encode, Decode, Debug, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]

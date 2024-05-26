@@ -14,8 +14,8 @@
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	ismp_mock::requests, mock::*, pallet::Regions as RegionsStorage, utils, Error, Event,
-	IsmpCustomError, IsmpModuleCallback, Record, Region,
+	ismp_mock::requests, mock::*, pallet::Regions as RegionsStorage, types::RegionRecordOf, utils,
+	Error, Event, IsmpCustomError, IsmpModuleCallback, Record, Region,
 };
 use frame_support::{
 	assert_noop, assert_ok,
@@ -26,7 +26,9 @@ use ismp::{
 	module::IsmpModule,
 	router::{GetResponse, Post, PostResponse, Request, Response, Timeout},
 };
+use nonfungible_primitives::LockableNonFungible;
 use pallet_broker::{CoreMask, RegionId, RegionRecord};
+use region_primitives::RegionInspect;
 use std::collections::BTreeMap;
 
 // pallet hash + storage item hash
@@ -41,14 +43,14 @@ fn nonfungibles_implementation_works() {
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, record: Record::Pending(Default::default()) }
+			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }
 		);
 
-		// The user is not required to set the region record to withdraw the asset back to the coretime
-		// chain.
+		// The user is not required to set the region record to withdraw the asset back to the
+		// coretime chain.
 		//
-		// NOTE: Burning occurs when placing the region into the XCM holding registrar at the time of
-		// reserve transfer.
+		// NOTE: Burning occurs when placing the region into the XCM holding registrar at the time
+		// of reserve transfer.
 
 		assert_noop!(Regions::burn(&region_id.into(), Some(&1)), Error::<Test>::NotOwner);
 
@@ -63,7 +65,7 @@ fn nonfungibles_implementation_works() {
 fn set_record_works() {
 	new_test_ext().execute_with(|| {
 		let region_id = RegionId { begin: 112830, core: 81, mask: CoreMask::complete() };
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 123600, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 123600, owner: 1, paid: None };
 
 		// The region with the given `region_id` does not exist.
 		assert_noop!(Regions::set_record(region_id, record.clone()), Error::<Test>::UnknownRegion);
@@ -84,7 +86,7 @@ fn set_record_works() {
 		let region = Regions::regions(region_id).unwrap();
 		assert!(region.record.is_available());
 		assert_eq!(region.owner, 2);
-		assert_eq!(region.record, Record::<Test>::Available(record.clone()));
+		assert_eq!(region.record, Record::Available(record.clone()));
 
 		// call `set_record` again with the same record
 		assert_noop!(Regions::set_record(region_id, record), Error::<Test>::RegionRecordAlreadySet);
@@ -183,7 +185,7 @@ fn on_response_works() {
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, record: Record::Pending(Default::default()) }
+			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }
 		);
 
 		let request = &requests()[0];
@@ -191,8 +193,7 @@ fn on_response_works() {
 
 		assert_eq!(request.who, 2);
 
-		let mock_record: RegionRecord<u64, u64> =
-			RegionRecord { end: 113000, owner: 1, paid: None };
+		let mock_record: RegionRecordOf<Test> = RegionRecord { end: 113000, owner: 1, paid: None };
 
 		let mock_response = Response::Get(GetResponse {
 			get: get.clone(),
@@ -204,7 +205,7 @@ fn on_response_works() {
 
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, record: Record::Available(mock_record.clone()) }
+			Region { owner: 2, locked: false, record: Record::Available(mock_record.clone()) }
 		);
 
 		// Fails when invalid region id is passed as response:
@@ -263,7 +264,7 @@ fn on_timeout_works() {
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, record: Record::Pending(Default::default()) }
+			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }
 		);
 
 		let request = &requests()[0];
@@ -275,7 +276,7 @@ fn on_timeout_works() {
 		assert_ok!(module.on_timeout(timeout));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, record: Record::Unavailable }
+			Region { owner: 2, locked: false, record: Record::Unavailable }
 		);
 
 		// failed to decode region_id
@@ -350,7 +351,7 @@ fn nonfungible_owner_works() {
 fn nonfungible_attribute_works() {
 	new_test_ext().execute_with(|| {
 		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
-		let record: RegionRecord<u64, u64> = RegionRecord { end: 123600, owner: 1, paid: None };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 123600, owner: 1, paid: None };
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &1));
 		assert_ok!(Regions::set_record(region_id, record.clone()));
@@ -402,6 +403,100 @@ fn nonfungible_transfer_works() {
 			)
 		);
 		assert_eq!(Regions::owner(&region_id.into()), Some(2));
+	});
+}
+
+#[test]
+fn region_locking_works() {
+	new_test_ext().execute_with(|| {
+		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
+
+		assert_noop!(Regions::lock(&region_id.into(), Some(1)), Error::<Test>::UnknownRegion);
+
+		assert_ok!(Regions::mint_into(&region_id.into(), &1));
+		assert_eq!(Regions::owner(&region_id.into()), Some(1));
+		assert_eq!(
+			Regions::regions(&region_id).unwrap(),
+			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }
+		);
+
+		// Must be the region owner:
+		assert_noop!(Regions::lock(&region_id.into(), Some(2)), Error::<Test>::NotOwner);
+
+		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
+		assert_eq!(
+			Regions::regions(&region_id).unwrap(),
+			Region { owner: 1, locked: true, record: Record::Pending(Default::default()) }
+		);
+
+		assert_noop!(Regions::lock(&region_id.into(), Some(1)), Error::<Test>::RegionLocked);
+
+		// Can't transfer locked region:
+		assert_noop!(
+			<Regions as NonFungibleTransfer::<<Test as frame_system::Config>::AccountId>>::transfer(
+				&region_id.into(),
+				&2
+			),
+			Error::<Test>::RegionLocked
+		);
+	});
+}
+
+#[test]
+fn region_unlocking_works() {
+	new_test_ext().execute_with(|| {
+		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
+
+		assert_noop!(Regions::unlock(&region_id.into(), Some(1)), Error::<Test>::UnknownRegion);
+
+		assert_ok!(Regions::mint_into(&region_id.into(), &1));
+		assert_eq!(Regions::owner(&region_id.into()), Some(1));
+		assert_eq!(
+			Regions::regions(&region_id).unwrap(),
+			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }
+		);
+		assert_noop!(Regions::unlock(&region_id.into(), Some(1)), Error::<Test>::RegionNotLocked);
+
+		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
+		assert_eq!(
+			Regions::regions(&region_id).unwrap(),
+			Region { owner: 1, locked: true, record: Record::Pending(Default::default()) }
+		);
+
+		// Must be the region owner:
+		assert_noop!(Regions::unlock(&region_id.into(), Some(2)), Error::<Test>::NotOwner);
+
+		assert_ok!(Regions::unlock(&region_id.into(), Some(1)));
+		assert_eq!(
+			Regions::regions(&region_id).unwrap(),
+			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }
+		);
+
+		// The region can be transferred after unlocking.
+		assert_ok!(
+			<Regions as NonFungibleTransfer::<<Test as frame_system::Config>::AccountId>>::transfer(
+				&region_id.into(),
+				&2
+			),
+		);
+		assert_eq!(Regions::owner(&region_id.into()), Some(2));
+	});
+}
+
+#[test]
+fn region_inspect_works() {
+	new_test_ext().execute_with(|| {
+		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
+		assert!(Regions::record(&region_id.into()).is_none());
+
+		assert_ok!(Regions::mint_into(&region_id.into(), &1));
+		// the record is still not available so it will return `None`.
+		assert!(Regions::record(&region_id.into()).is_none());
+
+		let record: RegionRecordOf<Test> = RegionRecord { end: 123600, owner: 1, paid: None };
+		assert_ok!(Regions::set_record(region_id, record.clone()));
+
+		assert_eq!(Regions::record(&region_id.into()), Some(record));
 	});
 }
 

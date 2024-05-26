@@ -20,6 +20,8 @@ use frame_support::{
 	pallet_prelude::DispatchResult,
 	traits::nonfungible::{Inspect, Mutate, Transfer},
 };
+use nonfungible_primitives::LockableNonFungible;
+use region_primitives::RegionInspect;
 
 impl<T: Config> Inspect<T::AccountId> for Pallet<T> {
 	type ItemId = u128;
@@ -71,7 +73,7 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 		// Even if requesting the region record fails we still want to mint it to the owner.
 		//
 		// We will just have the region record not set.
-		Regions::<T>::insert(region_id, Region { owner: who.clone(), record });
+		Regions::<T>::insert(region_id, Region { owner: who.clone(), locked: false, record });
 
 		Ok(())
 	}
@@ -86,6 +88,47 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 		}
 
 		Regions::<T>::remove(region_id);
+
+		Ok(())
+	}
+}
+
+impl<T: Config> RegionInspect<T::AccountId, BalanceOf<T>> for Pallet<T> {
+	type ItemId = u128;
+	fn record(item: &Self::ItemId) -> Option<RegionRecordOf<T>> {
+		let region_id: RegionId = (*item).into();
+		let region = Regions::<T>::get(region_id)?;
+		region.record.get()
+	}
+}
+
+impl<T: Config> LockableNonFungible<T::AccountId> for Pallet<T> {
+	fn lock(item: &Self::ItemId, maybe_check_owner: Option<T::AccountId>) -> DispatchResult {
+		let region_id: RegionId = (*item).into();
+		let mut region = Regions::<T>::get(region_id).ok_or(Error::<T>::UnknownRegion)?;
+
+		if let Some(owner) = maybe_check_owner {
+			ensure!(owner.clone() == region.owner, Error::<T>::NotOwner);
+		}
+		ensure!(!region.locked, Error::<T>::RegionLocked);
+
+		region.locked = true;
+		Regions::<T>::insert(region_id, region);
+
+		Ok(())
+	}
+
+	fn unlock(item: &Self::ItemId, maybe_check_owner: Option<T::AccountId>) -> DispatchResult {
+		let region_id: RegionId = (*item).into();
+		let mut region = Regions::<T>::get(region_id).ok_or(Error::<T>::UnknownRegion)?;
+
+		if let Some(owner) = maybe_check_owner {
+			ensure!(owner.clone() == region.owner, Error::<T>::NotOwner);
+		}
+		ensure!(region.locked, Error::<T>::RegionNotLocked);
+
+		region.locked = false;
+		Regions::<T>::insert(region_id, region);
 
 		Ok(())
 	}

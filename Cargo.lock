@@ -5757,6 +5757,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "nonfungible-primitives"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "normalize-line-endings"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6650,6 +6660,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-market"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ismp-testsuite",
+ "log",
+ "nonfungible-primitives",
+ "pallet-balances",
+ "pallet-broker",
+ "pallet-regions",
+ "parity-scale-codec",
+ "region-primitives",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-membership"
 version = "28.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6938,10 +6971,12 @@ dependencies = [
  "ismp-parachain",
  "ismp-testsuite",
  "log",
+ "nonfungible-primitives",
  "pallet-balances",
  "pallet-broker",
  "pallet-ismp",
  "parity-scale-codec",
+ "region-primitives",
  "scale-info",
  "serde",
  "sp-core",
@@ -9420,6 +9455,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
 
 [[package]]
+name = "region-primitives"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "log",
+ "pallet-broker",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "regionx-node"
 version = "0.1.0"
 dependencies = [
@@ -9528,11 +9575,13 @@ dependencies = [
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
+ "pallet-broker",
  "pallet-collator-selection",
  "pallet-collective",
  "pallet-conviction-voting",
  "pallet-ismp",
  "pallet-ismp-runtime-api",
+ "pallet-market",
  "pallet-membership",
  "pallet-message-queue",
  "pallet-multisig",

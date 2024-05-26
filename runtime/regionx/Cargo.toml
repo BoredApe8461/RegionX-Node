@@ -21,6 +21,7 @@ smallvec = { workspace = true }
 # Local
 regionx-primitives = { workspace = true, default-features = false }
 pallet-regions = { workspace = true, default-features = false }
+pallet-market = { workspace = true, default-features = false }
 
 # Polytope Labs
 ismp = { workspace = true }
@@ -50,6 +51,7 @@ pallet-authorship = { workspace = true }
 pallet-asset-rate = { workspace = true }
 pallet-asset-tx-payment = { workspace = true }
 pallet-balances = { workspace = true }
+pallet-broker = { workspace = true, optional = true }
 pallet-collective = { workspace = true }
 pallet-conviction-voting = { workspace = true }
 pallet-referenda = { workspace = true }
@@ -140,12 +142,14 @@ std = [
 	"pallet-asset-rate/std",
 	"pallet-asset-tx-payment/std",
 	"pallet-balances/std",
+	"pallet-broker/std",
 	"pallet-collective/std",
 	"pallet-conviction-voting/std",
 	"pallet-collator-selection/std",
 	"pallet-referenda/std",
 	"pallet-regions/std",
 	"regionx-primitives/std",
+	"pallet-market/std",
 	"pallet-membership/std",
 	"pallet-message-queue/std",
 	"pallet-multisig/std",
@@ -201,9 +205,11 @@ runtime-benchmarks = [
   	"pallet-asset-rate/runtime-benchmarks",
   	"pallet-asset-tx-payment/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
+	"pallet-broker/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
 	"pallet-conviction-voting/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
+	"pallet-market/runtime-benchmarks",
 	"pallet-membership/runtime-benchmarks",
 	"pallet-message-queue/runtime-benchmarks",
   	"pallet-multisig/runtime-benchmarks",
@@ -250,6 +256,7 @@ try-runtime = [
 	"pallet-collective/try-runtime",
 	"pallet-conviction-voting/try-runtime",
 	"pallet-collator-selection/try-runtime",
+	"pallet-market/try-runtime",
 	"pallet-membership/try-runtime",
 	"pallet-message-queue/try-runtime",
   	"pallet-multisig/try-runtime",

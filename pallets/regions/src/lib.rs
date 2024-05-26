@@ -30,6 +30,7 @@ use ismp_parachain::PARACHAIN_CONSENSUS_ID;
 pub use pallet::*;
 use pallet_broker::RegionId;
 use pallet_ismp::{weights::IsmpModuleWeight, ModuleId};
+use region_primitives::{Record, Region};
 use scale_info::prelude::{format, vec, vec::Vec};
 use sp_core::H256;
 use sp_runtime::traits::Zero;
@@ -113,7 +114,13 @@ pub mod pallet {
 	/// Regions that got cross-chain transferred to the RegionX parachain.
 	#[pallet::storage]
 	#[pallet::getter(fn regions)]
-	pub type Regions<T> = StorageMap<_, Blake2_128Concat, RegionId, Region<T>, OptionQuery>;
+	pub type Regions<T> = StorageMap<
+		_,
+		Blake2_128Concat,
+		RegionId,
+		Region<<T as frame_system::Config>::AccountId, BalanceOf<T>>,
+		OptionQuery,
+	>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -160,6 +167,10 @@ pub mod pallet {
 		InvalidRegionId,
 		/// Failed to get the latest height of the Coretime chain.
 		LatestHeightInaccessible,
+		/// Locked regions cannot be transferred.
+		RegionLocked,
+		/// Region isn't locked.
+		RegionNotLocked,
 	}
 
 	#[pallet::call]
@@ -189,7 +200,7 @@ pub mod pallet {
 			let commitment = Self::do_request_region_record(region_id, who.clone())?;
 			Regions::<T>::insert(
 				region_id,
-				Region { owner: who.clone(), record: Record::Pending(commitment) },
+				Region { owner: who.clone(), locked: false, record: Record::Pending(commitment) },
 			);
 
 			Ok(())
@@ -204,6 +215,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let mut region = Regions::<T>::get(region_id).ok_or(Error::<T>::UnknownRegion)?;
 
+			ensure!(!region.locked, Error::<T>::RegionLocked);
 			if let Some(check_owner) = maybe_check_owner {
 				ensure!(check_owner == region.owner, Error::<T>::NotOwner);
 			}
@@ -219,7 +231,7 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
-		pub(crate) fn set_record(region_id: RegionId, record: RegionRecordOf<T>) -> DispatchResult {
+		pub fn set_record(region_id: RegionId, record: RegionRecordOf<T>) -> DispatchResult {
 			let Some(mut region) = Regions::<T>::get(region_id) else {
 				return Err(Error::<T>::UnknownRegion.into());
 			};

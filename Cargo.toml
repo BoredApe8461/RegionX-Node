@@ -3,6 +3,7 @@ resolver = "2"
 members = [
 	"node",
 	"pallets/*",
+	"primitives/*",
 	"runtime/*",
 ]
 
@@ -11,7 +12,7 @@ name = "regionx"
 version = "0.1.0"
 authors = ["Sergej Sakac", "Oliver Lim"]
 description = "RegionX Coretime market Kusama runtime"
-license = "Apache-2.0"
+license = "GPLv3"
 homepage = "https://regionx.tech/"
 repository = "https://github.com/RegionX-Labs/RegionX-Node"
 edition = "2021"
@@ -160,6 +161,9 @@ ismp-parachain-runtime-api = { version = "1.6.2", default-features = false }
 ismp-testsuite = { git="https://github.com/polytope-labs/hyperbridge.git", branch="main", default-features = false }
 
 # Local
+region-primitives = { path = "./primitives/region", default-features = false }
+nonfungible-primitives= { path = "./primitives/nonfungible", default-features = false }
 regionx-primitives = { path = "./runtime/primitives", default-features = false }
 regionx-runtime = { path = "./runtime/regionx", default-features = false }
 pallet-regions = { path = "./pallets/regions", default-features = false }
+pallet-market = { path = "./pallets/market", default-features = false }

@@ -1,0 +1,32 @@
+[package]
+name = "region-primitives"
+authors = ["Anonymous"]
+description = "Traits and types related to nonfungible assets"
+version = "0.1.0"
+license = "GPLv3"
+homepage = "https://substrate.io"
+repository = "https://github.com/paritytech/substrate/"
+edition = "2021"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+log = { workspace = true }
+codec = { workspace = true, default-features = false, features = ["derive"] }
+scale-info = { workspace = true, default-features = false, features = ["derive"] }
+sp-core = { workspace = true, default-features = false }
+
+frame-support = { workspace = true, default-features = false }
+pallet-broker = { workspace = true, default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"log/std",
+	"codec/std",
+	"scale-info/std",
+    "sp-core/std",
+    "frame-support/std",
+    "pallet-broker/std",
+]
