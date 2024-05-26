@@ -46,11 +46,11 @@ fn nonfungibles_implementation_works() {
 			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }
 		);
 
-		// The user is not required to set the region record to withdraw the asset back to the coretime
-		// chain.
+		// The user is not required to set the region record to withdraw the asset back to the
+		// coretime chain.
 		//
-		// NOTE: Burning occurs when placing the region into the XCM holding registrar at the time of
-		// reserve transfer.
+		// NOTE: Burning occurs when placing the region into the XCM holding registrar at the time
+		// of reserve transfer.
 
 		assert_noop!(Regions::burn(&region_id.into(), Some(&1)), Error::<Test>::NotOwner);
 

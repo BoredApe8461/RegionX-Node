@@ -136,20 +136,21 @@ fn unlist_region_works() {
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &seller));
 
-		let record: RegionRecordOf<Test> = RegionRecord { end: 8, owner: 1, paid: None };
-		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
+		let record: RegionRecordOf<Test> = RegionRecord { end: 8, owner: seller, paid: None };
 		let price = 1_000_000;
-		let recipient = 1;
 
 		assert_ok!(Regions::set_record(region_id, record.clone()));
 
 		// Failure: NotListed
 		assert_noop!(Market::unlist_region(signer.clone(), region_id), Error::<Test>::NotListed);
 
-		assert_ok!(Market::list_region(signer.clone(), region_id, price, Some(recipient)));
+		assert_ok!(Market::list_region(signer.clone(), region_id, price, Some(seller)));
+		assert_eq!(
+			Market::listings(region_id),
+			Some(Listing { seller, timeslice_price: price, sale_recipient: seller })
+		);
 
 		// Failure: NotAllowed
-		RelayBlockNumber::set(1 * timeslice);
 		assert_noop!(
 			Market::unlist_region(RuntimeOrigin::signed(3), region_id),
 			Error::<Test>::NotAllowed
@@ -164,6 +165,44 @@ fn unlist_region_works() {
 
 		// Check events
 		System::assert_last_event(Event::Unlisted { region_id }.into())
+	});
+}
+
+#[test]
+fn unlist_expired_region_works() {
+	new_test_ext().execute_with(|| {
+		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
+		let seller = 2;
+		let signer = RuntimeOrigin::signed(seller);
+
+		assert_ok!(Regions::mint_into(&region_id.into(), &seller));
+
+		let record: RegionRecordOf<Test> = RegionRecord { end: 8, owner: seller, paid: None };
+		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
+		let price = 1_000_000;
+
+		assert_ok!(Regions::set_record(region_id, record.clone()));
+
+		// Failure: NotListed
+		assert_noop!(Market::unlist_region(signer.clone(), region_id), Error::<Test>::NotListed);
+
+		assert_ok!(Market::list_region(signer.clone(), region_id, price, Some(seller)));
+		assert_eq!(
+			Market::listings(region_id),
+			Some(Listing { seller, timeslice_price: price, sale_recipient: seller })
+		);
+
+		RelayBlockNumber::set(9 * timeslice);
+
+		// Anyone can unlist an expired region.
+		assert_ok!(Market::unlist_region(RuntimeOrigin::signed(3), region_id));
+
+		// Check events
+		System::assert_last_event(Event::Unlisted { region_id }.into());
+
+		// Check storage items
+		assert!(Market::listings(region_id).is_none());
+		assert!(Regions::regions(region_id).unwrap().locked == false);
 	});
 }
 

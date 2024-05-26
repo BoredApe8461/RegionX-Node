@@ -163,7 +163,8 @@ pub struct DealWithFees;
 impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
 		if let Some(fees) = fees_then_tips.next() {
-			// 60% of the fees go to the treasury, and the rest goes to the collators along with the tips.
+			// 60% of the fees go to the treasury, and the rest goes to the collators along with the
+			// tips.
 			let (treasury, mut collators) = fees.ration(60, 40);
 
 			if let Some(tips) = fees_then_tips.next() {

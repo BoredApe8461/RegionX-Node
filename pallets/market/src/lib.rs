@@ -153,7 +153,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// A function for listing a region on sale.
+		/// Extrinsic for listing a region on sale.
 		///
 		/// ## Arguments:
 		/// - `region_id`: The region that the caller intends to list for sale.
@@ -199,7 +199,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// A function for unlisting a region on sale.
+		/// Extrinsic for unlisting a region on sale.
 		///
 		/// ## Arguments:
 		/// - `region_id`: The region that the caller intends to unlist from sale.
@@ -213,7 +213,7 @@ pub mod pallet {
 
 			// If the region expired anyone can remove it from the market.
 			let current_timeslice = Self::current_timeslice();
-			if current_timeslice < record.end {
+			if current_timeslice <= record.end {
 				ensure!(who == listing.seller, Error::<T>::NotAllowed);
 			};
 
@@ -224,6 +224,11 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// Extrinsic for updating the price of a region listed on sale.
+		///
+		/// ## Arguments:
+		/// - `region_id`: The region that is listed on sale.
+		/// - `new_timeslice_price`: The new timeslice price.
 		#[pallet::call_index(2)]
 		#[pallet::weight(T::WeightInfo::update_region_price())]
 		pub fn update_region_price(
@@ -249,6 +254,13 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// Extrinsic for purchasing a region listed on sale.
+		///
+		/// ## Arguments:
+		/// - `region_id`: The region that is listed on sale.
+		/// - `max_price`: The maximum price the buyer is willing to pay for the region. If the
+		///   actual price exceeds this amount, the purchase will not be executed. The region price
+		///   is linearly decreasing for currently active(i.e. usable) regions.
 		#[pallet::call_index(3)]
 		#[pallet::weight(T::WeightInfo::purchase_region())]
 		pub fn purchase_region(

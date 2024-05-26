@@ -21,3 +21,7 @@ spaces_around_ranges = false
 trailing_comma = "Vertical"
 trailing_semicolon = false
 use_field_init_shorthand = true
+
+# Format comments
+comment_width = 100
+wrap_comments = true
