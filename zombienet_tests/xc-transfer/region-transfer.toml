@@ -30,4 +30,4 @@ addToGenesis = false
   [parachains.collator]
   name = "regionx-collator01"
   command = "regionx-node"
-  args = [ "--log=xcm=trace,regions=trace" ]
+  args = [ "--enable-offchain-indexing true --log=xcm=trace,regions=trace" ]
