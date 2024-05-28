@@ -6,7 +6,7 @@
 
 2. Build the `regionx-node` by running:
 
-    ```
+    ```sh
     cargo build --release --features fast-runtime
     ```
 
@@ -23,10 +23,9 @@
 
     - block production
 
-
-            ```
-            zombienet-linux -p native test ./zombienet_tests/general/block-production.zndsl
-            ```
+        ```
+        zombienet-linux -p native test ./zombienet_tests/general/block-production.zndsl
+        ```
 
     - fee payment
         - fee payment in native tokens

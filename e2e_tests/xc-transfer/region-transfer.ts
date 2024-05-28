@@ -1,9 +1,11 @@
 import { ApiPromise, Keyring, WsProvider } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { getEncodedRegionId, Id, RegionId } from 'coretime-utils';
+import { ISubmittableResult } from '@polkadot/types/types';
+import { getEncodedRegionId, RegionId } from 'coretime-utils';
 import assert from 'node:assert';
 import { setupRelayAsset, sleep, submitExtrinsic, transferRelayAssetToPara } from '../common';
 import { CONFIG, CORE_COUNT, INITIAL_PRICE, UNIT } from '../consts';
+import { Get, IsmpRequest, REGIONX_API_TYPES, REGIONX_CUSTOM_RPC } from './types';
 
 const REGIONX_SOVEREIGN_ACCOUNT = '5Eg2fntJ27qsari4FGrGhrMqKFDRnkNSR6UshkZYBGXmSuC8';
 
@@ -12,15 +14,13 @@ async function run(_nodeName: any, networkInfo: any, _jsArgs: any) {
   const { wsUri: coretimeUri } = networkInfo.nodesByName['coretime-collator01'];
   const { wsUri: rococoUri } = networkInfo.nodesByName['rococo-validator01'];
 
-  const regionXApi = await ApiPromise.create({ provider: new WsProvider(regionXUri) });
-  const rococoApi = await ApiPromise.create({
-    provider: new WsProvider(rococoUri),
-    types: { Id },
+  const regionXApi = await ApiPromise.create({
+    provider: new WsProvider(regionXUri),
+    types: { ...REGIONX_API_TYPES },
+    rpc: REGIONX_CUSTOM_RPC,
   });
-  const coretimeApi = await ApiPromise.create({
-    provider: new WsProvider(coretimeUri),
-    types: { Id },
-  });
+  const rococoApi = await ApiPromise.create({ provider: new WsProvider(rococoUri) });
+  const coretimeApi = await ApiPromise.create({ provider: new WsProvider(coretimeUri) });
 
   // account to submit tx
   const keyring = new Keyring({ type: 'sr25519' });
@@ -109,15 +109,29 @@ async function run(_nodeName: any, networkInfo: any, _jsArgs: any) {
   let regions = await regionXApi.query.regions.regions.entries();
   assert.equal(regions.length, 1);
   assert.deepStrictEqual(regions[0][0].toHuman(), [regionId]);
-  // record is unavailable because we did not setup ismp.
-  assert((regions[0][1].toHuman() as any).owner == alice.address);
-  assert(typeof (regions[0][1].toHuman() as any).record.Pending === 'string');
 
+  let region = regions[0][1].toHuman() as any;
+  assert(region.owner == alice.address);
+  assert(typeof region.record.Pending === 'string');
+
+  // Check the data on the Coretime chain:
   regions = await coretimeApi.query.broker.regions.entries();
   assert.equal(regions.length, 1);
   assert.deepStrictEqual(regions[0][0].toHuman(), [regionId]);
   assert.equal((regions[0][1].toHuman() as any).owner, REGIONX_SOVEREIGN_ACCOUNT);
 
+  // Respond to the ISMP get request:
+  const request = await queryRequest(regionXApi, region.record.Pending);
+  await makeIsmpResponse(regionXApi, coretimeApi, request, alice.address);
+
+  // The record should be set after ISMP response:
+  regions = await regionXApi.query.regions.regions.entries();
+  region = regions[0][1].toHuman() as any;
+  assert(region.owner == alice.address);
+  assert.equal(region.record.Available.end, '66');
+  assert.equal(region.record.Available.paid, null);
+
+  // Transfer the region back to the Coretime chain:
   const reserveTransferToCoretime = regionXApi.tx.polkadotXcm.limitedReserveTransferAssets(
     { V3: { parents: 1, interior: { X1: { Parachain: 1005 } } } }, // dest
     {
@@ -243,5 +257,81 @@ async function getRegionId(coretimeApi: ApiPromise): Promise<RegionId | null> {
 
   return null;
 }
+
+async function queryRequest(regionxApi: ApiPromise, commitment: string): Promise<IsmpRequest> {
+  const leafIndex = regionxApi.createType('LeafIndexQuery', { commitment });
+  const requests = await (regionxApi as any).rpc.ismp.queryRequests([leafIndex]);
+  // We only requested a single request so we only get one in the response.
+  return requests.toJSON()[0] as IsmpRequest;
+}
+
+async function makeIsmpResponse(
+  regionXApi: ApiPromise,
+  coretimeApi: ApiPromise,
+  request: IsmpRequest,
+  responderAddress: string
+): Promise<void> {
+  if (isGetRequest(request)) {
+    const hashAt = (
+      await coretimeApi.query.system.blockHash(Number(request.get.height))
+    ).toString();
+    const proofData = await coretimeApi.rpc.state.getReadProof([request.get.keys[0]], hashAt);
+
+    const stateMachineProof = regionXApi.createType('StateMachineProof', {
+      hasher: 'Blake2',
+      storage_proof: proofData.proof,
+    });
+
+    const substrateStateProof = regionXApi.createType('SubstrateStateProof', {
+      StateProof: stateMachineProof,
+    });
+    const response = regionXApi.tx.ismp.handleUnsigned([
+      {
+        Response: {
+          datagram: {
+            Request: [request],
+          },
+          proof: {
+            height: {
+              id: {
+                stateId: {
+                  Kusama: 1005,
+                },
+                consensusStateId: 'PARA',
+              },
+              height: request.get.height.toString(),
+            },
+            proof: substrateStateProof.toHex(),
+          },
+          signer: responderAddress,
+        },
+      },
+    ]);
+
+    return new Promise((resolve, reject) => {
+      const unsub = response.send((result: ISubmittableResult) => {
+        const { status, isError } = result;
+        console.log(`Current status is ${status}`);
+        if (status.isInBlock) {
+          console.log(`Transaction included at blockHash ${status.asInBlock}`);
+        } else if (status.isFinalized) {
+          console.log(`Transaction finalized at blockHash ${status.asFinalized}`);
+          unsub.then();
+          return resolve();
+        } else if (isError) {
+          console.log('Transaction error');
+          unsub.then();
+          return reject();
+        }
+      });
+    });
+  } else {
+    new Error('Expected a Get request');
+  }
+}
+
+const isGetRequest = (request: IsmpRequest): request is { get: Get } => {
+  return (request as { get: Get }).get !== undefined;
+};
 
 export { run };
