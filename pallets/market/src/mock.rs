@@ -19,7 +19,6 @@ use frame_support::{
 	parameter_types,
 	traits::{nonfungible::Mutate, Everything},
 };
-use frame_system as system;
 use ismp::{
 	consensus::StateMachineId,
 	dispatcher::{DispatchRequest, FeeMetadata, IsmpDispatcher},
@@ -54,7 +53,7 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 42;
 }
 
-impl system::Config for Test {
+impl frame_system::Config for Test {
 	type BaseCallFilter = Everything;
 	type BlockWeights = ();
 	type BlockLength = ();
@@ -139,7 +138,6 @@ parameter_types! {
 
 impl pallet_regions::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type Balance = u64;
 	type Currency = Balances;
 	type CoretimeChain = CoretimeChain;
 	type IsmpDispatcher = MockDispatcher<Self>;
@@ -175,10 +173,9 @@ impl crate::RegionFactory<Test> for RegionFactory {
 
 impl crate::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type Balance = u64;
 	type Currency = Balances;
 	type Regions = Regions;
-	type RelayChainBlockNumber = RelayBlockNumberProvider;
+	type RCBlockNumberProvider = RelayBlockNumberProvider;
 	type TimeslicePeriod = ConstU64<80>;
 	type WeightInfo = ();
 	#[cfg(feature = "runtime-benchmarks")]

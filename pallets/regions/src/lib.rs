@@ -66,13 +66,7 @@ pub const PALLET_ID: ModuleId = ModuleId::Pallet(PalletId(*b"regionsp"));
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{
-		pallet_prelude::*,
-		traits::{
-			fungible::{Inspect, Mutate},
-			tokens::Balance,
-		},
-	};
+	use frame_support::{pallet_prelude::*, traits::fungible::Mutate};
 	use frame_system::pallet_prelude::*;
 
 	/// The module configuration trait.
@@ -80,11 +74,6 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// The overarching event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-
-		/// Native balance
-		type Balance: Balance
-			+ Into<<Self::Currency as Inspect<Self::AccountId>>::Balance>
-			+ From<u32>;
 
 		/// Currency implementation
 		//
@@ -95,7 +84,7 @@ pub mod pallet {
 		type CoretimeChain: Get<StateMachine>;
 
 		/// The ISMP dispatcher.
-		type IsmpDispatcher: IsmpDispatcher<Account = Self::AccountId, Balance = <Self as Config>::Balance>
+		type IsmpDispatcher: IsmpDispatcher<Account = Self::AccountId, Balance = BalanceOf<Self>>
 			+ Default;
 
 		/// Used for getting the height of the Coretime chain.

@@ -4,8 +4,6 @@ authors = ["Anonymous"]
 description = "Pallet responsible for handling Coretime regions"
 version = "0.1.0"
 license = "GPLv3"
-homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/substrate/"
 edition = "2021"
 
 [package.metadata.docs.rs]

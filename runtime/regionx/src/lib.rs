@@ -616,7 +616,6 @@ parameter_types! {
 
 impl pallet_regions::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
 	type Currency = Balances;
 	type CoretimeChain = CoretimeChain;
 	type IsmpDispatcher = Ismp;
@@ -755,7 +754,6 @@ impl pallet_treasury::Config for Runtime {
 
 impl pallet_market::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
 	// To make benchmarking easier we use the native currency for coretime purchases.
 	//
 	// In production we use the relay chain asset.
@@ -766,7 +764,7 @@ impl pallet_market::Config for Runtime {
 	#[cfg(not(feature = "runtime-benchmarks"))]
 	type Currency = RelaychainCurrency;
 	type Regions = Regions;
-	type RelayChainBlockNumber = RelaychainDataProvider<Self>;
+	type RCBlockNumberProvider = RelaychainDataProvider<Self>;
 	type TimeslicePeriod = ConstU32<80>;
 	type WeightInfo = ();
 	#[cfg(feature = "runtime-benchmarks")]

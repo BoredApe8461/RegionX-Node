@@ -16,7 +16,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::{fungible::Inspect, tokens::Preservation};
-use frame_system::pallet_prelude::BlockNumberFor;
 use nonfungible_primitives::LockableNonFungible;
 pub use pallet::*;
 use pallet_broker::{RegionId, Timeslice};
@@ -41,16 +40,16 @@ mod benchmarking;
 pub type BalanceOf<T> =
 	<<T as crate::Config>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
+/// Relay chain block number.
+pub type RCBlockNumberOf<T> =
+	<<T as crate::Config>::RCBlockNumberProvider as BlockNumberProvider>::BlockNumber;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
 	use frame_support::{
 		pallet_prelude::*,
-		traits::{
-			fungible::{Inspect, Mutate},
-			nonfungible::Transfer,
-			tokens::Balance,
-		},
+		traits::{fungible::Mutate, nonfungible::Transfer},
 	};
 	use frame_system::pallet_prelude::*;
 
@@ -59,11 +58,6 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// The overarching event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-
-		/// The balance type
-		type Balance: Balance
-			+ Into<<Self::Currency as Inspect<Self::AccountId>>::Balance>
-			+ From<u32>;
 
 		/// Currency used for purchasing coretime.
 		type Currency: Mutate<Self::AccountId>;
@@ -78,11 +72,11 @@ pub mod pallet {
 		/// A means of getting the current relay chain block.
 		///
 		/// This is used for determining the current timeslice.
-		type RelayChainBlockNumber: BlockNumberProvider<BlockNumber = BlockNumberFor<Self>>;
+		type RCBlockNumberProvider: BlockNumberProvider;
 
 		/// Number of Relay-chain blocks per timeslice.
 		#[pallet::constant]
-		type TimeslicePeriod: Get<BlockNumberFor<Self>>;
+		type TimeslicePeriod: Get<RCBlockNumberOf<Self>>;
 
 		/// Weight Info
 		type WeightInfo: WeightInfo;
@@ -312,7 +306,7 @@ pub mod pallet {
 		}
 
 		pub(crate) fn current_timeslice() -> Timeslice {
-			let latest_rc_block = T::RelayChainBlockNumber::current_block_number();
+			let latest_rc_block = T::RCBlockNumberProvider::current_block_number();
 			let timeslice_period = T::TimeslicePeriod::get();
 			(latest_rc_block / timeslice_period).saturated_into()
 		}
