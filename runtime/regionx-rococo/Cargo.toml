@@ -1,5 +1,5 @@
 [package]
-name = "regionx-runtime"
+name = "regionx-rococo-runtime"
 version = "0.1.0"
 authors.workspace = true
 edition.workspace = true
@@ -19,7 +19,7 @@ scale-info = { workspace = true }
 smallvec = { workspace = true }
 
 # Local
-regionx-primitives = { workspace = true, default-features = false }
+regionx-runtime-common = { workspace = true, default-features = false }
 pallet-regions = { workspace = true, default-features = false }
 pallet-market = { workspace = true, default-features = false }
 
@@ -148,7 +148,7 @@ std = [
 	"pallet-collator-selection/std",
 	"pallet-referenda/std",
 	"pallet-regions/std",
-	"regionx-primitives/std",
+	"regionx-runtime-common/std",
 	"pallet-market/std",
 	"pallet-membership/std",
 	"pallet-message-queue/std",
@@ -169,7 +169,7 @@ std = [
 	"parachains-common/std",
 	"polkadot-parachain-primitives/std",
 	"polkadot-runtime-common/std",
-	"regionx-primitives/std",
+	"regionx-runtime-common/std",
 	"scale-info/std",
 	"sp-api/std",
 	"sp-block-builder/std",

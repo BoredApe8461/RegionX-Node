@@ -1,5 +1,5 @@
 [package]
-name = "regionx-primitives"
+name = "regionx-runtime-common"
 version = "0.1.0"
 authors.workspace = true
 edition.workspace = true
@@ -11,6 +11,7 @@ codec = { workspace = true }
 scale-info = { workspace = true }
 
 sp-core = { workspace = true, default-features = false }
+sp-consensus-aura = { workspace = true }
 sp-runtime = { workspace = true, default-features = false }
 
 [features]
@@ -19,5 +20,6 @@ std = [
 	"codec/std",
     "scale-info/std",
     "sp-core/std",
+    "sp-consensus-aura/std",
     "sp-runtime/std",
 ]

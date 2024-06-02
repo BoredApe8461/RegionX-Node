@@ -13,70 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::chain_spec::{
+	get_account_id_from_seed, get_collator_keys_from_seed, ChainSpec, Extensions,
+};
 use cumulus_primitives_core::ParaId;
-use regionx_primitives::{AccountId, Signature};
-use regionx_runtime::{AuraId, EXISTENTIAL_DEPOSIT};
-use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
+use regionx_rococo_runtime::EXISTENTIAL_DEPOSIT;
+use regionx_runtime_common::primitives::{AccountId, AuraId};
 use sc_service::ChainType;
-use serde::{Deserialize, Serialize};
-use sp_core::{sr25519, Pair, Public};
-use sp_runtime::traits::{IdentifyAccount, Verify};
-
-/// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec<T> = sc_service::GenericChainSpec<T, Extensions>;
+use sp_core::sr25519;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
-/// Helper function to generate a crypto pair from seed
-pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-	TPublic::Pair::from_string(&format!("//{}", seed), None)
-		.expect("static values are valid; qed")
-		.public()
-}
-
-/// The extensions for the [`ChainSpec`].
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
-#[serde(deny_unknown_fields)]
-pub struct Extensions {
-	/// The relay chain of the Parachain.
-	pub relay_chain: String,
-	/// The id of the Parachain.
-	pub para_id: u32,
-}
-
-impl Extensions {
-	/// Try to get the extension from the given `ChainSpec`.
-	pub fn try_get(chain_spec: &dyn sc_service::ChainSpec) -> Option<&Self> {
-		sc_chain_spec::get_extension(chain_spec.extensions())
-	}
-}
-
-type AccountPublic = <Signature as Verify>::Signer;
-
-/// Generate collator keys from seed.
-///
-/// This function's return type must always match the session keys of the chain in tuple format.
-pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
-	get_from_seed::<AuraId>(seed)
-}
-
-/// Helper function to generate an account ID from seed
-pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
-where
-	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
-{
-	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
-}
-
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn session_keys(keys: AuraId) -> regionx_runtime::SessionKeys {
-	regionx_runtime::SessionKeys { aura: keys }
+pub fn session_keys(keys: AuraId) -> regionx_rococo_runtime::SessionKeys {
+	regionx_rococo_runtime::SessionKeys { aura: keys }
 }
 
-pub fn development_config(id: u32) -> ChainSpec<regionx_runtime::RuntimeGenesisConfig> {
+pub fn development_config(id: u32) -> ChainSpec<regionx_rococo_runtime::RuntimeGenesisConfig> {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "REGX".into());
@@ -85,11 +41,11 @@ pub fn development_config(id: u32) -> ChainSpec<regionx_runtime::RuntimeGenesisC
 	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::builder(
-		regionx_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
+		regionx_rococo_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 		Extensions {
 			relay_chain: "rococo-local".into(),
 			// You MUST set this to the correct network!
-			para_id: 2000,
+			para_id: id,
 		},
 	)
 	.with_name("RegionX Development")
@@ -124,10 +80,12 @@ pub fn development_config(id: u32) -> ChainSpec<regionx_runtime::RuntimeGenesisC
 		get_account_id_from_seed::<sr25519::Public>("Alice"),
 		id.into(),
 	))
+	.with_protocol_id("regionx-dev")
+	.with_properties(properties)
 	.build()
 }
 
-pub fn local_testnet_config(id: u32) -> ChainSpec<regionx_runtime::RuntimeGenesisConfig> {
+pub fn local_testnet_config(id: u32) -> ChainSpec<regionx_rococo_runtime::RuntimeGenesisConfig> {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "REGX".into());
@@ -136,7 +94,7 @@ pub fn local_testnet_config(id: u32) -> ChainSpec<regionx_runtime::RuntimeGenesi
 	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::builder(
-		regionx_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
+		regionx_rococo_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 		Extensions {
 			relay_chain: "rococo-local".into(),
 			// You MUST set this to the correct network!

@@ -48,13 +48,13 @@ async function run(nodeName: string, networkInfo: any, _jsArgs: any) {
     assert(balance - BigInt(free) < TOLERANCE);
   };
 
-  await assertRegionXBalance(alice.address, 10n ** 12n);
+  await assertRegionXBalance(alice.address, 0n);
   await assertRococoBalance(alice.address, 10n ** 18n);
 
   await transferRelayAssetToPara(3n * 10n ** 12n, 2000, rococoApi, alice);
   await sleep(5 * 1000);
 
-  await assertRegionXBalance(alice.address, 4n * 10n ** 12n);
+  await assertRegionXBalance(alice.address, 3n * 10n ** 12n);
   await assertRococoBalance(alice.address, 10n ** 18n - 3n * 10n ** 12n);
 
   const regionXReserveTransfer = regionXApi.tx.polkadotXcm.limitedReserveTransferAssets(
@@ -92,7 +92,7 @@ async function run(nodeName: string, networkInfo: any, _jsArgs: any) {
 
   await sleep(5 * 1000);
 
-  await assertRegionXBalance(alice.address, 3n * 10n ** 12n);
+  await assertRegionXBalance(alice.address, 2n * 10n ** 12n);
   await assertRococoBalance(alice.address, 10n ** 18n - 3n * 10n ** 12n);
 }
 

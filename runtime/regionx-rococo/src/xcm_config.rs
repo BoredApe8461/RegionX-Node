@@ -28,7 +28,7 @@ use orml_xcm_support::{DepositToAlternative, IsNativeConcrete, MultiCurrencyAdap
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
 use polkadot_runtime_common::impls::ToAuthor;
-use regionx_primitives::assets::{REGX_ASSET_ID, RELAY_CHAIN_ASSET_ID};
+use regionx_runtime_common::assets::{REGX_ASSET_ID, RELAY_CHAIN_ASSET_ID};
 use sp_runtime::traits::{AccountIdConversion, Convert};
 use xcm::latest::prelude::*;
 use xcm_builder::{

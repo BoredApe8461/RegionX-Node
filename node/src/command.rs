@@ -18,7 +18,7 @@ use std::net::SocketAddr;
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use log::info;
-use regionx_runtime::Block;
+use regionx_runtime_common::primitives::Block;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
@@ -29,16 +29,18 @@ use sp_runtime::traits::AccountIdConversion;
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::new_partial,
+	service::{is_dev, is_local, is_rococo, new_partial},
 };
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
-		"dev" => Box::new(chain_spec::development_config(2000)),
-		"regionx-rococo" => Box::new(chain_spec::local_testnet_config(2000)),
-		"" | "local" => Box::new(chain_spec::local_testnet_config(2000)),
+		"regionx-rococo" => Box::new(chain_spec::regionx_rococo::local_testnet_config(2000)),
+		"regionx-dev" | "dev" | "" =>
+			Box::new(chain_spec::regionx_rococo::development_config(2000)),
+		"regionx-local" | "local" =>
+			Box::new(chain_spec::regionx_rococo::local_testnet_config(2000)),
 		path => Box::new(
-			chain_spec::ChainSpec::<regionx_runtime::RuntimeGenesisConfig>::from_json_file(
+			chain_spec::ChainSpec::<regionx_rococo_runtime::RuntimeGenesisConfig>::from_json_file(
 				std::path::PathBuf::from(path),
 			)?,
 		),
@@ -120,11 +122,17 @@ impl SubstrateCli for RelayChainCli {
 macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
-		runner.async_run(|$config| {
-			let $components = new_partial(&$config)?;
-			let task_manager = $components.task_manager;
-			{ $( $code )* }.map(|v| (v, task_manager))
-		})
+		match runner.config().chain_spec.id() {
+            chain if is_dev(chain) || is_local(chain) || is_rococo(chain) => {
+				runner.async_run(|$config| {
+					let executor = sc_service::new_wasm_executor::<sp_io::SubstrateHostFunctions>(&$config);
+					let $components = new_partial::<regionx_rococo_runtime::RuntimeApi, _>(&$config, executor)?;
+					let task_manager = $components.task_manager;
+					{ $( $code )* }.map(|v| (v, task_manager))
+				})
+			},
+			chain => panic!("Unknown chain with id: {}", chain),
+		}
 	}}
 }
 
@@ -184,9 +192,15 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::ExportGenesisHead(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				let partials = new_partial(&config)?;
-
-				cmd.run(partials.client)
+				let executor = sc_service::new_wasm_executor::<sp_io::SubstrateHostFunctions>(&config);
+				match config.chain_spec.id() {
+           			chain if is_dev(chain) || is_local(chain) || is_rococo(chain) => {
+						let partials =
+						new_partial::<regionx_rococo_runtime::RuntimeApi, _>(&config, executor)?;
+						cmd.run(partials.client)
+					},
+					chain => panic!("Unknown chain with id: {}", chain),
+				}
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -209,8 +223,16 @@ pub fn run() -> Result<()> {
 							.into())
 					},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
-					cmd.run(partials.client)
+					let executor = sc_service::new_wasm_executor::<sp_io::SubstrateHostFunctions>(&config);
+
+					match config.chain_spec.id() {
+            			chain if is_dev(chain) || is_local(chain) || is_rococo(chain) => {
+							let partials =
+								new_partial::<regionx_rococo_runtime::RuntimeApi, _>(&config, executor)?;
+							cmd.run(partials.client)
+						},
+						chain => panic!("Unknown chain with id: {}", chain),
+					}
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
 				BenchmarkCmd::Storage(_) =>
@@ -222,10 +244,18 @@ pub fn run() -> Result<()> {
 					),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
-					let db = partials.backend.expose_db();
-					let storage = partials.backend.expose_storage();
-					cmd.run(config, partials.client.clone(), db, storage)
+					let executor = sc_service::new_wasm_executor::<sp_io::SubstrateHostFunctions>(&config);
+
+					match config.chain_spec.id() {
+            			chain if is_dev(chain) || is_local(chain) || is_rococo(chain) => {
+							let partials =
+								new_partial::<regionx_rococo_runtime::RuntimeApi, _>(&config, executor)?;
+							let db = partials.backend.expose_db();
+							let storage = partials.backend.expose_storage();
+							cmd.run(config, partials.client.clone(), db, storage)
+						},
+						chain => panic!("Unknown chain with id: {}", chain),
+					}
 				}),
 				BenchmarkCmd::Machine(cmd) =>
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
@@ -280,7 +310,6 @@ pub fn run() -> Result<()> {
 					hwbench,
 				)
 				.await
-				.map(|r| r.0)
 				.map_err(Into::into)
 			})
 		},

@@ -22,7 +22,7 @@
 
 use std::sync::Arc;
 
-use regionx_primitives::{opaque::Block, AccountId, Balance, Nonce};
+use regionx_runtime_common::primitives::{opaque::Block, AccountId, Balance, Nonce};
 
 use pallet_ismp_rpc::{IsmpApiServer, IsmpRpcHandler};
 use sc_client_api::{AuxStore, BlockBackend, ProofProvider};

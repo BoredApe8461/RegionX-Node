@@ -13,18 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
-//! Substrate Parachain Node Template CLI
+#![cfg_attr(not(feature = "std"), no_std)]
 
-#![warn(missing_docs)]
-
-mod chain_spec;
-#[macro_use]
-mod service;
-mod cli;
-mod command;
-mod rpc;
-mod runtime_api;
-
-fn main() -> sc_cli::Result<()> {
-	command::run()
-}
+pub mod assets;
+pub mod primitives;
