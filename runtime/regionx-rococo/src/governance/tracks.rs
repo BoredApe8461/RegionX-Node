@@ -50,7 +50,7 @@ const DELEGATED_REFERENDA_TRACKS: [(u16, pallet_referenda::TrackInfo<Balance, Bl
 		pallet_referenda::TrackInfo {
 			name: "root",
 			max_deciding: 1,
-			decision_deposit: 200 * KSM,
+			decision_deposit: 200 * ROC,
 			prepare_period: 2 * HOURS,
 			decision_period: 14 * DAYS,
 			confirm_period: 24 * HOURS,
@@ -64,7 +64,7 @@ const DELEGATED_REFERENDA_TRACKS: [(u16, pallet_referenda::TrackInfo<Balance, Bl
 		pallet_referenda::TrackInfo {
 			name: "whitelisted_caller",
 			max_deciding: 50,
-			decision_deposit: 50 * KSM,
+			decision_deposit: 50 * ROC,
 			prepare_period: 30 * MINUTES,
 			decision_period: 14 * DAYS,
 			confirm_period: 30 * MINUTES,

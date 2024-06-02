@@ -70,7 +70,7 @@ impl pallet_conviction_voting::Config<NativeConvictionVotingInstance> for Runtim
 parameter_types! {
 	pub const AlarmInterval: BlockNumber = 1;
 	pub const UndecidingTimeout: BlockNumber = 14 * DAYS;
-	pub const DelegatedReferendaSubmissionDeposit: Balance = KSM;
+	pub const DelegatedReferendaSubmissionDeposit: Balance = ROC;
 	pub const NativeReferendaSubmissionDeposit: Balance = 50 * REGX;
 }
 

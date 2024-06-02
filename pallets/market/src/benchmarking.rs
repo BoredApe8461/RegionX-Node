@@ -115,9 +115,8 @@ mod benchmarks {
 		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
 		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: alice.clone(), paid: None };
 
-		T::Currency::set_balance(&alice.clone(), u32::MAX.into());
+		<T as crate::Config>::Currency::set_balance(&alice.clone(), u32::MAX.into());
 		T::BenchmarkHelper::create_region(region_id, record, alice.clone())?;
-
 		crate::Pallet::<T>::list_region(
 			RawOrigin::Signed(alice).into(),
 			region_id,
@@ -125,8 +124,9 @@ mod benchmarks {
 			None,
 		)?;
 
-		T::Currency::set_balance(&caller.clone(), u32::MAX.into());
+		<T as crate::Config>::Currency::set_balance(&caller.clone(), u32::MAX.into());
 		let max_price = 8000u32.into();
+
 		#[extrinsic_call]
 		_(RawOrigin::Signed(caller.clone()), region_id, max_price);
 

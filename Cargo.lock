@@ -9490,6 +9490,7 @@ dependencies = [
  "ismp-parachain-runtime-api",
  "jsonrpsee",
  "log",
+ "orml-asset-registry",
  "pallet-ismp-rpc",
  "pallet-ismp-runtime-api",
  "pallet-transaction-payment-rpc",

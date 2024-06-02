@@ -27,6 +27,9 @@ pallet-ismp-rpc = { workspace = true }
 ismp-parachain-inherent = { workspace = true }
 ismp-parachain-runtime-api = { workspace = true }
 
+# ORML
+orml-asset-registry = { workspace = true }
+
 # Substrate
 frame-benchmarking = { workspace = true }
 frame-benchmarking-cli = { workspace = true }

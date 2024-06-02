@@ -17,10 +17,15 @@ use crate::chain_spec::{
 	get_account_id_from_seed, get_collator_keys_from_seed, ChainSpec, Extensions,
 };
 use cumulus_primitives_core::ParaId;
-use regionx_rococo_runtime::EXISTENTIAL_DEPOSIT;
-use regionx_runtime_common::primitives::{AccountId, AuraId};
+use orml_asset_registry::AssetMetadata;
+use regionx_rococo_runtime::{REGX_EXISTENTIAL_DEPOSIT, ROC_EXISTENTIAL_DEPOSIT};
+use regionx_runtime_common::{
+	assets::{AssetsStringLimit, RELAY_CHAIN_ASSET_ID},
+	primitives::{AccountId, AuraId, Balance},
+};
 use sc_service::ChainType;
-use sp_core::sr25519;
+use sp_core::{sr25519, Encode};
+use xcm::opaque::lts::MultiLocation;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
@@ -153,7 +158,20 @@ fn testnet_genesis(
 		},
 		"collatorSelection": {
 			"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<_>>(),
-			"candidacyBond": EXISTENTIAL_DEPOSIT * 16,
+			"candidacyBond": REGX_EXISTENTIAL_DEPOSIT * 16,
+		},
+		"assetRegistry": {
+			"lastAssetId": RELAY_CHAIN_ASSET_ID,
+			"assets": vec![(RELAY_CHAIN_ASSET_ID,
+				AssetMetadata::<Balance, (), AssetsStringLimit>::encode(&AssetMetadata{
+					decimals: 12,
+					name: b"ROC".to_vec().try_into().expect("Invalid asset name"),
+					symbol: b"ROC".to_vec().try_into().expect("Invalid asset symbol"),
+					existential_deposit: ROC_EXISTENTIAL_DEPOSIT,
+					location: Some(MultiLocation::parent().into()),
+					additional: Default::default(),
+				})
+			)]
 		},
 		"session": {
 			"keys": invulnerables
