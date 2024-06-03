@@ -38,6 +38,7 @@ mod ismp;
 
 use impls::*;
 
+use crate::xcm_config::LocationToAccountId;
 use cumulus_pallet_parachain_system::{
 	RelayChainState, RelayNumberStrictlyIncreases, RelaychainDataProvider,
 };
@@ -763,6 +764,23 @@ impl pallet_market::Config for Runtime {
 	type BenchmarkHelper = impls::benchmarks::RegionFactory;
 }
 
+parameter_types! {
+	pub const OrderCreationCost: Balance = ROC;
+	pub const MinimumContribution: Balance = ROC;
+}
+
+impl pallet_orders::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = RelaychainCurrency;
+	type SovereignAccountOf = LocationToAccountId;
+	type OrderCreationCost = OrderCreationCost;
+	type MinimumContribution = MinimumContribution;
+	type OrderCreationFeeHandler = OrderCreationFeeHandler;
+	type RCBlockNumberProvider = RelaychainDataProvider<Self>;
+	type TimeslicePeriod = ConstU32<80>;
+	type WeightInfo = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime
@@ -826,6 +844,7 @@ construct_runtime!(
 		// Main stage:
 		Regions: pallet_regions = 90,
 		Market: pallet_market = 91,
+		Orders: pallet_orders = 92,
 	}
 );
 
@@ -846,6 +865,7 @@ mod benches {
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_regions, Regions]
 		[pallet_market, Market]
+		[pallet_orders, Orders]
 		[pallet_referenda, NativeReferenda]
 		[pallet_referenda, DelegatedReferenda]
 		[pallet_conviction_voting, NativeConvictionVoting]

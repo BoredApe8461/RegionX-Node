@@ -69,7 +69,7 @@ pub mod pallet {
 			+ LockableNonFungible<Self::AccountId, ItemId = u128>
 			+ RegionInspect<Self::AccountId, BalanceOf<Self>, ItemId = u128>;
 
-		/// A means of getting the current relay chain block.
+		/// Type for getting the current relay chain block.
 		///
 		/// This is used for determining the current timeslice.
 		type RCBlockNumberProvider: BlockNumberProvider;

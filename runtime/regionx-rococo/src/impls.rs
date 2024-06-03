@@ -15,11 +15,12 @@
 
 use crate::{
 	AccountId, AssetId, AssetRegistry, Authorship, Balance, Balances, PalletCurrency, PotId,
-	Runtime, RuntimeCall, Tokens, Treasury,
+	RegionXTreasuryAccount, Runtime, RuntimeCall, Tokens, Treasury,
 };
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::{
-	fungibles, tokens::ConversionToAssetBalance, Defensive, Imbalance, InstanceFilter, OnUnbalanced,
+	fungibles, tokens::ConversionToAssetBalance, Defensive, ExistenceRequirement, Imbalance,
+	InstanceFilter, OnUnbalanced,
 };
 use orml_asset_registry::DefaultAssetMetadata;
 use orml_traits::{asset_registry::AssetProcessor, GetByKey};
@@ -27,7 +28,8 @@ use pallet_asset_tx_payment::HandleCredit;
 use scale_info::TypeInfo;
 use sp_runtime::{
 	traits::{AccountIdConversion, CheckedDiv},
-	ArithmeticError, DispatchError, FixedPointNumber, FixedU128, RuntimeDebug, TokenError,
+	ArithmeticError, DispatchError, DispatchResult, FixedPointNumber, FixedU128, RuntimeDebug,
+	TokenError,
 };
 
 #[derive(
@@ -174,6 +176,20 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 			<ToStakingPot as OnUnbalanced<_>>::on_unbalanced(collators);
 			Treasury::on_unbalanced(treasury);
 		}
+	}
+}
+
+pub struct OrderCreationFeeHandler;
+impl pallet_orders::FeeHandler<AccountId, Balance> for OrderCreationFeeHandler {
+	fn handle(who: &AccountId, fee: Balance) -> DispatchResult {
+		// We send the order creation fee to the treasury:
+		<Runtime as pallet_orders::Config>::Currency::transfer(
+			who,
+			&RegionXTreasuryAccount::get(),
+			fee,
+			ExistenceRequirement::KeepAlive,
+		)?;
+		Ok(())
 	}
 }
 
