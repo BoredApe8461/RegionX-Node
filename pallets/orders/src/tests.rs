@@ -67,10 +67,11 @@ fn create_order_works() {
 }
 
 #[test]
-fn cancel_order_works() {
+fn anyone_can_cancel_expired_order() {
 	new_test_ext(vec![(ALICE, 1000), (BOB, 1000), (CHARLIE, 1000)]).execute_with(|| {
 		let creator = ALICE;
 		let para_id: ParaId = 2000.into();
+		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
 		let requirements = Requirements {
 			begin: 0,
 			end: 8,
@@ -83,43 +84,6 @@ fn cancel_order_works() {
 			Error::<Test>::InvalidOrderId
 		);
 
-		// Create an order
-
-		assert_ok!(Orders::create_order(
-			RuntimeOrigin::signed(creator.clone()),
-			para_id,
-			requirements.clone()
-		));
-
-		// Caller is not the creator of the order
-		assert_noop!(
-			Orders::cancel_order(RuntimeOrigin::signed(BOB), 0),
-			Error::<Test>::NotAllowed
-		);
-
-		// Should be working fine
-		assert_ok!(Orders::cancel_order(RuntimeOrigin::signed(creator.clone()), 0));
-
-		// Check storage items
-		assert!(Orders::orders(0).is_none());
-
-		// Check events
-		System::assert_last_event(Event::OrderRemoved { order_id: 0, by: creator }.into());
-	});
-}
-
-#[test]
-fn anyone_can_cancel_expired_order() {
-	new_test_ext(vec![(ALICE, 1000), (BOB, 1000), (CHARLIE, 1000)]).execute_with(|| {
-		let creator = ALICE;
-		let para_id: ParaId = 2000.into();
-		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
-		let requirements = Requirements {
-			begin: 0,
-			end: 8,
-			core_occupancy: 28800, // Half of a core.
-		};
-
 		// Create an order:
 		assert_ok!(Orders::create_order(
 			RuntimeOrigin::signed(creator.clone()),
@@ -127,9 +91,9 @@ fn anyone_can_cancel_expired_order() {
 			requirements.clone()
 		));
 
-		// Caller is not the creator of the order
+		// Cannot cancel a non-expired order:
 		assert_noop!(
-			Orders::cancel_order(RuntimeOrigin::signed(BOB), 0),
+			Orders::cancel_order(RuntimeOrigin::signed(ALICE), 0),
 			Error::<Test>::NotAllowed
 		);
 
@@ -238,7 +202,9 @@ fn remove_contribution_works() {
 		assert_eq!(Balances::reserved_balance(CHARLIE), 500);
 		assert_eq!(Orders::total_contributions(0), 700);
 
-		// Cancel the order
+		// Cancel the expired order:
+		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
+		RelayBlockNumber::set(9 * timeslice);
 		assert_ok!(Orders::cancel_order(RuntimeOrigin::signed(ALICE), 0));
 
 		// Should be working fine

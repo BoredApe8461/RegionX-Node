@@ -187,6 +187,8 @@ pub mod pallet {
 		/// If the region requirements on which the order was based are for an expired region,
 		/// anyone can cancel the order.
 		///
+		/// Only expired orders can be cancelled.
+		///
 		/// ## Arguments:
 		/// - `order_id`: The order the caller wants to cancel.
 		#[pallet::call_index(1)]
@@ -195,10 +197,7 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			let order = Orders::<T>::get(order_id).ok_or(Error::<T>::InvalidOrderId)?;
-			ensure!(
-				order.creator == who || order.requirements.end < Self::current_timeslice(),
-				Error::<T>::NotAllowed
-			);
+			ensure!(order.requirements.end < Self::current_timeslice(), Error::<T>::NotAllowed);
 
 			Orders::<T>::remove(order_id);
 
