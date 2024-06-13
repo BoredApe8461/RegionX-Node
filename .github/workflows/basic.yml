@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4.1.7
     - uses: Swatinem/rust-cache@v2
     - uses: ./.github/actions/setup
 
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4.1.7
     - uses: Swatinem/rust-cache@v2
     - uses: ./.github/actions/setup
 
