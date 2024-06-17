@@ -23,6 +23,7 @@ use regionx_runtime_common::primitives::opaque::{Block, Hash};
 
 // Cumulus Imports
 use cumulus_client_collator::service::CollatorService;
+use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params as AuraParams};
 use cumulus_client_consensus_common::ParachainBlockImport as TParachainBlockImport;
 use cumulus_client_consensus_proposer::Proposer;
 use cumulus_client_service::{
@@ -31,6 +32,7 @@ use cumulus_client_service::{
 };
 use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
+use polkadot_primitives::ValidationCode;
 use sc_executor::RuntimeVersionOf;
 use sp_core::traits::CodeExecutor;
 
@@ -253,7 +255,7 @@ where
 		task_manager: &mut task_manager,
 		config: parachain_config,
 		keystore: params.keystore_container.keystore(),
-		backend,
+		backend: backend.clone(),
 		network: network.clone(),
 		sync_service: sync_service.clone(),
 		system_rpc_tx,
@@ -317,6 +319,7 @@ where
 	if validator {
 		start_consensus::<Runtime>(
 			client.clone(),
+			backend.clone(),
 			block_import,
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
@@ -379,6 +382,7 @@ where
 #[allow(clippy::too_many_arguments)]
 fn start_consensus<Runtime>(
 	client: Arc<ParachainClient<Runtime>>,
+	backend: Arc<ParachainBackend>,
 	block_import: ParachainBlockImport<Runtime>,
 	prometheus_registry: Option<&Registry>,
 	telemetry: Option<TelemetryHandle>,
@@ -397,10 +401,6 @@ where
 	Runtime: sp_api::ConstructRuntimeApi<Block, ParachainClient<Runtime>> + Send + Sync + 'static,
 	Runtime::RuntimeApi: crate::runtime_api::BaseHostRuntimeApis,
 {
-	use cumulus_client_consensus_aura::collators::basic::{
-		self as basic_aura, Params as BasicAuraParams,
-	};
-
 	// NOTE: because we use Aura here explicitly, we can use `CollatorSybilResistance::Resistant`
 	// when starting the network.
 
@@ -425,7 +425,7 @@ where
 
 	let (client_clone, relay_chain_interface_clone) =
 		(client.clone(), relay_chain_interface.clone());
-	let params = BasicAuraParams {
+	let params = AuraParams {
 		create_inherent_data_providers: move |parent, ()| {
 			let client = client_clone.clone();
 			let relay_chain_interface = relay_chain_interface_clone.clone();
@@ -441,8 +441,12 @@ where
 			}
 		},
 		block_import,
-		para_client: client,
+		para_client: client.clone(),
+		para_backend: backend,
 		relay_client: relay_chain_interface,
+		code_hash_provider: move |block_hash| {
+			client.code_at(block_hash).ok().map(|c| ValidationCode::from(c).hash())
+		},
 		sync_oracle,
 		keystore,
 		collator_key,
@@ -453,12 +457,12 @@ where
 		proposer,
 		collator_service,
 		// Very limited proposal time.
+		// TODO: is it safe to increase this to 1500?
 		authoring_duration: Duration::from_millis(500),
-		collation_request_receiver: None,
 	};
 
 	let fut =
-		basic_aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _, _>(
+		aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _, _, _, _>(
 			params,
 		);
 	task_manager.spawn_essential_handle().spawn("aura", None, fut);

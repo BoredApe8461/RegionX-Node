@@ -40,7 +40,7 @@ use impls::*;
 
 use crate::xcm_config::LocationToAccountId;
 use cumulus_pallet_parachain_system::{
-	RelayChainState, RelayNumberStrictlyIncreases, RelaychainDataProvider,
+	RelayChainState, RelayNumberMonotonicallyIncreases, RelaychainDataProvider,
 };
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use frame_support::traits::{
@@ -494,7 +494,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type ReservedDmpWeight = ReservedDmpWeight;
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
-	type CheckAssociatedRelayNumber = RelayNumberStrictlyIncreases;
+	type CheckAssociatedRelayNumber = RelayNumberMonotonicallyIncreases;
 	type WeightInfo = ();
 	type ConsensusHook = ConsensusHook;
 }
@@ -879,11 +879,19 @@ mod benches {
 impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
 		fn slot_duration() -> sp_consensus_aura::SlotDuration {
-			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
+			sp_consensus_aura::SlotDuration::from_millis(SLOT_DURATION)
 		}
 
 		fn authorities() -> Vec<AuraId> {
 			Aura::authorities().into_inner()
+		}
+	}
+
+	impl cumulus_primitives_aura::AuraUnincludedSegmentApi<Block> for Runtime {
+		fn can_build_upon(
+			included_hash: <Block as BlockT>::Hash, slot: cumulus_primitives_aura::Slot,
+		) -> bool {
+			ConsensusHook::can_build_upon(included_hash, slot)
 		}
 	}
 
