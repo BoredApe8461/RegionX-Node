@@ -18,7 +18,7 @@
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 32.0.0
 //! DATE: 2024-06-03, STEPS: `20`, REPEAT: `50`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
-//! WASM-EXECUTION: `Compiled`, CHAIN: `Some("regionx-rococo")`, DB CACHE: `1024`
+//! WASM-EXECUTION: `Compiled`, CHAIN: `Some("cocos")`, DB CACHE: `1024`
 
 // Executed Command:
 // ./target/release/regionx-node
@@ -39,7 +39,7 @@
 // --header
 // ./config/HEADER-GPL3
 // --chain
-// regionx-rococo
+// cocos
 // --wasm-execution
 // compiled
 // --heap-pages

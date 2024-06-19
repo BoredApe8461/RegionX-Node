@@ -19,14 +19,14 @@
 //! DATE: 2024-06-02, STEPS: `20`, REPEAT: `50`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
 //! HOSTNAME: `sergej-B650-AORUS-ELITE-AX`, CPU: `AMD Ryzen 9 7900X3D 12-Core Processor`
-//! WASM-EXECUTION: `Compiled`, CHAIN: `Some("regionx-rococo")`, DB CACHE: `1024`
+//! WASM-EXECUTION: `Compiled`, CHAIN: `Some("cocos")`, DB CACHE: `1024`
 
 // Executed Command:
 // ./target/release/regionx-node
 // benchmark
 // pallet
 // --chain
-// regionx-rococo
+// cocos
 // --pallet
 // pallet_market
 // --steps

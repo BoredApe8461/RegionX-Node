@@ -71,7 +71,7 @@ parameter_types! {
 	pub const AlarmInterval: BlockNumber = 1;
 	pub const UndecidingTimeout: BlockNumber = 14 * DAYS;
 	pub const DelegatedReferendaSubmissionDeposit: Balance = ROC;
-	pub const NativeReferendaSubmissionDeposit: Balance = 50 * REGX;
+	pub const NativeReferendaSubmissionDeposit: Balance = 50 * COCOS;
 }
 
 impl pallet_referenda::Config<DelegatedReferendaInstance> for Runtime {
@@ -85,7 +85,7 @@ impl pallet_referenda::Config<DelegatedReferendaInstance> for Runtime {
 		EitherOfDiverse<EnsureTwoThirdTechnicalCommittee, EnsureTwoThirdGeneralCouncil>;
 	type KillOrigin =
 		EitherOfDiverse<EnsureTwoThirdTechnicalCommittee, EnsureTwoThirdGeneralCouncil>;
-	type Slash = (); // TODO: treasury
+	type Slash = (); // TODO: Treasury. NOTE: We need multi-asset treasury to support this.
 	type Votes = pallet_conviction_voting::VotesOf<Runtime, DelegatedConvictionVotingInstance>;
 	type Tally = pallet_conviction_voting::TallyOf<Runtime, DelegatedConvictionVotingInstance>;
 	type SubmissionDeposit = DelegatedReferendaSubmissionDeposit;

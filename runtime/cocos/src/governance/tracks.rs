@@ -81,7 +81,7 @@ const NATIVE_REFERENDA_TRACKS: [(u16, pallet_referenda::TrackInfo<Balance, Block
 		pallet_referenda::TrackInfo {
 			name: "treasurer",
 			max_deciding: 5,
-			decision_deposit: 20_000 * REGX,
+			decision_deposit: 20_000 * COCOS,
 			prepare_period: 12 * HOURS,
 			decision_period: 14 * DAYS,
 			confirm_period: 48 * HOURS,
@@ -95,7 +95,7 @@ const NATIVE_REFERENDA_TRACKS: [(u16, pallet_referenda::TrackInfo<Balance, Block
 		pallet_referenda::TrackInfo {
 			name: "small_tipper",
 			max_deciding: 50,
-			decision_deposit: 100 * REGX,
+			decision_deposit: 100 * COCOS,
 			prepare_period: 30 * MINUTES,
 			decision_period: 7 * DAYS,
 			confirm_period: 4 * HOURS,
@@ -109,7 +109,7 @@ const NATIVE_REFERENDA_TRACKS: [(u16, pallet_referenda::TrackInfo<Balance, Block
 		pallet_referenda::TrackInfo {
 			name: "big_tipper",
 			max_deciding: 20,
-			decision_deposit: 250 * REGX,
+			decision_deposit: 250 * COCOS,
 			prepare_period: 2 * HOURS,
 			decision_period: 10 * DAYS,
 			confirm_period: 8 * HOURS,
@@ -123,7 +123,7 @@ const NATIVE_REFERENDA_TRACKS: [(u16, pallet_referenda::TrackInfo<Balance, Block
 		pallet_referenda::TrackInfo {
 			name: "small_spender",
 			max_deciding: 10,
-			decision_deposit: 1000 * REGX,
+			decision_deposit: 1000 * COCOS,
 			prepare_period: 4 * HOURS,
 			decision_period: 14 * DAYS,
 			confirm_period: 12 * HOURS,
@@ -137,7 +137,7 @@ const NATIVE_REFERENDA_TRACKS: [(u16, pallet_referenda::TrackInfo<Balance, Block
 		pallet_referenda::TrackInfo {
 			name: "medium_spender",
 			max_deciding: 5,
-			decision_deposit: 2000 * REGX,
+			decision_deposit: 2000 * COCOS,
 			prepare_period: 8 * HOURS,
 			decision_period: 14 * DAYS,
 			confirm_period: 24 * HOURS,
@@ -151,7 +151,7 @@ const NATIVE_REFERENDA_TRACKS: [(u16, pallet_referenda::TrackInfo<Balance, Block
 		pallet_referenda::TrackInfo {
 			name: "big_spender",
 			max_deciding: 5,
-			decision_deposit: 5000 * REGX,
+			decision_deposit: 5000 * COCOS,
 			prepare_period: 12 * HOURS,
 			decision_period: 14 * DAYS,
 			confirm_period: 48 * HOURS,

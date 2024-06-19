@@ -67,16 +67,8 @@ pub type Service<Runtime, Executor> = PartialComponents<
 	(ParachainBlockImport<Runtime, Executor>, Option<Telemetry>, Option<TelemetryWorkerHandle>),
 >;
 
-pub fn is_rococo(id: &str) -> bool {
-	id.contains("rococo")
-}
-
-pub fn is_dev(id: &str) -> bool {
-	id.is_empty() || id.contains("dev")
-}
-
-pub fn is_local(id: &str) -> bool {
-	id.contains("dev")
+pub fn is_cocos(id: &str) -> bool {
+	id.contains("cocos") || id.is_empty() || id.contains("dev") || id.contains("local")
 }
 
 /// Starts a `ServiceBuilder` for a full service.
@@ -479,8 +471,8 @@ pub async fn start_parachain_node(
 	hwbench: Option<sc_sysinfo::HwBench>,
 ) -> sc_service::error::Result<TaskManager> {
 	match parachain_config.chain_spec.id() {
-		chain if is_rococo(chain) || is_dev(chain) || is_local(chain) =>
-			start_node_impl::<regionx_rococo_runtime::RuntimeApi>(
+		chain if is_cocos(chain) =>
+			start_node_impl::<cocos_runtime::RuntimeApi>(
 				parachain_config,
 				polkadot_config,
 				collator_options,

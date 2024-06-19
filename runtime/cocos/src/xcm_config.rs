@@ -28,7 +28,7 @@ use orml_xcm_support::{DepositToAlternative, IsNativeConcrete, MultiCurrencyAdap
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
 use polkadot_runtime_common::impls::ToAuthor;
-use regionx_runtime_common::assets::{REGX_ASSET_ID, RELAY_CHAIN_ASSET_ID};
+use regionx_runtime_common::assets::{COCOS_ASSET_ID, RELAY_CHAIN_ASSET_ID};
 use sp_runtime::traits::{AccountIdConversion, Convert};
 use xcm::latest::prelude::*;
 use xcm_builder::{
@@ -111,7 +111,7 @@ impl Convert<AssetId, Option<MultiLocation>> for AssetIdConverter {
 	fn convert(id: AssetId) -> Option<MultiLocation> {
 		match id {
 			RELAY_CHAIN_ASSET_ID => Some(MultiLocation::parent()),
-			REGX_ASSET_ID => Some(MultiLocation::here()),
+			COCOS_ASSET_ID => Some(MultiLocation::here()),
 			_ => None,
 		}
 	}
@@ -121,7 +121,7 @@ impl Convert<MultiLocation, Option<AssetId>> for AssetIdConverter {
 	fn convert(location: MultiLocation) -> Option<AssetId> {
 		match location {
 			MultiLocation { parents: 1, interior: Here } => Some(RELAY_CHAIN_ASSET_ID),
-			MultiLocation { parents: 0, interior: Here } => Some(REGX_ASSET_ID),
+			MultiLocation { parents: 0, interior: Here } => Some(COCOS_ASSET_ID),
 			_ => None,
 		}
 	}

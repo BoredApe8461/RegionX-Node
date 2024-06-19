@@ -18,7 +18,7 @@ pub use pallet_custom_origins::*;
 #[allow(unused_imports)]
 #[frame_support::pallet]
 pub mod pallet_custom_origins {
-	use crate::{Balance, REGX};
+	use crate::{Balance, COCOS};
 	use frame_support::pallet_prelude::*;
 
 	#[pallet::config]
@@ -34,15 +34,15 @@ pub mod pallet_custom_origins {
 		WhitelistedCaller,
 		/// Origin for spending (any amount of) funds.
 		Treasurer,
-		/// Origin able to spend up to 500 REGX from the treasury at once.
+		/// Origin able to spend up to 500 COCOS from the treasury at once.
 		SmallTipper,
-		/// Origin able to spend up to 2,000 REGX from the treasury at once.
+		/// Origin able to spend up to 2,000 COCOS from the treasury at once.
 		BigTipper,
-		/// Origin able to spend up to 50,000 REGX from the treasury at once.
+		/// Origin able to spend up to 50,000 COCOS from the treasury at once.
 		SmallSpender,
-		/// Origin able to spend up to 200,000 REGX from the treasury at once.
+		/// Origin able to spend up to 200,000 COCOS from the treasury at once.
 		MediumSpender,
-		/// Origin able to spend up to 500,000 REGX from the treasury at once.
+		/// Origin able to spend up to 500,000 COCOS from the treasury at once.
 		BigSpender,
 	}
 
@@ -113,11 +113,11 @@ pub mod pallet_custom_origins {
 
 	decl_ensure! {
 		pub type Spender: EnsureOrigin<Success = Balance> {
-			SmallTipper = 500 * REGX,
-			BigTipper = 2000 * REGX,
-			SmallSpender = 50_000 * REGX,
-			MediumSpender = 200_000 * REGX,
-			BigSpender = 500_000 * REGX,
+			SmallTipper = 500 * COCOS,
+			BigTipper = 2000 * COCOS,
+			SmallSpender = 50_000 * COCOS,
+			MediumSpender = 200_000 * COCOS,
+			BigSpender = 500_000 * COCOS,
 		}
 	}
 }

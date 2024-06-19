@@ -18,7 +18,7 @@ use sp_core::ConstU32;
 /// Asset identifier.
 pub type AssetId = u32;
 
-pub const REGX_ASSET_ID: AssetId = 0;
+pub const COCOS_ASSET_ID: AssetId = 0;
 pub const RELAY_CHAIN_ASSET_ID: AssetId = 1;
 
 pub type AssetsStringLimit = ConstU32<50>;

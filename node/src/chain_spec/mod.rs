@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use sp_core::{Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
-pub mod regionx_rococo;
+pub mod cocos;
 
 type AccountPublic = <Signature as Verify>::Signer;
 

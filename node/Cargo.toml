@@ -18,7 +18,7 @@ futures = { workspace = true }
 serde_json = { workspace = true }
 
 # Local
-regionx-rococo-runtime = { workspace = true }
+cocos-runtime = { workspace = true }
 regionx-runtime-common = { workspace = true }
 
 # Polytope Labs
@@ -90,10 +90,10 @@ substrate-build-script-utils = { workspace = true }
 [features]
 default = []
 runtime-benchmarks = [
-	"regionx-rococo-runtime/runtime-benchmarks",
+	"cocos-runtime/runtime-benchmarks",
 	"polkadot-cli/runtime-benchmarks",
 ]
 try-runtime = [
 	"try-runtime-cli/try-runtime",
-	"regionx-rococo-runtime/try-runtime"
+	"cocos-runtime/try-runtime"
 ]
