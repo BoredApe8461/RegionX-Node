@@ -61,7 +61,7 @@ mod benchmarks {
 		let para_id: ParaId = 2000.into();
 		let requirements = Requirements {
 			begin: 0,
-			end: 8,
+			end: 0,
 			core_occupancy: 28800, // Half of a core.
 		};
 
@@ -148,7 +148,7 @@ mod benchmarks {
 			0,
 			<T as crate::Config>::MinimumContribution::get(),
 		)?;
-		crate::Pallet::<T>::cancel_order(RawOrigin::Signed(creator.clone()).into(), 0)?;
+		crate::Pallet::<T>::do_cancel_order(0, 10)?;
 
 		#[extrinsic_call]
 		_(RawOrigin::Signed(creator.clone()), 0);

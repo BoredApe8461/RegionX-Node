@@ -196,12 +196,9 @@ pub mod pallet {
 		pub fn cancel_order(origin: OriginFor<T>, order_id: OrderId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			let order = Orders::<T>::get(order_id).ok_or(Error::<T>::InvalidOrderId)?;
-			ensure!(order.requirements.end < Self::current_timeslice(), Error::<T>::NotAllowed);
-
-			Orders::<T>::remove(order_id);
-
+			Self::do_cancel_order(order_id, Self::current_timeslice())?;
 			Self::deposit_event(Event::OrderRemoved { order_id, by: who });
+
 			Ok(())
 		}
 
@@ -267,6 +264,23 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
+		pub(crate) fn do_cancel_order(
+			order_id: OrderId,
+			current_timeslice: Timeslice,
+		) -> DispatchResult {
+			let order = Orders::<T>::get(order_id).ok_or(Error::<T>::InvalidOrderId)?;
+
+			// Allowing order cancellation 1 timeslice before it truly expires makes writing
+			// benchmarks much easier. With this we can set the start and end to 0 and be able to
+			// cancel the order without having to modify the current timeslice.
+			#[cfg(feature = "runtime-benchmarks")]
+			ensure!(order.requirements.end <= current_timeslice, Error::<T>::NotAllowed);
+			#[cfg(not(feature = "runtime-benchmarks"))]
+			ensure!(order.requirements.end < current_timeslice, Error::<T>::NotAllowed);
+			Orders::<T>::remove(order_id);
+			Ok(())
+		}
+
 		pub(crate) fn current_timeslice() -> Timeslice {
 			let latest_rc_block = T::RCBlockNumberProvider::current_block_number();
 			let timeslice_period = T::TimeslicePeriod::get();
