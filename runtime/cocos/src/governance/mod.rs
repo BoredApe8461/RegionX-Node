@@ -18,6 +18,7 @@ use super::*;
 mod origins;
 pub use origins::{pallet_custom_origins, Spender, WhitelistedCaller};
 mod tracks;
+use frame_support::traits::EitherOf;
 pub use tracks::*;
 
 use polkadot_runtime_common::prod_or_fast;
@@ -44,7 +45,8 @@ parameter_types! {
 }
 
 impl pallet_conviction_voting::Config<DelegatedConvictionVotingInstance> for Runtime {
-	type WeightInfo = ();
+	type WeightInfo =
+		weights::pallet_conviction_voting_delegated_conviction_voting::WeightInfo<Runtime>;
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = RelaychainCurrency;
 	type VoteLockingPeriod = VoteLockingPeriod;
@@ -57,7 +59,8 @@ impl pallet_conviction_voting::Config<DelegatedConvictionVotingInstance> for Run
 }
 
 impl pallet_conviction_voting::Config<NativeConvictionVotingInstance> for Runtime {
-	type WeightInfo = ();
+	type WeightInfo =
+		weights::pallet_conviction_voting_native_conviction_voting::WeightInfo<Runtime>;
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type VoteLockingPeriod = VoteLockingPeriod;
@@ -81,10 +84,16 @@ impl pallet_referenda::Config<DelegatedReferendaInstance> for Runtime {
 	type Scheduler = Scheduler;
 	type Currency = RelaychainCurrency;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type CancelOrigin =
 		EitherOfDiverse<EnsureTwoThirdTechnicalCommittee, EnsureTwoThirdGeneralCouncil>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type CancelOrigin = EnsureRoot<AccountId>;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type KillOrigin =
 		EitherOfDiverse<EnsureTwoThirdTechnicalCommittee, EnsureTwoThirdGeneralCouncil>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type KillOrigin = EnsureRoot<AccountId>;
 	type Slash = (); // TODO: Treasury. NOTE: We need multi-asset treasury to support this.
 	type Votes = pallet_conviction_voting::VotesOf<Runtime, DelegatedConvictionVotingInstance>;
 	type Tally = pallet_conviction_voting::TallyOf<Runtime, DelegatedConvictionVotingInstance>;
@@ -103,8 +112,14 @@ impl pallet_referenda::Config<NativeReferendaInstance> for Runtime {
 	type Scheduler = Scheduler;
 	type Currency = Balances;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type CancelOrigin = EnsureTwoThirdGeneralCouncil;
+	#[cfg(feature = "runtime-benchmarks")]
+	type CancelOrigin = EitherOfDiverse<EnsureTwoThirdGeneralCouncil, EnsureRoot<AccountId>>;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type KillOrigin = EnsureTwoThirdGeneralCouncil;
+	#[cfg(feature = "runtime-benchmarks")]
+	type KillOrigin = EitherOfDiverse<EnsureTwoThirdGeneralCouncil, EnsureRoot<AccountId>>;
 	type Slash = Treasury;
 	type Votes = pallet_conviction_voting::VotesOf<Runtime, NativeConvictionVotingInstance>;
 	type Tally = pallet_conviction_voting::TallyOf<Runtime, NativeConvictionVotingInstance>;
@@ -178,10 +193,13 @@ impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime
 impl pallet_custom_origins::Config for Runtime {}
 
 impl pallet_whitelist::Config for Runtime {
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_whitelist::WeightInfo<Runtime>;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type WhitelistOrigin = EnsureTwoThirdTechnicalCommittee;
-	type DispatchWhitelistedOrigin = WhitelistedCaller;
+	#[cfg(feature = "runtime-benchmarks")]
+	type WhitelistOrigin = EnsureRoot<AccountId>;
+	type DispatchWhitelistedOrigin = EitherOf<EnsureRoot<AccountId>, WhitelistedCaller>;
 	type Preimages = Preimage;
 }

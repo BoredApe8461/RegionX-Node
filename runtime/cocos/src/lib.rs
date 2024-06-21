@@ -328,7 +328,7 @@ impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
 	type BaseCallFilter = Everything;
 	/// Weight information for the extrinsics of this pallet.
-	type SystemWeightInfo = ();
+	type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = RuntimeBlockWeights;
 	/// The maximum length of a block (in bytes).
@@ -347,7 +347,7 @@ impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Aura;
 	type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }
 
 impl pallet_authorship::Config for Runtime {
@@ -371,7 +371,7 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeHoldReason = RuntimeHoldReason;
@@ -466,7 +466,7 @@ impl pallet_asset_tx_payment::Config for Runtime {
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_sudo::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -492,7 +492,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = RelayNumberMonotonicallyIncreases;
-	type WeightInfo = ();
+	type WeightInfo = weights::cumulus_pallet_parachain_system::WeightInfo<Runtime>;
 	type ConsensusHook = ConsensusHook;
 }
 
@@ -535,7 +535,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type MaxInboundSuspended = sp_core::ConstU32<1_000>;
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
-	type WeightInfo = ();
+	type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Runtime>;
 	type PriceForSiblingDelivery = NoPriceForMessageDelivery<ParaId>;
 }
 
@@ -555,7 +555,7 @@ impl pallet_session::Config for Runtime {
 	// Essentially just Aura, but let's be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -587,7 +587,7 @@ impl pallet_collator_selection::Config for Runtime {
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
 	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
 	type ValidatorRegistration = Session;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_collator_selection::WeightInfo<Runtime>;
 }
 
 pub struct StateMachineHeightProvider;
@@ -615,14 +615,14 @@ impl pallet_regions::Config for Runtime {
 	type IsmpDispatcher = Ismp;
 	type StateMachineHeightProvider = StateMachineHeightProvider;
 	type Timeout = ConstU64<300>; // 5 minutes
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_regions::WeightInfo<Runtime>;
 }
 
 impl pallet_utility::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 	type PalletsOrigin = OriginCaller;
-	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -640,7 +640,7 @@ impl pallet_multisig::Config for Runtime {
 	type DepositBase = DepositBase;
 	type DepositFactor = DepositFactor;
 	type MaxSignatories = MaxSignatories;
-	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_multisig::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -663,7 +663,7 @@ impl pallet_proxy::Config for Runtime {
 	type ProxyDepositBase = ProxyDepositBase;
 	type ProxyDepositFactor = ProxyDepositFactor;
 	type MaxProxies = MaxProxies;
-	type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_proxy::WeightInfo<Runtime>;
 	type MaxPending = MaxPending;
 	type CallHasher = BlakeTwo256;
 	type AnnouncementDepositBase = AnnouncementDepositBase;
@@ -752,7 +752,7 @@ impl pallet_market::Config for Runtime {
 	type Regions = Regions;
 	type RCBlockNumberProvider = RelaychainDataProvider<Self>;
 	type TimeslicePeriod = ConstU32<80>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_market::WeightInfo<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type BenchmarkHelper = impls::benchmarks::RegionFactory;
 }
@@ -771,7 +771,7 @@ impl pallet_orders::Config for Runtime {
 	type OrderCreationFeeHandler = OrderCreationFeeHandler;
 	type RCBlockNumberProvider = RelaychainDataProvider<Self>;
 	type TimeslicePeriod = ConstU32<80>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_orders::WeightInfo<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -841,26 +841,33 @@ construct_runtime!(
 	}
 );
 
+// TODO: Add missing modules to benchmarks.
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
 	frame_benchmarking::define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
+		[cumulus_pallet_parachain_system, ParachainSystem]
+		[pallet_asset_rate, AssetRate]
 		[pallet_balances, Balances]
 		[pallet_session, SessionBench::<Runtime>]
 		[pallet_multisig, Multisig]
 		[pallet_proxy, Proxy]
-		[pallet_proxy, Preimage]
+		[pallet_preimage, Preimage]
 		[pallet_timestamp, Timestamp]
 		[pallet_utility, Utility]
 		[pallet_sudo, Sudo]
-		[pallet_proxy, Scheduler]
+		[pallet_scheduler, Scheduler]
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_regions, Regions]
 		[pallet_market, Market]
+		[pallet_message_queue, MessageQueue]
 		[pallet_orders, Orders]
+		[pallet_preimage, Preimage]
 		[pallet_referenda, NativeReferenda]
 		[pallet_referenda, DelegatedReferenda]
+		[pallet_scheduler, Scheduler]
+		[pallet_treasury, Treasury]
 		[pallet_conviction_voting, NativeConvictionVoting]
 		[pallet_conviction_voting, DelegatedConvictionVoting]
 		[pallet_collective, GeneralCouncil]
