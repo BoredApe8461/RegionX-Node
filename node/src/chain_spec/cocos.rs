@@ -186,21 +186,11 @@ fn cocos_genesis(id: ParaId) -> serde_json::Value {
 			)]
 		},
 		"sudo": {
-			// The RegionX account:
-			//
 			// It should be needless to say that sudo is only available on the testnet.
-			"key": "5DnKDEGGGo67szBc6tA42HMv7Q2vHe9y9xxNbaXknUcDPJcL"
+			"key": "5DADsnBXr5DXiEAjdJvruf6c7ZSUR8iXUTATQqJfheGLiEVm"
 		},
 		"balances": {
 		  "balances": [
-			[
-			  "5GL8eBMvz9LwbXciBufpEFPpecPbWM62gSH3hd9aAb1jrpo1",
-			  1_000_000 * COCOS
-			],
-			[
-			  "5DnKDEGGGo67szBc6tA42HMv7Q2vHe9y9xxNbaXknUcDPJcL",
-			  1_000_000 * COCOS
-			],
 			[
 			  "5DADsnBXr5DXiEAjdJvruf6c7ZSUR8iXUTATQqJfheGLiEVm",
 			  500_000 * COCOS
@@ -229,7 +219,6 @@ fn cocos_genesis(id: ParaId) -> serde_json::Value {
 		},
 		"technicalCommittee": {
 			"members": [
-				"5DnKDEGGGo67szBc6tA42HMv7Q2vHe9y9xxNbaXknUcDPJcL",
 				"5DADsnBXr5DXiEAjdJvruf6c7ZSUR8iXUTATQqJfheGLiEVm",
 				"5DqwiiztGYq9P4jxG7RJJQWz4dMYREtbMrMSv62TwRAqVa1v",
 				"5FbSPQrNexY6dZ2JEVRguyqtrZbpD7qzRttXbiWKneagfEqr",

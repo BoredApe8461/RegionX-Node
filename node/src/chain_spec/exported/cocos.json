@@ -11,7 +11,7 @@
     "tokenSymbol": "COCOS"
   },
   "relay_chain": "rococo",
-  "para_id": 4461,
+  "para_id": 4459,
   "codeSubstitutes": {},
   "genesis": {
     "runtimeGenesis": {
@@ -62,14 +62,6 @@
         "balances": {
           "balances": [
             [
-              "5GL8eBMvz9LwbXciBufpEFPpecPbWM62gSH3hd9aAb1jrpo1",
-              1000000000000000000
-            ],
-            [
-              "5DnKDEGGGo67szBc6tA42HMv7Q2vHe9y9xxNbaXknUcDPJcL",
-              1000000000000000000
-            ],
-            [
               "5DADsnBXr5DXiEAjdJvruf6c7ZSUR8iXUTATQqJfheGLiEVm",
               500000000000000000
             ],
@@ -102,7 +94,7 @@
           ]
         },
         "parachainInfo": {
-          "parachainId": 4461
+          "parachainId": 4459
         },
         "polkadotXcm": {
           "safeXcmVersion": 3
@@ -119,11 +111,10 @@
           ]
         },
         "sudo": {
-          "key": "5DnKDEGGGo67szBc6tA42HMv7Q2vHe9y9xxNbaXknUcDPJcL"
+          "key": "5DADsnBXr5DXiEAjdJvruf6c7ZSUR8iXUTATQqJfheGLiEVm"
         },
         "technicalCommittee": {
           "members": [
-            "5DnKDEGGGo67szBc6tA42HMv7Q2vHe9y9xxNbaXknUcDPJcL",
             "5DADsnBXr5DXiEAjdJvruf6c7ZSUR8iXUTATQqJfheGLiEVm",
             "5DqwiiztGYq9P4jxG7RJJQWz4dMYREtbMrMSv62TwRAqVa1v",
             "5FbSPQrNexY6dZ2JEVRguyqtrZbpD7qzRttXbiWKneagfEqr"
