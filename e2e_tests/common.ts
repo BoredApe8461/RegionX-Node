@@ -30,17 +30,9 @@ async function submitExtrinsic(
 }
 
 async function setupRelayAsset(api: ApiPromise, signer: KeyringPair, initialBalance = 0n) {
-  const assetMetadata = {
-    decimals: 12,
-    name: 'ROC',
-    symbol: 'ROC',
-    existentialDeposit: 10n ** 3n,
-    location: null,
-    additional: null,
-  };
+  // The relay asset is registered in the genesis block.
 
   const assetSetupCalls = [
-    api.tx.assetRegistry.registerAsset(assetMetadata, RELAY_ASSET_ID),
     api.tx.assetRate.create(RELAY_ASSET_ID, 1_000_000_000_000_000_000n), // 1 on 1
   ];
 
