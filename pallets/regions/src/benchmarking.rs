@@ -61,11 +61,7 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
 
-		// Create a region with an unavailable record, allowing us to re-request the record.
-		crate::Regions::<T>::insert(
-			region_id,
-			Region { owner: caller.clone(), record: Record::Unavailable, locked: false },
-		);
+		assert_ok!(crate::Pallet::<T>::mint_into(&region_id.into(), &caller));
 
 		#[extrinsic_call]
 		_(RawOrigin::Signed(caller.clone()), region_id);

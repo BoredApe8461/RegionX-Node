@@ -106,6 +106,9 @@ async function run(_nodeName: any, networkInfo: any, _jsArgs: any) {
 
   await sleep(5000);
 
+  const requestRecord = regionXApi.tx.regions.requestRegionRecord(regionId);
+  await submitExtrinsic(alice, requestRecord, {});
+
   let regions = await regionXApi.query.regions.regions.entries();
   assert.equal(regions.length, 1);
   assert.deepStrictEqual(regions[0][0].toHuman(), [regionId]);

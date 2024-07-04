@@ -43,7 +43,7 @@ fn nonfungibles_implementation_works() {
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }
+			Region { owner: 2, locked: false, record: Record::Unavailable }
 		);
 
 		// The user is not required to set the region record to withdraw the asset back to the
@@ -73,6 +73,7 @@ fn set_record_works() {
 		// `set_record` succeeds:
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(2), region_id));
 
 		assert!(Regions::regions(region_id).is_some());
 		let region = Regions::regions(region_id).unwrap();
@@ -105,8 +106,9 @@ fn request_region_record_works() {
 		);
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &1));
-		assert!(Regions::regions(region_id).is_some());
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(1), region_id));
 
+		assert!(Regions::regions(region_id).is_some());
 		let region = Regions::regions(region_id).unwrap();
 		assert!(region.record.is_pending());
 		// Cannot request if there is already a request pending.
@@ -183,6 +185,7 @@ fn on_response_works() {
 		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(2), region_id));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }
@@ -262,6 +265,7 @@ fn on_timeout_works() {
 		let region_id = RegionId { begin: 0, core: 72, mask: CoreMask::complete() };
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(2), region_id));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }
@@ -417,7 +421,7 @@ fn region_locking_works() {
 		assert_eq!(Regions::owner(&region_id.into()), Some(1));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }
+			Region { owner: 1, locked: false, record: Record::Unavailable }
 		);
 
 		// Must be the region owner:
@@ -426,7 +430,7 @@ fn region_locking_works() {
 		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 1, locked: true, record: Record::Pending(Default::default()) }
+			Region { owner: 1, locked: true, record: Record::Unavailable }
 		);
 
 		assert_noop!(Regions::lock(&region_id.into(), Some(1)), Error::<Test>::RegionLocked);
@@ -453,14 +457,14 @@ fn region_unlocking_works() {
 		assert_eq!(Regions::owner(&region_id.into()), Some(1));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }
+			Region { owner: 1, locked: false, record: Record::Unavailable }
 		);
 		assert_noop!(Regions::unlock(&region_id.into(), Some(1)), Error::<Test>::RegionNotLocked);
 
 		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 1, locked: true, record: Record::Pending(Default::default()) }
+			Region { owner: 1, locked: true, record: Record::Unavailable }
 		);
 
 		// Must be the region owner:
@@ -469,7 +473,7 @@ fn region_unlocking_works() {
 		assert_ok!(Regions::unlock(&region_id.into(), Some(1)));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
-			Region { owner: 1, locked: false, record: Record::Pending(Default::default()) }
+			Region { owner: 1, locked: false, record: Record::Unavailable }
 		);
 
 		// The region can be transferred after unlocking.

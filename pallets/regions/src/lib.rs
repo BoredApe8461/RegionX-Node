@@ -252,10 +252,7 @@ pub mod pallet {
 				dest: T::CoretimeChain::get(),
 				from: PALLET_ID.to_bytes(),
 				keys: vec![key],
-				// We require data following the cross-chain transfer, which will be available in
-				// the subsequent block. However, if the core time chain has a block production rate
-				// of 6 seconds, we will only have the commitment from the block after the next one.
-				height: coretime_chain_height.saturating_add(2),
+				height: coretime_chain_height,
 				timeout: T::Timeout::get(),
 			};
 

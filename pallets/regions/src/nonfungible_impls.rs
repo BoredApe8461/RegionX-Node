@@ -57,23 +57,24 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 	fn mint_into(item: &Self::ItemId, who: &T::AccountId) -> DispatchResult {
 		let region_id: RegionId = (*item).into();
 
-		// We don't want the region to get trapped, so we will handle the error.
-		let record = match Self::do_request_region_record(region_id, who.clone()) {
-			Ok(commitment) => Record::Pending(commitment),
-			Err(_) => {
-				log::error!(
-					target: LOG_TARGET,
-					"Failed to request region record for region_id: {:?}",
-					region_id
-				);
-				Record::Unavailable
-			},
-		};
-
-		// Even if requesting the region record fails we still want to mint it to the owner.
+		// Insert the region even though we only know the `RegionId`.
 		//
-		// We will just have the region record not set.
-		Regions::<T>::insert(region_id, Region { owner: who.clone(), locked: false, record });
+		// A region in this state is not very useful since we don't know what the region record
+		// is.
+		//
+		// The record is therefore set to `Unavailable`. The user can call the
+		// `request_region_record` extrinsic at any time to fetch the record from the Coretime
+		// chain.
+		Regions::<T>::insert(
+			region_id,
+			Region { owner: who.clone(), locked: false, record: Record::Unavailable },
+		);
+
+		log::info!(
+			target: LOG_TARGET,
+			"Minted region: {:?}",
+			region_id
+		);
 
 		Ok(())
 	}
