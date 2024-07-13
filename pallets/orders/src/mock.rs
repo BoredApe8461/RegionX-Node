@@ -13,15 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{FeeHandler, ParaId};
+use crate::{FeeHandler, OrderId, ParaId};
 use frame_support::{
 	pallet_prelude::*,
 	parameter_types,
 	traits::{fungible::Mutate, tokens::Preservation, Everything},
 };
 use sp_core::{ConstU64, H256};
+use sp_io::hashing::blake2_256;
 use sp_runtime::{
-	traits::{BlakeTwo256, BlockNumberProvider, IdentityLookup},
+	traits::{BlakeTwo256, BlockNumberProvider, Convert, IdentityLookup},
 	AccountId32, BuildStorage,
 };
 use xcm::opaque::lts::NetworkId;
@@ -127,6 +128,13 @@ impl BlockNumberProvider for RelayBlockNumberProvider {
 	}
 }
 
+pub struct OrderToAccountId;
+impl Convert<OrderId, AccountId> for OrderToAccountId {
+	fn convert(order: OrderId) -> AccountId {
+		("order", order).using_encoded(blake2_256).into()
+	}
+}
+
 impl crate::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
@@ -134,6 +142,7 @@ impl crate::Config for Test {
 	type OrderCreationCost = ConstU64<100>;
 	type MinimumContribution = ConstU64<50>;
 	type RCBlockNumberProvider = RelayBlockNumberProvider;
+	type OrderToAccountId = OrderToAccountId;
 	type TimeslicePeriod = ConstU64<80>;
 	type OrderCreationFeeHandler = OrderCreationFeeHandler;
 	type WeightInfo = ();

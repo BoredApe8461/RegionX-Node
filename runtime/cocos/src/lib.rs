@@ -39,6 +39,7 @@ mod ismp;
 use impls::*;
 
 use crate::xcm_config::LocationToAccountId;
+use codec::Encode;
 use cumulus_pallet_parachain_system::{
 	RelayChainState, RelayNumberMonotonicallyIncreases, RelaychainDataProvider,
 };
@@ -48,15 +49,19 @@ use frame_support::traits::{
 	tokens::{PayFromAccount, UnityAssetBalanceConversion},
 	Currency as PalletCurrency, EqualPrivilegeOnly, LinearStoragePrice, TransformOrigin,
 };
+use pallet_orders::OrderId;
 use pallet_regions::primitives::StateMachineHeightProvider as StateMachineHeightProviderT;
 use parachains_common::message_queue::{NarrowOriginToSibling, ParaIdToSibling};
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, Get, OpaqueMetadata};
+use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdConversion, AccountIdLookup, BlakeTwo256, Block as BlockT, IdentityLookup},
+	traits::{
+		AccountIdConversion, AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, IdentityLookup,
+	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
@@ -762,6 +767,13 @@ parameter_types! {
 	pub const MinimumContribution: Balance = ROC;
 }
 
+pub struct OrderToAccountId;
+impl Convert<OrderId, AccountId> for OrderToAccountId {
+	fn convert(order: OrderId) -> AccountId {
+		("order", order).using_encoded(blake2_256).into()
+	}
+}
+
 impl pallet_orders::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = RelaychainCurrency;
@@ -769,6 +781,7 @@ impl pallet_orders::Config for Runtime {
 	type OrderCreationCost = OrderCreationCost;
 	type MinimumContribution = MinimumContribution;
 	type OrderCreationFeeHandler = OrderCreationFeeHandler;
+	type OrderToAccountId = OrderToAccountId;
 	type RCBlockNumberProvider = RelaychainDataProvider<Self>;
 	type TimeslicePeriod = ConstU32<80>;
 	type WeightInfo = weights::pallet_orders::WeightInfo<Runtime>;

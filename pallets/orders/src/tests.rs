@@ -18,8 +18,7 @@ use frame_support::{
 	assert_noop, assert_ok,
 	traits::{Currency, Get},
 };
-use pallet_balances::Error as BalancesError;
-use sp_runtime::{DispatchError, TokenError};
+use sp_runtime::{traits::Convert, ArithmeticError, DispatchError, TokenError};
 
 #[test]
 fn create_order_works() {
@@ -134,12 +133,12 @@ fn contribute_works() {
 		// Insufficient balance:
 		assert_noop!(
 			Orders::contribute(RuntimeOrigin::signed(CHARLIE), 0, 100_000),
-			BalancesError::<Test>::InsufficientBalance
+			ArithmeticError::Underflow
 		);
 
 		assert_eq!(Orders::contributions(0, CHARLIE), 0);
 
-		// Should be working fine
+		// Should work fine
 		assert_ok!(Orders::contribute(RuntimeOrigin::signed(CHARLIE), 0, 500));
 		System::assert_last_event(
 			Event::Contributed { order_id: 0, who: CHARLIE, amount: 500 }.into(),
@@ -150,18 +149,16 @@ fn contribute_works() {
 		// Check storage items
 		assert_eq!(Orders::contributions(0, CHARLIE), 500);
 		assert_eq!(Orders::contributions(0, BOB), 100);
-		assert_eq!(Orders::total_contributions(0), 600);
 
 		assert_eq!(Balances::free_balance(CHARLIE), 500);
-		assert_eq!(Balances::reserved_balance(CHARLIE), 500);
 		assert_eq!(Balances::free_balance(BOB), 900);
-		assert_eq!(Balances::reserved_balance(BOB), 100);
+		let order_account = OrderToAccountId::convert(0);
+		assert_eq!(Balances::free_balance(order_account), 600);
 
 		// Additional contributions work:
 		assert_ok!(Orders::contribute(RuntimeOrigin::signed(CHARLIE), 0, 300));
 		assert_eq!(Orders::contributions(0, CHARLIE), 800);
 		assert_eq!(Orders::contributions(0, BOB), 100);
-		assert_eq!(Orders::total_contributions(0), 900);
 
 		// Cannot contribute to an expired order
 		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
@@ -174,7 +171,6 @@ fn contribute_works() {
 
 		assert_eq!(Orders::contributions(0, CHARLIE), 800);
 		assert_eq!(Orders::contributions(0, BOB), 100);
-		assert_eq!(Orders::total_contributions(0), 900);
 	});
 }
 
@@ -199,21 +195,20 @@ fn remove_contribution_works() {
 		assert_ok!(Orders::contribute(RuntimeOrigin::signed(BOB), 0, 200));
 
 		assert_eq!(Balances::free_balance(CHARLIE), 500);
-		assert_eq!(Balances::reserved_balance(CHARLIE), 500);
-		assert_eq!(Orders::total_contributions(0), 700);
+		let order_account = OrderToAccountId::convert(0);
+		assert_eq!(Balances::free_balance(order_account.clone()), 700);
 
 		// Cancel the expired order:
 		let timeslice: u64 = <Test as crate::Config>::TimeslicePeriod::get();
 		RelayBlockNumber::set(9 * timeslice);
 		assert_ok!(Orders::cancel_order(RuntimeOrigin::signed(ALICE), 0));
 
-		// Should be working fine
+		// Should work fine
 		assert_ok!(Orders::remove_contribution(RuntimeOrigin::signed(CHARLIE), 0));
 
 		// Check storage items
-		assert_eq!(Balances::reserved_balance(CHARLIE), 0);
 		assert_eq!(Balances::free_balance(CHARLIE), 1000);
-		assert_eq!(Orders::total_contributions(0), 200);
+		assert_eq!(Balances::free_balance(order_account), 200);
 
 		// Check the events
 		System::assert_last_event(

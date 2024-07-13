@@ -15,10 +15,13 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::Currency;
+use frame_support::traits::{Currency, ExistenceRequirement};
 pub use pallet::*;
 use pallet_broker::Timeslice;
-use sp_runtime::{traits::BlockNumberProvider, SaturatedConversion};
+use sp_runtime::{
+	traits::{BlockNumberProvider, Convert},
+	SaturatedConversion,
+};
 use xcm_executor::traits::ConvertLocation;
 
 #[cfg(test)]
@@ -73,6 +76,9 @@ pub mod pallet {
 		/// This is used for determining the current timeslice.
 		type RCBlockNumberProvider: BlockNumberProvider;
 
+		/// A way for getting the associated account of an order.
+		type OrderToAccountId: Convert<OrderId, Self::AccountId>;
+
 		/// Number of Relay-chain blocks per timeslice.
 		#[pallet::constant]
 		type TimeslicePeriod: Get<RCBlockNumberOf<Self>>;
@@ -84,6 +90,8 @@ pub mod pallet {
 		type OrderCreationCost: Get<BalanceOf<Self>>;
 
 		/// The minimum contribution to an order.
+		///
+		/// NOTE: This must be greater than existentail deposit.
 		#[pallet::constant]
 		type MinimumContribution: Get<BalanceOf<Self>>;
 
@@ -116,15 +124,6 @@ pub mod pallet {
 		BalanceOf<T>, // contributed amount
 		ValueQuery,
 	>;
-
-	/// The total amount that was contributed to an order.
-	///
-	/// The sum of contributions for a specific order from the `Contributions` map should be equal
-	/// to the total contribution stored here.
-	#[pallet::storage]
-	#[pallet::getter(fn total_contributions)]
-	pub type TotalContributions<T: Config> =
-		StorageMap<_, Blake2_128Concat, OrderId, BalanceOf<T>, ValueQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -220,15 +219,17 @@ pub mod pallet {
 			ensure!(Self::current_timeslice() < order.requirements.end, Error::<T>::OrderExpired);
 
 			ensure!(amount >= T::MinimumContribution::get(), Error::<T>::InvalidAmount);
-			T::Currency::reserve(&who, amount)?;
+			let order_account = T::OrderToAccountId::convert(order_id);
+			<<T as Config>::Currency as Currency<T::AccountId>>::transfer(
+				&who,
+				&order_account,
+				amount,
+				ExistenceRequirement::KeepAlive,
+			)?;
 
 			let mut contribution: BalanceOf<T> = Contributions::<T>::get(order_id, who.clone());
 			contribution = contribution.saturating_add(amount);
 			Contributions::<T>::insert(order_id, who.clone(), contribution);
-
-			let mut total_contributions = TotalContributions::<T>::get(order_id);
-			total_contributions = total_contributions.saturating_add(amount);
-			TotalContributions::<T>::insert(order_id, total_contributions);
 
 			Self::deposit_event(Event::Contributed { order_id, who, amount });
 
@@ -250,12 +251,14 @@ pub mod pallet {
 			let amount: BalanceOf<T> = Contributions::<T>::get(order_id, who.clone());
 			ensure!(amount != Default::default(), Error::<T>::NoContribution);
 
-			T::Currency::unreserve(&who, amount);
+			let order_account = T::OrderToAccountId::convert(order_id);
+			<<T as Config>::Currency as Currency<T::AccountId>>::transfer(
+				&order_account,
+				&who,
+				amount,
+				ExistenceRequirement::AllowDeath,
+			)?;
 			Contributions::<T>::remove(order_id, who.clone());
-
-			let mut total_contributions = TotalContributions::<T>::get(order_id);
-			total_contributions = total_contributions.saturating_sub(amount);
-			TotalContributions::<T>::insert(order_id, total_contributions);
 
 			Self::deposit_event(Event::ContributionRemoved { who, order_id, amount });
 
