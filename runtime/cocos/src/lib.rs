@@ -38,7 +38,6 @@ mod ismp;
 
 use impls::*;
 
-use crate::xcm_config::LocationToAccountId;
 use codec::Encode;
 use cumulus_pallet_parachain_system::{
 	RelayChainState, RelayNumberMonotonicallyIncreases, RelaychainDataProvider,
@@ -777,7 +776,6 @@ impl Convert<OrderId, AccountId> for OrderToAccountId {
 impl pallet_orders::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = RelaychainCurrency;
-	type SovereignAccountOf = LocationToAccountId;
 	type OrderCreationCost = OrderCreationCost;
 	type MinimumContribution = MinimumContribution;
 	type OrderCreationFeeHandler = OrderCreationFeeHandler;

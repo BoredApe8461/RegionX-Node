@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with RegionX.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{FeeHandler, OrderId, ParaId};
+use crate::{FeeHandler, OrderId};
 use frame_support::{
 	pallet_prelude::*,
 	parameter_types,
@@ -24,11 +24,6 @@ use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BlakeTwo256, BlockNumberProvider, Convert, IdentityLookup},
 	AccountId32, BuildStorage,
-};
-use xcm::opaque::lts::NetworkId;
-
-use xcm_builder::{
-	AccountId32Aliases, ChildParachainConvertsVia, DescribeAllTerminal, HashedDescription,
 };
 
 type AccountId = AccountId32;
@@ -47,16 +42,6 @@ frame_support::construct_runtime!(
 		Balances: pallet_balances,
 		Orders: crate::{Pallet, Call, Storage, Event<T>},
 	}
-);
-
-parameter_types! {
-	pub const AnyNetwork: Option<NetworkId> = None;
-}
-
-pub type SovereignAccountOf = (
-	ChildParachainConvertsVia<ParaId, AccountId>,
-	AccountId32Aliases<AnyNetwork, AccountId>,
-	HashedDescription<AccountId, DescribeAllTerminal>,
 );
 
 parameter_types! {
@@ -138,7 +123,6 @@ impl Convert<OrderId, AccountId> for OrderToAccountId {
 impl crate::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
-	type SovereignAccountOf = SovereignAccountOf;
 	type OrderCreationCost = ConstU64<100>;
 	type MinimumContribution = ConstU64<50>;
 	type RCBlockNumberProvider = RelayBlockNumberProvider;

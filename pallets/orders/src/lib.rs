@@ -22,7 +22,6 @@ use sp_runtime::{
 	traits::{BlockNumberProvider, Convert},
 	SaturatedConversion,
 };
-use xcm_executor::traits::ConvertLocation;
 
 #[cfg(test)]
 mod mock;
@@ -64,9 +63,6 @@ pub mod pallet {
 
 		/// Currency used for purchasing coretime.
 		type Currency: Mutate<Self::AccountId> + ReservableCurrency<Self::AccountId>;
-
-		/// How to get an `AccountId` value from a `Location`.
-		type SovereignAccountOf: ConvertLocation<Self::AccountId>;
 
 		/// Type responsible for dealing with order creation fees.
 		type OrderCreationFeeHandler: FeeHandler<Self::AccountId, BalanceOf<Self>>;
