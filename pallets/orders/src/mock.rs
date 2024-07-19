@@ -20,19 +20,15 @@ use frame_support::{
 	traits::{fungible::Mutate, tokens::Preservation, Everything},
 };
 use sp_core::{ConstU64, H256};
-use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BlakeTwo256, BlockNumberProvider, Convert, IdentityLookup},
-	AccountId32, BuildStorage,
+	BuildStorage,
 };
 
-type AccountId = AccountId32;
+type AccountId = u64;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-pub const ALICE: AccountId = AccountId::new([0u8; 32]);
-pub const BOB: AccountId = AccountId::new([1u8; 32]);
-pub const CHARLIE: AccountId = AccountId::new([2u8; 32]);
-pub const TREASURY: AccountId = AccountId::new([3u8; 32]);
+pub const TREASURY: AccountId = 42;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -116,7 +112,7 @@ impl BlockNumberProvider for RelayBlockNumberProvider {
 pub struct OrderToAccountId;
 impl Convert<OrderId, AccountId> for OrderToAccountId {
 	fn convert(order: OrderId) -> AccountId {
-		("order", order).using_encoded(blake2_256).into()
+		1000u64 + order as u64
 	}
 }
 
@@ -133,7 +129,7 @@ impl crate::Config for Test {
 }
 
 // Build genesis storage according to the mock runtime.
-pub fn new_test_ext(endowed_accounts: Vec<(AccountId32, u64)>) -> sp_io::TestExternalities {
+pub fn new_test_ext(endowed_accounts: Vec<(AccountId, u64)>) -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::<Test>::default().build_storage().unwrap();
 	pallet_balances::GenesisConfig::<Test> { balances: endowed_accounts }
 		.assimilate_storage(&mut t)
