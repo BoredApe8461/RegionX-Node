@@ -6,7 +6,8 @@
   "scripts": {
     "build": "npx tsc > /dev/null",
     "lint": "eslint e2e_tests --fix",
-    "format": "npx prettier --write './e2e_tests/**/*.ts'"
+    "format": "npx prettier --write './e2e_tests/**/*.ts'",
+    "test": "chmod +x ./scripts/test-runner.sh && ./scripts/test-runner.sh"
   },
   "keywords": [],
   "author": "",

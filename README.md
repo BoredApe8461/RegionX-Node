@@ -24,20 +24,20 @@
     - block production
 
         ```
-        zombienet-linux -p native test ./zombienet_tests/general/block-production.zndsl
+        npm run test -- ./zombienet_tests/general/block-production.zndsl
         ```
 
     - fee payment
         - fee payment in native tokens
 
             ```
-            zombienet-linux -p native test ./zombienet_tests/fee-payment/native-fee-payment.zndsl
+            npm run test -- ./zombienet_tests/fee-payment/native-fee-payment.zndsl
             ```
 
         - fee payment in custom assets
 
             ```
-            zombienet-linux -p native test ./zombienet_tests/fee-payment/custom-fee-payment.zndsl
+            npm run test -- ./zombienet_tests/fee-payment/custom-fee-payment.zndsl
             ```
 
     - governance
@@ -45,13 +45,13 @@
         - delegated governance(relay chain token holders)
 
             ```
-            zombienet-linux -p native test ./zombienet_tests/governance/delegated-governance.zndsl
+            npm run test -- ./zombienet_tests/governance/delegated-governance.zndsl
             ```
 
         - native governance(RegionX token holders)
 
             ```
-            zombienet-linux -p native test ./zombienet_tests/governance/native-governance.zndsl
+            npm run test -- ./zombienet_tests/governance/native-governance.zndsl
             ```
     
     - cross-chain transfer
@@ -59,11 +59,11 @@
         - transfer assets
         
             ```
-            zombienet-linux -p native test ./zombienet_tests/xc-transfer/asset-transfer.zndsl
+            npm run test -- ./zombienet_tests/xc-transfer/asset-transfer.zndsl
             ```
 
         - transfer regions
 
             ```
-            zombienet-linux -p native test ./zombienet_tests/xc-transfer/region-transfer.zndsl
+            npm run test -- ./zombienet_tests/xc-transfer/region-transfer.zndsl
             ```
