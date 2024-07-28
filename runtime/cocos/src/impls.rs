@@ -22,9 +22,12 @@ use frame_support::traits::{
 	fungibles, tokens::ConversionToAssetBalance, Defensive, ExistenceRequirement, Imbalance,
 	InstanceFilter, OnUnbalanced,
 };
+use order_primitives::ParaId;
 use orml_asset_registry::DefaultAssetMetadata;
 use orml_traits::{asset_registry::AssetProcessor, GetByKey};
 use pallet_asset_tx_payment::HandleCredit;
+use pallet_broker::RegionId;
+use pallet_processor::assigner::AssignmentCallEncoder as AssignmentCallEncoderT;
 use scale_info::TypeInfo;
 use sp_runtime::{
 	traits::{AccountIdConversion, CheckedDiv},
@@ -193,24 +196,22 @@ impl pallet_orders::FeeHandler<AccountId, Balance> for OrderCreationFeeHandler {
 	}
 }
 
-#[cfg(feature = "runtime-benchmarks")]
-pub mod benchmarks {
-	use crate::*;
-	use frame_support::traits::nonfungible::Mutate;
-	use pallet_broker::RegionId;
-	use pallet_market::RegionRecordOf;
-	use sp_runtime::DispatchResult;
+#[derive(Encode, Decode)]
+enum CoretimeRuntimeCalls {
+	#[codec(index = 50)]
+	Broker(BrokerPalletCalls),
+}
 
-	pub struct RegionFactory;
-	impl pallet_market::RegionFactory<Runtime> for RegionFactory {
-		fn create_region(
-			region_id: RegionId,
-			record: RegionRecordOf<Runtime>,
-			owner: <Runtime as frame_system::Config>::AccountId,
-		) -> DispatchResult {
-			Regions::mint_into(&region_id.into(), &owner)?;
-			Regions::set_record(region_id, record.clone())?;
-			Ok(())
-		}
+/// Broker pallet calls. We don't define all of them, only the ones we use.
+#[derive(Encode, Decode)]
+enum BrokerPalletCalls {
+	#[codec(index = 10)]
+	Assign(RegionId, ParaId),
+}
+
+pub struct AssignmentCallEncoder;
+impl AssignmentCallEncoderT for AssignmentCallEncoder {
+	fn encode_assignment_call(region_id: RegionId, para_id: ParaId) -> sp_std::vec::Vec<u8> {
+		CoretimeRuntimeCalls::Broker(BrokerPalletCalls::Assign(region_id, para_id)).encode()
 	}
 }

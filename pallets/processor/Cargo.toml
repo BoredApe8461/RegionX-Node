@@ -1,7 +1,7 @@
 [package]
-name = "pallet-orders"
+name = "pallet-processor"
 authors = ["Anonymous"]
-description = "Pallet for handling order creation and crowdfunding"
+description = "Pallet for processing coretime orders"
 version = "0.1.0"
 license = "GPLv3"
 edition = "2021"
@@ -15,7 +15,6 @@ codec = { workspace = true, default-features = false, features = ["derive"] }
 scale-info = { workspace = true, default-features = false, features = ["derive"] }
 
 # Substrate
-cumulus-primitives-core = { workspace = true, default-features = false }
 frame-benchmarking = { workspace = true, default-features = false, optional = true }
 frame-support = { workspace = true, default-features = false }
 frame-system = { workspace = true, default-features = false }
@@ -23,23 +22,38 @@ sp-io = { workspace = true, default-features = false }
 sp-core = { workspace = true, default-features = false }
 sp-runtime = { workspace = true, default-features = false }
 pallet-broker = { workspace = true, default-features = false }
+pallet-xcm = { workspace = true, default-features = false }
+
+xcm = { workspace = true, default-features = false }
+xcm-executor = { workspace = true, default-features = false }
+xcm-builder = { workspace = true, default-features = false }
 
 # Local
+nonfungible-primitives = { workspace = true, default-features = false }
 order-primitives = { workspace = true, default-features = false }
+region-primitives = { workspace = true, default-features = false }
 
 [dev-dependencies]
 serde = { workspace = true }
+smallvec = { workspace = true }
 pallet-balances = { workspace = true, default-features = false }
+
+pallet-regions = { workspace = true, default-features = false }
+pallet-orders = { workspace = true, default-features = false }
+
+ismp = { workspace = true, default-features = false }
+ismp-testsuite = { workspace = true }
 
 [features]
 default = ["std"]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks", 
+	"xcm-builder/runtime-benchmarks",
+	"pallet-xcm/runtime-benchmarks",
 ]
 std = [
 	"log/std",
 	"codec/std",
-	"cumulus-primitives-core/std",
 	"scale-info/std",
 	"sp-io/std",
 	"sp-core/std",
@@ -49,6 +63,15 @@ std = [
 	"frame-system/std",
 	"pallet-broker/std",
 	"pallet-balances/std",
-	"order-primitives/std",
+	"pallet-regions/std",
+	"pallet-orders/std",
+	"pallet-xcm/std",
+    "nonfungible-primitives/std",
+    "order-primitives/std",
+    "region-primitives/std",
+	"ismp/std",
+	"xcm/std",
+	"xcm-executor/std",
+	"xcm-builder/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

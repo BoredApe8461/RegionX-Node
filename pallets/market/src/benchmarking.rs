@@ -40,7 +40,7 @@ mod benchmarks {
 
 		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
 		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: caller.clone(), paid: None };
-		T::BenchmarkHelper::create_region(region_id, record, caller.clone())?;
+		T::Regions::create_region(region_id, record, caller.clone())?;
 
 		let timeslice_price: BalanceOf<T> = 1_000u32.into();
 		#[extrinsic_call]
@@ -65,7 +65,7 @@ mod benchmarks {
 
 		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
 		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: caller.clone(), paid: None };
-		T::BenchmarkHelper::create_region(region_id, record, caller.clone())?;
+		T::Regions::create_region(region_id, record, caller.clone())?;
 
 		let timeslice_price: BalanceOf<T> = 1_000u32.into();
 		crate::Pallet::<T>::list_region(
@@ -89,7 +89,7 @@ mod benchmarks {
 
 		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
 		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: caller.clone(), paid: None };
-		T::BenchmarkHelper::create_region(region_id, record, caller.clone())?;
+		T::Regions::create_region(region_id, record, caller.clone())?;
 
 		crate::Pallet::<T>::list_region(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -116,7 +116,7 @@ mod benchmarks {
 		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: alice.clone(), paid: None };
 
 		<T as crate::Config>::Currency::set_balance(&alice.clone(), u32::MAX.into());
-		T::BenchmarkHelper::create_region(region_id, record, alice.clone())?;
+		T::Regions::create_region(region_id, record, alice.clone())?;
 		crate::Pallet::<T>::list_region(
 			RawOrigin::Signed(alice).into(),
 			region_id,

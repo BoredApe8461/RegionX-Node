@@ -1239,6 +1239,7 @@ dependencies = [
  "ismp-parachain",
  "ismp-parachain-runtime-api",
  "log",
+ "order-primitives",
  "orml-asset-registry",
  "orml-currencies",
  "orml-tokens",
@@ -1262,6 +1263,7 @@ dependencies = [
  "pallet-multisig",
  "pallet-orders",
  "pallet-preimage",
+ "pallet-processor",
  "pallet-proxy",
  "pallet-referenda",
  "pallet-regions",
@@ -6038,6 +6040,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "order-primitives"
+version = "0.1.0"
+dependencies = [
+ "cumulus-primitives-core",
+ "frame-support",
+ "log",
+ "pallet-broker",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "ordered-float"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6968,6 +6983,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
+ "order-primitives",
  "pallet-balances",
  "pallet-broker",
  "parity-scale-codec",
@@ -6994,6 +7010,36 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-processor"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "ismp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ismp-testsuite",
+ "log",
+ "nonfungible-primitives",
+ "order-primitives",
+ "pallet-balances",
+ "pallet-broker",
+ "pallet-orders",
+ "pallet-regions",
+ "pallet-xcm",
+ "parity-scale-codec",
+ "region-primitives",
+ "scale-info",
+ "serde",
+ "smallvec",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "staging-xcm",
+ "staging-xcm-builder",
+ "staging-xcm-executor",
 ]
 
 [[package]]

@@ -101,6 +101,11 @@ impl<T: Config> RegionInspect<T::AccountId, BalanceOf<T>> for Pallet<T> {
 		let region = Regions::<T>::get(region_id)?;
 		region.record.get()
 	}
+
+	fn region(item: &Self::ItemId) -> Option<RegionOf<T>> {
+		let region_id: RegionId = (*item).into();
+		Regions::<T>::get(region_id)
+	}
 }
 
 impl<T: Config> LockableNonFungible<T::AccountId> for Pallet<T> {

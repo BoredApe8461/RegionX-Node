@@ -24,6 +24,9 @@ pub type BalanceOf<T> =
 pub type RegionRecordOf<T> =
 	pallet_broker::RegionRecord<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
 
+pub type RegionOf<T> =
+	region_primitives::Region<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
+
 /// ISMP errors specific to the RegionX project.
 #[derive(Encode, Decode, Debug, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 pub enum IsmpCustomError {

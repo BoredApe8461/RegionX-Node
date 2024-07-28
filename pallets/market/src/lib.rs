@@ -19,7 +19,7 @@ use frame_support::traits::{fungible::Inspect, tokens::Preservation};
 use nonfungible_primitives::LockableNonFungible;
 pub use pallet::*;
 use pallet_broker::{RegionId, Timeslice};
-use region_primitives::RegionInspect;
+use region_primitives::{RegionFactory, RegionInspect};
 use sp_runtime::{traits::BlockNumberProvider, SaturatedConversion, Saturating};
 
 mod types;
@@ -67,7 +67,8 @@ pub mod pallet {
 		// The item id is `u128` encoded RegionId.
 		type Regions: Transfer<Self::AccountId, ItemId = u128>
 			+ LockableNonFungible<Self::AccountId, ItemId = u128>
-			+ RegionInspect<Self::AccountId, BalanceOf<Self>, ItemId = u128>;
+			+ RegionInspect<Self::AccountId, BalanceOf<Self>, ItemId = u128>
+			+ RegionFactory<Self::AccountId, RegionRecordOf<Self>>;
 
 		/// Type for getting the current relay chain block.
 		///
@@ -80,9 +81,6 @@ pub mod pallet {
 
 		/// Weight Info
 		type WeightInfo: WeightInfo;
-
-		#[cfg(feature = "runtime-benchmarks")]
-		type BenchmarkHelper: RegionFactory<Self>;
 	}
 
 	#[pallet::pallet]
@@ -143,6 +141,10 @@ pub mod pallet {
 		NotAllowed,
 		/// The price of the region is higher than what the buyer is willing to pay.
 		PriceTooHigh,
+		/// The region record is not available.
+		RecordUnavailable,
+		/// Locked regions cannot be listed on sale.
+		RegionLocked,
 	}
 
 	#[pallet::call]
@@ -165,7 +167,10 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			ensure!(Listings::<T>::get(region_id).is_none(), Error::<T>::AlreadyListed);
-			let record = T::Regions::record(&region_id.into()).ok_or(Error::<T>::UnknownRegion)?;
+
+			let region = T::Regions::region(&region_id.into()).ok_or(Error::<T>::UnknownRegion)?;
+			ensure!(!region.locked, Error::<T>::RegionLocked);
+			let record = region.record.get().ok_or(Error::<T>::RecordUnavailable)?;
 
 			// It doesn't make sense to list a region that expired.
 			let current_timeslice = Self::current_timeslice();

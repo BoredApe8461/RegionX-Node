@@ -16,6 +16,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::{Currency, ExistenceRequirement};
+use order_primitives::{Order, OrderFactory, OrderId, OrderInspect, Requirements};
 pub use pallet::*;
 use pallet_broker::Timeslice;
 use sp_runtime::{
@@ -167,14 +168,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			T::OrderCreationFeeHandler::handle(&who, T::OrderCreationCost::get())?;
-
-			let order_id = NextOrderId::<T>::get();
-			Orders::<T>::insert(order_id, Order { creator: who.clone(), para_id, requirements });
-			NextOrderId::<T>::put(order_id.saturating_add(1));
-
-			Self::deposit_event(Event::OrderCreated { order_id, by: who });
-			Ok(())
+			Self::do_create_order(who, para_id, requirements)
 		}
 
 		/// Extrinsic for cancelling an order.
@@ -263,6 +257,24 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
+		pub(crate) fn do_create_order(
+			creator: T::AccountId,
+			para_id: ParaId,
+			requirements: Requirements,
+		) -> DispatchResult {
+			T::OrderCreationFeeHandler::handle(&creator, T::OrderCreationCost::get())?;
+
+			let order_id = NextOrderId::<T>::get();
+			Orders::<T>::insert(
+				order_id,
+				Order { creator: creator.clone(), para_id, requirements },
+			);
+			NextOrderId::<T>::put(order_id.saturating_add(1));
+
+			Self::deposit_event(Event::OrderCreated { order_id, by: creator });
+			Ok(())
+		}
+
 		pub(crate) fn do_cancel_order(
 			order_id: OrderId,
 			current_timeslice: Timeslice,
@@ -285,5 +297,26 @@ pub mod pallet {
 			let timeslice_period = T::TimeslicePeriod::get();
 			(latest_rc_block / timeslice_period).saturated_into()
 		}
+	}
+
+	impl<T: Config> OrderInspect<T::AccountId> for Pallet<T> {
+		fn order(order_id: &OrderId) -> Option<Order<T::AccountId>> {
+			Orders::<T>::get(order_id)
+		}
+
+		fn remove_order(order_id: &OrderId) {
+			Orders::<T>::remove(order_id)
+		}
+	}
+}
+
+impl<T: crate::Config> OrderFactory<T::AccountId> for Pallet<T> {
+	fn create_order(
+		creator: T::AccountId,
+		para_id: ParaId,
+		requirements: Requirements,
+	) -> sp_runtime::DispatchResult {
+		crate::Pallet::<T>::do_create_order(creator, para_id, requirements)?;
+		Ok(())
 	}
 }

@@ -17,7 +17,7 @@
 
 use codec::{alloc::collections::BTreeMap, Decode};
 use core::{cmp::max, marker::PhantomData};
-use frame_support::{pallet_prelude::Weight, PalletId};
+use frame_support::{pallet_prelude::Weight, traits::nonfungible::Mutate as NftMutate, PalletId};
 use ismp::{
 	consensus::StateMachineId,
 	dispatcher::{DispatchGet, DispatchRequest, FeeMetadata, IsmpDispatcher},
@@ -30,7 +30,7 @@ use ismp_parachain::PARACHAIN_CONSENSUS_ID;
 pub use pallet::*;
 use pallet_broker::RegionId;
 use pallet_ismp::{weights::IsmpModuleWeight, ModuleId};
-use region_primitives::{Record, Region};
+use region_primitives::{Record, Region, RegionFactory};
 use scale_info::prelude::{format, vec, vec::Vec};
 use sp_core::H256;
 use sp_runtime::traits::Zero;
@@ -103,13 +103,7 @@ pub mod pallet {
 	/// Regions that got cross-chain transferred to the RegionX parachain.
 	#[pallet::storage]
 	#[pallet::getter(fn regions)]
-	pub type Regions<T> = StorageMap<
-		_,
-		Blake2_128Concat,
-		RegionId,
-		Region<<T as frame_system::Config>::AccountId, BalanceOf<T>>,
-		OptionQuery,
-	>;
+	pub type Regions<T> = StorageMap<_, Blake2_128Concat, RegionId, RegionOf<T>, OptionQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -377,6 +371,18 @@ impl<T: crate::Config> IsmpModuleWeight for IsmpRegionsModuleWeight<T> {
 impl<T: crate::Config> Default for IsmpRegionsModuleWeight<T> {
 	fn default() -> Self {
 		IsmpRegionsModuleWeight { marker: PhantomData }
+	}
+}
+
+impl<T: crate::Config> RegionFactory<T::AccountId, RegionRecordOf<T>> for Pallet<T> {
+	fn create_region(
+		region_id: RegionId,
+		record: RegionRecordOf<T>,
+		owner: <T as frame_system::Config>::AccountId,
+	) -> sp_runtime::DispatchResult {
+		crate::Pallet::<T>::mint_into(&region_id.into(), &owner)?;
+		crate::Pallet::<T>::set_record(region_id, record.clone())?;
+		Ok(())
 	}
 }
 

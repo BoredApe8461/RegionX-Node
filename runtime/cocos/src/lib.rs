@@ -38,6 +38,7 @@ mod ismp;
 
 use impls::*;
 
+use crate::xcm_config::CoretimeChainLocation;
 use codec::Encode;
 use cumulus_pallet_parachain_system::{
 	RelayChainState, RelayNumberMonotonicallyIncreases, RelaychainDataProvider,
@@ -48,7 +49,8 @@ use frame_support::traits::{
 	tokens::{PayFromAccount, UnityAssetBalanceConversion},
 	Currency as PalletCurrency, EqualPrivilegeOnly, LinearStoragePrice, TransformOrigin,
 };
-use pallet_orders::OrderId;
+use order_primitives::OrderId;
+use pallet_processor::assigner::XcmRegionAssigner;
 use pallet_regions::primitives::StateMachineHeightProvider as StateMachineHeightProviderT;
 use parachains_common::message_queue::{NarrowOriginToSibling, ParaIdToSibling};
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
@@ -757,8 +759,6 @@ impl pallet_market::Config for Runtime {
 	type RCBlockNumberProvider = RelaychainDataProvider<Self>;
 	type TimeslicePeriod = ConstU32<80>;
 	type WeightInfo = weights::pallet_market::WeightInfo<Runtime>;
-	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = impls::benchmarks::RegionFactory;
 }
 
 parameter_types! {
@@ -783,6 +783,20 @@ impl pallet_orders::Config for Runtime {
 	type RCBlockNumberProvider = RelaychainDataProvider<Self>;
 	type TimeslicePeriod = ConstU32<80>;
 	type WeightInfo = weights::pallet_orders::WeightInfo<Runtime>;
+}
+
+impl pallet_processor::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = RelaychainCurrency;
+	type Balance = Balance;
+	type Orders = Orders;
+	type OrderToAccountId = OrderToAccountId;
+	type Regions = Regions;
+	type AssignmentCallEncoder = AssignmentCallEncoder;
+	type RegionAssigner = XcmRegionAssigner<Self>;
+	type CoretimeChain = CoretimeChainLocation;
+	type WeightToFee = WeightToFee;
+	type WeightInfo = ();
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -849,6 +863,7 @@ construct_runtime!(
 		Regions: pallet_regions = 90,
 		Market: pallet_market = 91,
 		Orders: pallet_orders = 92,
+		Processor: pallet_processor = 93,
 	}
 );
 
@@ -875,6 +890,7 @@ mod benches {
 		[pallet_message_queue, MessageQueue]
 		[pallet_orders, Orders]
 		[pallet_preimage, Preimage]
+		[pallet_processor, Processor]
 		[pallet_referenda, NativeReferenda]
 		[pallet_referenda, DelegatedReferenda]
 		[pallet_scheduler, Scheduler]

@@ -88,7 +88,7 @@ fn list_region_works() {
 
 		assert_noop!(
 			Market::list_region(signer.clone(), region_id, price, None),
-			Error::<Test>::UnknownRegion
+			Error::<Test>::RecordUnavailable
 		);
 
 		assert_ok!(Regions::set_record(region_id, record.clone()));

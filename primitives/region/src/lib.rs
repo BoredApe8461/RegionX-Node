@@ -15,8 +15,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::Parameter;
-use pallet_broker::RegionRecord;
+use frame_support::{pallet_prelude::DispatchResult, Parameter};
+use pallet_broker::{RegionId, RegionRecord};
 use scale_info::TypeInfo;
 use sp_core::H256;
 
@@ -79,4 +79,15 @@ pub trait RegionInspect<AccountId: Clone, Balance: Clone> {
 	///
 	/// If `None` the region record was not found.
 	fn record(region_id: &Self::ItemId) -> Option<RegionRecord<AccountId, Balance>>;
+
+	/// Get the region data.
+	///
+	/// If `None` the region was not found.
+	fn region(region_id: &Self::ItemId) -> Option<Region<AccountId, Balance>>;
+}
+
+/// Trait for creating regions. Mostly used for benchmarking.
+pub trait RegionFactory<AccountId, RegionRecord> {
+	fn create_region(region_id: RegionId, record: RegionRecord, owner: AccountId)
+		-> DispatchResult;
 }

@@ -158,8 +158,10 @@ ismp-testsuite = { git = "https://github.com/polytope-labs/hyperbridge.git", bra
 # Local
 region-primitives = { path = "./primitives/region", default-features = false }
 nonfungible-primitives = { path = "./primitives/nonfungible", default-features = false }
+order-primitives = { path = "./primitives/order", default-features = false }
 regionx-runtime-common = { path = "./runtime/common", default-features = false }
 cocos-runtime = { path = "./runtime/cocos", default-features = false }
 pallet-market = { path = "./pallets/market", default-features = false }
 pallet-orders = { path = "./pallets/orders", default-features = false }
+pallet-processor = { path = "./pallets/processor", default-features = false }
 pallet-regions = { path = "./pallets/regions", default-features = false }
