@@ -51,13 +51,14 @@ async function setupRelayAsset(api: ApiPromise, signer: KeyringPair, initialBala
 // Transfer the relay chain asset to the parachain specified by paraId.
 // Receiver address is same as the sender's.
 async function transferRelayAssetToPara(
-  amount: bigint,
-  paraId: number,
   relayApi: ApiPromise,
-  signer: KeyringPair
+  signer: KeyringPair,
+  paraId: number,
+  receiver: string,
+  amount: bigint
 ) {
   const receiverKeypair = new Keyring();
-  receiverKeypair.addFromAddress(signer.address);
+  receiverKeypair.addFromAddress(receiver);
 
   // If system parachain we use teleportation, otherwise we do a reserve transfer.
   const transferKind = paraId < 2000 ? 'limitedTeleportAssets' : 'limitedReserveTransferAssets';
@@ -97,6 +98,23 @@ async function transferRelayAssetToPara(
   await submitExtrinsic(signer, reserveTransfer, {});
 }
 
+async function openHrmpChannel(
+  signer: KeyringPair,
+  relayApi: ApiPromise,
+  senderParaId: number,
+  recipientParaId: number
+) {
+  const openHrmp = relayApi.tx.parasSudoWrapper.sudoEstablishHrmpChannel(
+    senderParaId, // sender
+    recipientParaId, // recipient
+    8, // Max capacity
+    102400 // Max message size
+  );
+  const sudoCall = relayApi.tx.sudo.sudo(openHrmp);
+
+  return submitExtrinsic(signer, sudoCall, {});
+}
+
 async function sleep(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -117,10 +135,17 @@ const getFreeBalance = async (api: ApiPromise, address: string): Promise<bigint>
   return BigInt(free);
 };
 
+function log(message: string) {
+  // Green log.
+  console.log('\x1b[32m%s\x1b[0m', message);
+}
+
 export {
   RELAY_ASSET_ID,
+  log,
   setupRelayAsset,
   sleep,
+  openHrmpChannel,
   submitExtrinsic,
   transferRelayAssetToPara,
   getAddressFromModuleId,

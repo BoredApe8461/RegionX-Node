@@ -1,6 +1,6 @@
-const UNIT = 10 ** 12; // ROC has 12 decimals
+const UNIT = 10n ** 12n; // ROC has 12 decimals
 
-const INITIAL_PRICE = 50 * UNIT;
+const INITIAL_PRICE = 1n * UNIT;
 const CORE_COUNT = 10;
 const TIMESLICE_PERIOD = 80;
 const IDEAL_CORES_SOLD = 5;

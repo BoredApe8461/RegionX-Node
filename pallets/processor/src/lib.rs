@@ -43,10 +43,8 @@ pub use weights::WeightInfo;
 
 const LOG_TARGET: &str = "runtime::order-creator";
 
-pub type BalanceOf<T> =
-	<<T as crate::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-
-pub type RegionRecordOf<T> = RegionRecord<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
+pub type RegionRecordOf<T> =
+	RegionRecord<<T as frame_system::Config>::AccountId, <T as crate::Config>::Balance>;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -55,6 +53,7 @@ pub mod pallet {
 		pallet_prelude::*,
 		traits::{
 			fungible::{Inspect, Mutate},
+			nonfungible::Mutate as NftMutate,
 			tokens::Balance,
 			ReservableCurrency,
 		},
@@ -85,8 +84,9 @@ pub mod pallet {
 		//
 		// The item id is `u128` encoded RegionId.
 		type Regions: Transfer<Self::AccountId, ItemId = u128>
+			+ NftMutate<Self::AccountId, ItemId = u128>
 			+ LockableNonFungible<Self::AccountId, ItemId = u128>
-			+ RegionInspect<Self::AccountId, BalanceOf<Self>, ItemId = u128>
+			+ RegionInspect<Self::AccountId, Self::Balance, ItemId = u128>
 			+ RegionFactory<Self::AccountId, RegionRecordOf<Self>>;
 
 		/// Type assigning the region to the specified task.
@@ -189,11 +189,7 @@ pub mod pallet {
 			// transfer it to the order creator. This way in case the assignment fails the region
 			// will still be owned by the creator.
 			T::Regions::transfer(&region_id.into(), &order.creator)?;
-			// Lock the region so the order creator cannot transfer it.
 			T::Regions::lock(&region_id.into(), None)?;
-			// Even though the region will be owned by the creator, anyone can assign it to the task
-			// by calling the `assign` extrinsic.
-			RegionAssignments::<T>::insert(region_id, order.para_id);
 
 			let order_account = T::OrderToAccountId::convert(order_id);
 			let amount = T::Currency::free_balance(&order_account);
@@ -210,13 +206,19 @@ pub mod pallet {
 
 			Self::deposit_event(Event::OrderProcessed { order_id, region_id, seller: who });
 
-			// NOTE: if an error occurs we don't return error, we instead return ok and emit
-			// appropriate event so the transaction doesn't get reverted in case the assignment
-			// fails.
+			// NOTE: If the assignment fails, we don't return an error; instead, we return ok and
+			// allow anyone to attempt to assign the region.
 			if let Err(err) = T::RegionAssigner::assign(region_id, order.para_id) {
+				// Even though the region will be owned by the creator, anyone can assign it to the
+				// task by calling the `assign` extrinsic.
+				RegionAssignments::<T>::insert(region_id, order.para_id);
+
 				Self::deposit_event(Event::AssignmentFailed(err));
 				return Ok(())
 			}
+
+			// We will burn the region since it has been assigned with `Final` finality.
+			T::Regions::burn(&region_id.into(), None)?;
 
 			Self::deposit_event(Event::RegionAssigned { region_id, para_id: order.para_id });
 			Ok(())
@@ -236,6 +238,9 @@ pub mod pallet {
 				.ok_or(Error::<T>::RegionAssignmentNotFound)?;
 
 			T::RegionAssigner::assign(region_id, para_id)?;
+
+			// We will burn the region since it has been assigned with `Final` finality.
+			T::Regions::burn(&region_id.into(), None)?;
 
 			Self::deposit_event(Event::RegionAssigned { region_id, para_id });
 			Ok(())

@@ -26,7 +26,7 @@ use order_primitives::ParaId;
 use orml_asset_registry::DefaultAssetMetadata;
 use orml_traits::{asset_registry::AssetProcessor, GetByKey};
 use pallet_asset_tx_payment::HandleCredit;
-use pallet_broker::RegionId;
+use pallet_broker::{Finality, RegionId};
 use pallet_processor::assigner::AssignmentCallEncoder as AssignmentCallEncoderT;
 use scale_info::TypeInfo;
 use sp_runtime::{
@@ -206,12 +206,13 @@ enum CoretimeRuntimeCalls {
 #[derive(Encode, Decode)]
 enum BrokerPalletCalls {
 	#[codec(index = 10)]
-	Assign(RegionId, ParaId),
+	Assign(RegionId, ParaId, Finality),
 }
 
 pub struct AssignmentCallEncoder;
 impl AssignmentCallEncoderT for AssignmentCallEncoder {
 	fn encode_assignment_call(region_id: RegionId, para_id: ParaId) -> sp_std::vec::Vec<u8> {
-		CoretimeRuntimeCalls::Broker(BrokerPalletCalls::Assign(region_id, para_id)).encode()
+		CoretimeRuntimeCalls::Broker(BrokerPalletCalls::Assign(region_id, para_id, Finality::Final))
+			.encode()
 	}
 }

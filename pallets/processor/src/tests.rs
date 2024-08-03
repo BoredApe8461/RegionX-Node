@@ -92,7 +92,8 @@ fn fulfill_order_works() {
 
 		// Region owner receives as the contributions for fulfilling the order:
 		assert_eq!(Balances::free_balance(region_owner), 1500);
-		assert_eq!(Regions::regions(region_id).unwrap().owner, 2000);
+		// The region is removed since the assignment was successful:
+		assert!(Regions::regions(region_id).is_none());
 
 		// Assignment request is emmited:
 		assert_eq!(assignments(), vec![(region_id, 2000.into())]);
@@ -111,7 +112,9 @@ fn assign_works() {
 			Error::<Test>::RegionAssignmentNotFound
 		);
 
+		Regions::mint_into(&region_id.into(), &1).unwrap();
 		crate::RegionAssignments::<Test>::insert(&region_id, para_id);
+
 		assert_ok!(Processor::assign(RuntimeOrigin::signed(1), region_id));
 		System::assert_last_event(Event::RegionAssigned { region_id, para_id: 2000.into() }.into());
 	});

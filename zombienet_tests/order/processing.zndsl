@@ -1,0 +1,12 @@
+Description: Order processing test
+Network: ./processing.toml
+Creds: config
+
+rococo-validator01: is up
+rococo-validator02: is up
+
+rococo-validator01: parachain 2000 is registered within 225 seconds
+
+regionx-collator01: js-script ../../e2e_tests/build/order/processing.js return is 0 within 800 seconds
+
+sleep 1000 seconds
