@@ -44,6 +44,7 @@ pub mod pallet_conviction_voting_native_conviction_voting;
 pub mod pallet_market;
 pub mod pallet_multisig;
 pub mod pallet_orders;
+pub mod pallet_processor;
 pub mod pallet_proxy;
 pub mod pallet_regions;
 pub mod pallet_session;

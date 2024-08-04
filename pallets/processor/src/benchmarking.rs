@@ -20,7 +20,7 @@
 use super::*;
 
 use frame_benchmarking::v2::*;
-use frame_support::{assert_ok, traits::fungible::Mutate};
+use frame_support::assert_ok;
 use frame_system::RawOrigin;
 use pallet_broker::{CoreMask, RegionId, RegionRecord};
 use sp_runtime::SaturatedConversion;
@@ -71,6 +71,9 @@ mod benchmarks {
 		let para_id: ParaId = 2000.into();
 
 		let region_id = RegionId { begin: 0, core: 0, mask: CoreMask::complete() };
+		let record: RegionRecordOf<T> = RegionRecord { end: 8, owner: caller.clone(), paid: None };
+		T::Regions::create_region(region_id, record, caller.clone())?;
+
 		crate::RegionAssignments::<T>::insert(&region_id, para_id);
 
 		#[extrinsic_call]

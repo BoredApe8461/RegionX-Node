@@ -194,7 +194,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("regionx-parachain"),
 	impl_name: create_runtime_str!("regionx-parachain"),
 	authoring_version: 1,
-	spec_version: 1_000_001,
+	spec_version: 1_001_000,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -801,7 +801,7 @@ impl pallet_processor::Config for Runtime {
 	type RegionAssigner = XcmRegionAssigner<Self, LocationToAccountId, OwnParaId, FeeBuffer>;
 	type CoretimeChain = CoretimeChainLocation;
 	type WeightToFee = parachains_common::rococo::fee::WeightToFee;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_processor::WeightInfo<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

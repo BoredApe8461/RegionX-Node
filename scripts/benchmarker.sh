@@ -16,6 +16,7 @@ modules=(
     "cumulus_pallet_xcmp_queue"
     "pallet_regions"
     "pallet_market"
+    "pallet_processor"
     "pallet_orders"
     "pallet_referenda"
     "pallet_conviction_voting"
