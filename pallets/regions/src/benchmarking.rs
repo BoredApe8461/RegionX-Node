@@ -64,7 +64,7 @@ mod benchmarks {
 		assert_ok!(crate::Pallet::<T>::mint_into(&region_id.into(), &caller));
 
 		#[extrinsic_call]
-		_(RawOrigin::Signed(caller.clone()), region_id);
+		_(RawOrigin::None, region_id);
 		assert!(crate::Pallet::<T>::regions(&region_id).unwrap().record.is_pending());
 
 		Ok(())

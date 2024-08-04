@@ -73,7 +73,7 @@ fn set_record_works() {
 		// `set_record` succeeds:
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
-		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(2), region_id));
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::none(), region_id));
 
 		assert!(Regions::regions(region_id).is_some());
 		let region = Regions::regions(region_id).unwrap();
@@ -101,19 +101,19 @@ fn request_region_record_works() {
 
 		// fails to request unknown regions
 		assert_noop!(
-			Regions::request_region_record(RuntimeOrigin::signed(1), region_id),
+			Regions::request_region_record(RuntimeOrigin::none(), region_id),
 			Error::<Test>::UnknownRegion
 		);
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &1));
-		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(1), region_id));
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::none(), region_id));
 
 		assert!(Regions::regions(region_id).is_some());
 		let region = Regions::regions(region_id).unwrap();
 		assert!(region.record.is_pending());
 		// Cannot request if there is already a request pending.
 		assert_noop!(
-			Regions::request_region_record(RuntimeOrigin::signed(1), region_id),
+			Regions::request_region_record(RuntimeOrigin::none(), region_id),
 			Error::<Test>::NotUnavailable
 		);
 
@@ -123,7 +123,7 @@ fn request_region_record_works() {
 			*val = Some(v0);
 		});
 
-		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(1), region_id));
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::none(), region_id));
 		assert!(region.record.is_pending());
 		let request = &requests()[0];
 		let Request::Get(get) = request.request.clone() else { panic!("Expected GET request") };
@@ -139,7 +139,6 @@ fn request_region_record_works() {
 		System::assert_last_event(
 			Event::<Test>::RegionRecordRequested {
 				region_id,
-				account: 1,
 				request_commitment: Default::default(),
 			}
 			.into(),
@@ -185,7 +184,7 @@ fn on_response_works() {
 		let region_id = RegionId { begin: 112830, core: 72, mask: CoreMask::complete() };
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
-		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(2), region_id));
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::none(), region_id));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }
@@ -265,7 +264,7 @@ fn on_timeout_works() {
 		let region_id = RegionId { begin: 0, core: 72, mask: CoreMask::complete() };
 
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
-		assert_ok!(Regions::request_region_record(RuntimeOrigin::signed(2), region_id));
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::none(), region_id));
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 2, locked: false, record: Record::Pending(Default::default()) }

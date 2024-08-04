@@ -126,8 +126,6 @@ pub mod pallet {
 		RegionRecordRequested {
 			/// The id of the region that the request was made for.
 			region_id: RegionId,
-			/// The account who requested the region record.
-			account: T::AccountId,
 			/// The ismp get request commitment.
 			request_commitment: H256,
 		},
@@ -174,16 +172,17 @@ pub mod pallet {
 		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::request_region_record())]
 		pub fn request_region_record(origin: OriginFor<T>, region_id: RegionId) -> DispatchResult {
-			let who = ensure_signed(origin)?;
+			ensure_none(origin)?;
 
 			let region = Regions::<T>::get(region_id).ok_or(Error::<T>::UnknownRegion)?;
-
 			ensure!(region.record.is_unavailable(), Error::<T>::NotUnavailable);
 
-			let commitment = Self::do_request_region_record(region_id, who.clone())?;
+			// Even though we don't know if this was requested by the region owner, we can use it
+			// since there is no fee charged.
+			let commitment = Self::do_request_region_record(region_id, region.owner.clone())?;
 			Regions::<T>::insert(
 				region_id,
-				Region { owner: who.clone(), locked: false, record: Record::Pending(commitment) },
+				Region { owner: region.owner, locked: false, record: Record::Pending(commitment) },
 			);
 
 			Ok(())
@@ -261,7 +260,6 @@ pub mod pallet {
 
 			Self::deposit_event(Event::RegionRecordRequested {
 				region_id,
-				account: who,
 				request_commitment: commitment,
 			});
 
