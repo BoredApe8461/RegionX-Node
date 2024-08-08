@@ -13,7 +13,7 @@ repository = "https://github.com/RegionX-Labs/RegionX-Node"
 edition = "2021"
 
 [workspace.dependencies]
-serde = { version = "1.0.201", default-features = false }
+serde = { version = "1.0.204", default-features = false }
 sha2 = { version = "0.10.8", default-features = false }
 clap = { version = "4.5.13" }
 futures = { version = "0.3.29" }
