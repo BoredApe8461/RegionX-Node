@@ -2,7 +2,7 @@ import { ApiPromise, Keyring } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { getEncodedRegionId, RegionId } from 'coretime-utils';
 import assert from 'node:assert';
-import { sleep, submitExtrinsic } from './common';
+import { sleep, submitExtrinsic, submitUnsigned } from './common';
 import { makeIsmpResponse, queryRequest } from './ismp.common';
 
 const REGIONX_SOVEREIGN_ACCOUNT = '5Eg2fntJ27qsari4FGrGhrMqKFDRnkNSR6UshkZYBGXmSuC8';
@@ -69,7 +69,7 @@ async function transferRegionToRegionX(
   await sleep(5000);
 
   const requestRecord = regionXApi.tx.regions.requestRegionRecord(regionId);
-  await submitExtrinsic(sender, requestRecord, {});
+  await submitUnsigned(requestRecord);
 
   let regions = await regionXApi.query.regions.regions.entries();
   assert.equal(regions.length, 1);

@@ -63,6 +63,10 @@ const LOG_TARGET: &str = "runtime::regions";
 /// Constant Pallet ID
 pub const PALLET_ID: ModuleId = ModuleId::Pallet(PalletId(*b"regionsp"));
 
+// Custom transaction error codes
+const REGION_NOT_FOUND: u8 = 1;
+const REGION_NOT_UNAVAILABLE: u8 = 2;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -92,6 +96,10 @@ pub mod pallet {
 
 		/// Number of seconds before a GET request times out.
 		type Timeout: Get<u64>;
+
+		/// The priority of unsigned transactions.
+		#[pallet::constant]
+		type UnsignedPriority: Get<TransactionPriority>;
 
 		/// Weight Info
 		type WeightInfo: WeightInfo;
@@ -279,6 +287,37 @@ pub mod pallet {
 			let key = [pallet_hash, storage_hash, region_id_hash, region_id_encoded].concat();
 
 			Ok(key)
+		}
+	}
+
+	#[pallet::validate_unsigned]
+	impl<T: Config> ValidateUnsigned for Pallet<T> {
+		type Call = Call<T>;
+		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
+			let region_id = match call {
+				Call::request_region_record { region_id } => region_id,
+				_ => return InvalidTransaction::Call.into(),
+			};
+
+			let Some(region) = Regions::<T>::get(region_id) else {
+				return InvalidTransaction::Custom(REGION_NOT_FOUND).into()
+			};
+
+			if !region.record.is_unavailable() {
+				return InvalidTransaction::Custom(REGION_NOT_UNAVAILABLE).into()
+			}
+
+			ValidTransaction::with_tag_prefix("RecordRequest")
+				.priority(T::UnsignedPriority::get())
+				.and_provides(region_id)
+				.propagate(true)
+				.build()
+		}
+
+		fn pre_dispatch(_call: &Self::Call) -> Result<(), TransactionValidityError> {
+			// Given that the `request_region_record` function contains checks there is no need to
+			// call `validate_unsigned` again.
+			Ok(())
 		}
 	}
 }
