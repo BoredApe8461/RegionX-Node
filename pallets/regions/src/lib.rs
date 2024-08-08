@@ -137,6 +137,26 @@ pub mod pallet {
 			/// The ismp get request commitment.
 			request_commitment: H256,
 		},
+		/// A region was minted via a cross chain transfer.
+		RegionMinted {
+			/// minted region id
+			region_id: RegionId,
+		},
+		/// A region was burnt.
+		RegionBurnt {
+			/// burnt region id
+			region_id: RegionId,
+		},
+		/// A region was locked.
+		RegionLocked {
+			/// locked region id
+			region_id: RegionId,
+		},
+		/// A region was unlocked.
+		RegionUnlocked {
+			/// unlocked region id
+			region_id: RegionId,
+		},
 	}
 
 	#[pallet::error]

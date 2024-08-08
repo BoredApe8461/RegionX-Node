@@ -41,6 +41,7 @@ fn nonfungibles_implementation_works() {
 
 		assert!(Regions::regions(&region_id).is_none());
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
+		System::assert_last_event(Event::RegionMinted { region_id }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 2, locked: false, record: Record::Unavailable }
@@ -55,6 +56,7 @@ fn nonfungibles_implementation_works() {
 		assert_noop!(Regions::burn(&region_id.into(), Some(&1)), Error::<Test>::NotOwner);
 
 		assert_ok!(Regions::burn(&region_id.into(), Some(&2)));
+		System::assert_last_event(Event::RegionBurnt { region_id }.into());
 		assert!(Regions::regions(&region_id).is_none());
 
 		assert_noop!(Regions::burn(&region_id.into(), None), Error::<Test>::UnknownRegion);
@@ -427,6 +429,7 @@ fn region_locking_works() {
 		assert_noop!(Regions::lock(&region_id.into(), Some(2)), Error::<Test>::NotOwner);
 
 		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
+		System::assert_last_event(Event::RegionLocked { region_id }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: true, record: Record::Unavailable }
@@ -461,6 +464,7 @@ fn region_unlocking_works() {
 		assert_noop!(Regions::unlock(&region_id.into(), Some(1)), Error::<Test>::RegionNotLocked);
 
 		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
+		System::assert_last_event(Event::RegionLocked { region_id }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: true, record: Record::Unavailable }
@@ -470,6 +474,7 @@ fn region_unlocking_works() {
 		assert_noop!(Regions::unlock(&region_id.into(), Some(2)), Error::<Test>::NotOwner);
 
 		assert_ok!(Regions::unlock(&region_id.into(), Some(1)));
+		System::assert_last_event(Event::RegionUnlocked { region_id }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: false, record: Record::Unavailable }

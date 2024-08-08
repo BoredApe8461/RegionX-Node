@@ -70,6 +70,8 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 			Region { owner: who.clone(), locked: false, record: Record::Unavailable },
 		);
 
+		Pallet::<T>::deposit_event(Event::RegionMinted { region_id });
+
 		log::info!(
 			target: LOG_TARGET,
 			"Minted region: {:?}",
@@ -89,6 +91,8 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 		}
 
 		Regions::<T>::remove(region_id);
+
+		Pallet::<T>::deposit_event(Event::RegionBurnt { region_id });
 
 		Ok(())
 	}
@@ -121,6 +125,7 @@ impl<T: Config> LockableNonFungible<T::AccountId> for Pallet<T> {
 		region.locked = true;
 		Regions::<T>::insert(region_id, region);
 
+		Pallet::<T>::deposit_event(Event::RegionLocked { region_id });
 		Ok(())
 	}
 
@@ -135,6 +140,8 @@ impl<T: Config> LockableNonFungible<T::AccountId> for Pallet<T> {
 
 		region.locked = false;
 		Regions::<T>::insert(region_id, region);
+
+		Pallet::<T>::deposit_event(Event::RegionUnlocked { region_id });
 
 		Ok(())
 	}
