@@ -28,12 +28,16 @@ use ismp::{
 };
 use ismp_parachain::PARACHAIN_CONSENSUS_ID;
 pub use pallet::*;
-use pallet_broker::RegionId;
+use pallet_broker::{RegionId, Timeslice};
 use pallet_ismp::{weights::IsmpModuleWeight, ModuleId};
+use primitives::StateMachineHeightProvider;
 use region_primitives::{Record, Region, RegionFactory};
 use scale_info::prelude::{format, vec, vec::Vec};
 use sp_core::H256;
-use sp_runtime::traits::Zero;
+use sp_runtime::{
+	traits::{BlockNumberProvider, Zero},
+	SaturatedConversion,
+};
 
 #[cfg(test)]
 mod mock;
@@ -53,7 +57,6 @@ mod types;
 use types::*;
 
 pub mod primitives;
-use primitives::StateMachineHeightProvider;
 
 pub mod weights;
 pub use weights::WeightInfo;
@@ -66,6 +69,10 @@ pub const PALLET_ID: ModuleId = ModuleId::Pallet(PalletId(*b"regionsp"));
 // Custom transaction error codes
 const REGION_NOT_FOUND: u8 = 1;
 const REGION_NOT_UNAVAILABLE: u8 = 2;
+
+/// Relay chain block number.
+pub type RCBlockNumberOf<T> =
+	<<T as crate::Config>::RCBlockNumberProvider as BlockNumberProvider>::BlockNumber;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -86,6 +93,15 @@ pub mod pallet {
 
 		/// The Coretime chain from which we read region state.
 		type CoretimeChain: Get<StateMachine>;
+
+		/// Type for getting the current relay chain block.
+		///
+		/// This is used for determining the current timeslice.
+		type RCBlockNumberProvider: BlockNumberProvider;
+
+		/// Number of Relay-chain blocks per timeslice.
+		#[pallet::constant]
+		type TimeslicePeriod: Get<RCBlockNumberOf<Self>>;
 
 		/// The ISMP dispatcher.
 		type IsmpDispatcher: IsmpDispatcher<Account = Self::AccountId, Balance = BalanceOf<Self>>
@@ -139,23 +155,30 @@ pub mod pallet {
 		},
 		/// A region was minted via a cross chain transfer.
 		RegionMinted {
-			/// minted region id
+			/// id of the minted region
 			region_id: RegionId,
 		},
 		/// A region was burnt.
 		RegionBurnt {
-			/// burnt region id
+			/// id of the burnt region
 			region_id: RegionId,
 		},
 		/// A region was locked.
 		RegionLocked {
-			/// locked region id
+			/// id of the locked region
 			region_id: RegionId,
 		},
 		/// A region was unlocked.
 		RegionUnlocked {
-			/// unlocked region id
+			/// id of the unlocked region
 			region_id: RegionId,
+		},
+		/// An expired region was dropped.
+		RegionDropped {
+			/// id of the dropped region
+			region_id: RegionId,
+			/// the account that dropped the region
+			who: T::AccountId,
 		},
 	}
 
@@ -172,6 +195,8 @@ pub mod pallet {
 		IsmpDispatchError,
 		/// The record must be unavailable to be able to re-request it.
 		NotUnavailable,
+		/// The region record is not available.
+		NotAvailable,
 		/// The given region id is not valid.
 		InvalidRegionId,
 		/// Failed to get the latest height of the Coretime chain.
@@ -180,6 +205,8 @@ pub mod pallet {
 		RegionLocked,
 		/// Region isn't locked.
 		RegionNotLocked,
+		/// Region is not expired.
+		RegionNotExpired,
 	}
 
 	#[pallet::call]
@@ -214,6 +241,36 @@ pub mod pallet {
 			);
 
 			Ok(())
+		}
+
+		#[pallet::call_index(2)]
+		#[pallet::weight(T::WeightInfo::drop_region())]
+		pub fn drop_region(origin: OriginFor<T>, region_id: RegionId) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			let region = Regions::<T>::get(region_id).ok_or(Error::<T>::UnknownRegion)?;
+
+			ensure!(region.record.is_available(), Error::<T>::NotAvailable);
+
+			if let Record::Available(record) = region.record {
+				// Cannot drop a region that is not expired yet.
+
+				// Allowing region removal 1 timeslice before it truly expires makes writing
+				// benchmarks much easier. With this we can set the start and end to 0 and be able
+				// to drop the region without having to modify the current timeslice.
+				let current_timeslice = Self::current_timeslice();
+				#[cfg(feature = "runtime-benchmarks")]
+				ensure!(record.end <= current_timeslice, Error::<T>::RegionNotExpired);
+				#[cfg(not(feature = "runtime-benchmarks"))]
+				ensure!(record.end < current_timeslice, Error::<T>::RegionNotExpired);
+
+				Regions::<T>::remove(region_id);
+
+				Self::deposit_event(Event::RegionDropped { region_id, who });
+				Ok(())
+			} else {
+				Err(Error::<T>::NotAvailable.into())
+			}
 		}
 	}
 
@@ -307,6 +364,12 @@ pub mod pallet {
 			let key = [pallet_hash, storage_hash, region_id_hash, region_id_encoded].concat();
 
 			Ok(key)
+		}
+
+		pub(crate) fn current_timeslice() -> Timeslice {
+			let latest_rc_block = T::RCBlockNumberProvider::current_block_number();
+			let timeslice_period = T::TimeslicePeriod::get();
+			(latest_rc_block / timeslice_period).saturated_into()
 		}
 	}
 

@@ -622,6 +622,8 @@ impl pallet_regions::Config for Runtime {
 	type IsmpDispatcher = Ismp;
 	type StateMachineHeightProvider = StateMachineHeightProvider;
 	type Timeout = ConstU64<300>; // 5 minutes
+	type RCBlockNumberProvider = RelaychainDataProvider<Self>;
+	type TimeslicePeriod = ConstU32<80>;
 	type UnsignedPriority = RegionsUnsignedPriority;
 	type WeightInfo = weights::pallet_regions::WeightInfo<Runtime>;
 }

@@ -18,7 +18,7 @@ use frame_support::{pallet_prelude::*, parameter_types, traits::Everything};
 use ismp::{consensus::StateMachineId, host::StateMachine};
 use sp_core::{ConstU64, H256};
 use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup},
+	traits::{BlakeTwo256, BlockNumberProvider, IdentityLookup},
 	BuildStorage,
 };
 
@@ -95,6 +95,18 @@ impl StateMachineHeightProvider for MockStateMachineHeightProvider {
 	}
 }
 
+parameter_types! {
+	pub static RelayBlockNumber: u64 = 0;
+}
+
+pub struct RelayBlockNumberProvider;
+impl BlockNumberProvider for RelayBlockNumberProvider {
+	type BlockNumber = u64;
+	fn current_block_number() -> Self::BlockNumber {
+		RelayBlockNumber::get()
+	}
+}
+
 impl crate::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
@@ -103,6 +115,8 @@ impl crate::Config for Test {
 	type StateMachineHeightProvider = MockStateMachineHeightProvider;
 	type Timeout = ConstU64<1000>;
 	type UnsignedPriority = RegionsUnsignedPriority;
+	type RCBlockNumberProvider = RelayBlockNumberProvider;
+	type TimeslicePeriod = ConstU64<80>;
 	type WeightInfo = ();
 }
 

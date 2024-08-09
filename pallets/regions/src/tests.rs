@@ -529,3 +529,45 @@ fn utils_read_value_works() {
 		);
 	});
 }
+
+#[test]
+fn drop_region_works() {
+	new_test_ext().execute_with(|| {
+		let region_id = RegionId { begin: 1, core: 81, mask: CoreMask::complete() };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 10, owner: 1, paid: None };
+		let who = 1u32.into();
+
+		assert_noop!(
+			Regions::drop_region(RuntimeOrigin::signed(who), region_id),
+			Error::<Test>::UnknownRegion
+		);
+
+		assert_ok!(Regions::mint_into(&region_id.into(), &2));
+		// region status = Unavailable
+		assert_noop!(
+			Regions::drop_region(RuntimeOrigin::signed(who), region_id),
+			Error::<Test>::NotAvailable
+		);
+
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::none(), region_id));
+		// region status = Pending
+		assert_noop!(
+			Regions::drop_region(RuntimeOrigin::signed(who), region_id),
+			Error::<Test>::NotAvailable
+		);
+
+		assert_ok!(Regions::set_record(region_id, record.clone()));
+
+		assert_noop!(
+			Regions::drop_region(RuntimeOrigin::signed(who), region_id),
+			Error::<Test>::RegionNotExpired
+		);
+
+		RelayBlockNumber::set(11 * 80);
+		assert_ok!(Regions::drop_region(RuntimeOrigin::signed(who), region_id));
+
+		assert!(Regions::regions(region_id).is_none());
+
+		System::assert_last_event(Event::RegionDropped { region_id, who }.into());
+	})
+}
