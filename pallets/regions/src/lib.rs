@@ -157,6 +157,8 @@ pub mod pallet {
 		RegionMinted {
 			/// id of the minted region
 			region_id: RegionId,
+			/// address of the minter
+			by: T::AccountId,
 		},
 		/// A region was burnt.
 		RegionBurnt {
@@ -180,6 +182,8 @@ pub mod pallet {
 			/// the account that dropped the region
 			who: T::AccountId,
 		},
+		/// Request for a region record timed out.
+		RequestTimedOut { region_id: RegionId },
 	}
 
 	#[pallet::error]
@@ -462,6 +466,7 @@ impl<T: Config> IsmpModule for IsmpModuleCallback<T> {
 				region.record = Record::Unavailable;
 				Regions::<T>::insert(region_id, region);
 
+				crate::Pallet::<T>::deposit_event(Event::RequestTimedOut { region_id });
 				Ok(())
 			}),
 			Timeout::Request(Request::Post(_)) => Ok(()),

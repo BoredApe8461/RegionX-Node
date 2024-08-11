@@ -41,7 +41,7 @@ fn nonfungibles_implementation_works() {
 
 		assert!(Regions::regions(&region_id).is_none());
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
-		System::assert_last_event(Event::RegionMinted { region_id }.into());
+		System::assert_last_event(Event::RegionMinted { region_id, by: 2u32.into() }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 2, locked: false, record: Record::Unavailable }
@@ -286,19 +286,15 @@ fn on_timeout_works() {
 
 		// failed to decode region_id
 		let mut invalid_get_req = get.clone();
-		invalid_get_req.keys.push(vec![0u8; 15]);
+		invalid_get_req.keys = vec![vec![0u8; 15]];
 		assert_noop!(
 			module.on_timeout(Timeout::Request(Request::Get(invalid_get_req.clone()))),
 			IsmpCustomError::KeyDecodeFailed
 		);
 
 		// invalid id: region not found
-		invalid_get_req.keys.pop();
-		if let Some(key) = invalid_get_req.keys.get_mut(0) {
-			for i in 0..key.len() {
-				key[i] = key[i].reverse_bits();
-			}
-		}
+		let non_existing_region = RegionId { begin: 42, core: 72, mask: CoreMask::complete() };
+		invalid_get_req.keys = vec![non_existing_region.encode()];
 		assert_noop!(
 			module.on_timeout(Timeout::Request(Request::Get(invalid_get_req.clone()))),
 			IsmpCustomError::RegionNotFound
@@ -314,6 +310,7 @@ fn on_timeout_works() {
 			data: Default::default(),
 		};
 		assert_ok!(module.on_timeout(Timeout::Request(Request::Post(post.clone()))));
+		System::assert_last_event(Event::RequestTimedOut { region_id }.into());
 
 		assert_ok!(module.on_timeout(Timeout::Response(PostResponse {
 			post,

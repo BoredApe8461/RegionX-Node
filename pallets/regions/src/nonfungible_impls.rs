@@ -70,7 +70,7 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 			Region { owner: who.clone(), locked: false, record: Record::Unavailable },
 		);
 
-		Pallet::<T>::deposit_event(Event::RegionMinted { region_id });
+		Pallet::<T>::deposit_event(Event::RegionMinted { region_id, by: who.clone() });
 
 		log::info!(
 			target: LOG_TARGET,
