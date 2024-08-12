@@ -129,6 +129,7 @@ impl<T: crate::Config> IsmpDispatcher for MockDispatcher<T> {
 
 parameter_types! {
 	pub const CoretimeChain: StateMachine = StateMachine::Kusama(1005); // coretime-kusama
+	pub const RegionsUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
 }
 
 impl pallet_regions::Config for Test {
@@ -138,6 +139,9 @@ impl pallet_regions::Config for Test {
 	type IsmpDispatcher = MockDispatcher<Self>;
 	type StateMachineHeightProvider = MockStateMachineHeightProvider;
 	type Timeout = ConstU64<1000>;
+	type RCBlockNumberProvider = RelayBlockNumberProvider;
+	type TimeslicePeriod = ConstU64<80>;
+	type UnsignedPriority = RegionsUnsignedPriority;
 	type WeightInfo = ();
 }
 

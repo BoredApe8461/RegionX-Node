@@ -55,6 +55,7 @@ use core::marker::PhantomData;
 pub trait WeightInfo {
 	fn transfer() -> Weight;
 	fn request_region_record() -> Weight;
+	fn drop_region() -> Weight;
 	fn on_accept() -> Weight;
 	fn on_response() -> Weight;
 	fn on_timeout() -> Weight;
@@ -94,6 +95,21 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		Weight::from_parts(28_955_000, 3957)
 			.saturating_add(T::DbWeight::get().reads(6_u64))
 			.saturating_add(T::DbWeight::get().writes(3_u64))
+	}
+	/// Storage: `Regions::Regions` (r:1 w:1)
+	/// Proof: `Regions::Regions` (`max_values`: None, `max_size`: Some(119), added: 2594, mode: `MaxEncodedLen`)
+	/// Storage: `ParachainSystem::ValidationData` (r:1 w:0)
+	/// Proof: `ParachainSystem::ValidationData` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
+	/// Storage: `ParachainSystem::LastRelayChainBlockNumber` (r:1 w:0)
+	/// Proof: `ParachainSystem::LastRelayChainBlockNumber` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
+	fn drop_region() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `249`
+		//  Estimated: `3584`
+		// Minimum execution time: 19_555_000 picoseconds.
+		Weight::from_parts(20_101_000, 3584)
+			.saturating_add(T::DbWeight::get().reads(3_u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 	fn on_accept() -> Weight {
 		// Proof Size summary in bytes:
@@ -159,6 +175,21 @@ impl WeightInfo for () {
 		Weight::from_parts(28_955_000, 3957)
 			.saturating_add(RocksDbWeight::get().reads(6_u64))
 			.saturating_add(RocksDbWeight::get().writes(3_u64))
+	}
+	/// Storage: `Regions::Regions` (r:1 w:1)
+	/// Proof: `Regions::Regions` (`max_values`: None, `max_size`: Some(119), added: 2594, mode: `MaxEncodedLen`)
+	/// Storage: `ParachainSystem::ValidationData` (r:1 w:0)
+	/// Proof: `ParachainSystem::ValidationData` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
+	/// Storage: `ParachainSystem::LastRelayChainBlockNumber` (r:1 w:0)
+	/// Proof: `ParachainSystem::LastRelayChainBlockNumber` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
+	fn drop_region() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `249`
+		//  Estimated: `3584`
+		// Minimum execution time: 19_555_000 picoseconds.
+		Weight::from_parts(20_101_000, 3584)
+			.saturating_add(RocksDbWeight::get().reads(3_u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 	fn on_accept() -> Weight {
 		// Proof Size summary in bytes:

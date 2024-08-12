@@ -71,6 +71,26 @@ mod benchmarks {
 	}
 
 	#[benchmark]
+	fn drop_region() -> Result<(), BenchmarkError> {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner: T::AccountId = account("alice", 0, SEED);
+
+		let region_id = RegionId { begin: 0, core: 72, mask: CoreMask::complete() };
+		let record: RegionRecordOf<T> = RegionRecord { end: 0, owner, paid: None };
+
+		assert_ok!(crate::Pallet::<T>::mint_into(&region_id.into(), &caller));
+		assert_ok!(crate::Pallet::<T>::request_region_record(RawOrigin::None.into(), region_id));
+		assert_ok!(crate::Pallet::<T>::set_record(region_id, record));
+
+		#[extrinsic_call]
+		_(RawOrigin::Signed(caller.clone()), region_id);
+
+		assert_last_event::<T>(Event::RegionDropped { region_id, who: caller }.into());
+
+		Ok(())
+	}
+
+	#[benchmark]
 	fn on_accept() -> Result<(), BenchmarkError> {
 		let module = IsmpModuleCallback::<T>::default();
 		#[block]

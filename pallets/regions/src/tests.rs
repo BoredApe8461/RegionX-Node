@@ -41,6 +41,7 @@ fn nonfungibles_implementation_works() {
 
 		assert!(Regions::regions(&region_id).is_none());
 		assert_ok!(Regions::mint_into(&region_id.into(), &2));
+		System::assert_last_event(Event::RegionMinted { region_id, by: 2u32.into() }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 2, locked: false, record: Record::Unavailable }
@@ -55,6 +56,7 @@ fn nonfungibles_implementation_works() {
 		assert_noop!(Regions::burn(&region_id.into(), Some(&1)), Error::<Test>::NotOwner);
 
 		assert_ok!(Regions::burn(&region_id.into(), Some(&2)));
+		System::assert_last_event(Event::RegionBurnt { region_id }.into());
 		assert!(Regions::regions(&region_id).is_none());
 
 		assert_noop!(Regions::burn(&region_id.into(), None), Error::<Test>::UnknownRegion);
@@ -284,19 +286,15 @@ fn on_timeout_works() {
 
 		// failed to decode region_id
 		let mut invalid_get_req = get.clone();
-		invalid_get_req.keys.push(vec![0u8; 15]);
+		invalid_get_req.keys = vec![vec![0u8; 15]];
 		assert_noop!(
 			module.on_timeout(Timeout::Request(Request::Get(invalid_get_req.clone()))),
 			IsmpCustomError::KeyDecodeFailed
 		);
 
 		// invalid id: region not found
-		invalid_get_req.keys.pop();
-		if let Some(key) = invalid_get_req.keys.get_mut(0) {
-			for i in 0..key.len() {
-				key[i] = key[i].reverse_bits();
-			}
-		}
+		let non_existing_region = RegionId { begin: 42, core: 72, mask: CoreMask::complete() };
+		invalid_get_req.keys = vec![non_existing_region.encode()];
 		assert_noop!(
 			module.on_timeout(Timeout::Request(Request::Get(invalid_get_req.clone()))),
 			IsmpCustomError::RegionNotFound
@@ -312,6 +310,7 @@ fn on_timeout_works() {
 			data: Default::default(),
 		};
 		assert_ok!(module.on_timeout(Timeout::Request(Request::Post(post.clone()))));
+		System::assert_last_event(Event::RequestTimedOut { region_id }.into());
 
 		assert_ok!(module.on_timeout(Timeout::Response(PostResponse {
 			post,
@@ -427,6 +426,7 @@ fn region_locking_works() {
 		assert_noop!(Regions::lock(&region_id.into(), Some(2)), Error::<Test>::NotOwner);
 
 		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
+		System::assert_last_event(Event::RegionLocked { region_id }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: true, record: Record::Unavailable }
@@ -461,6 +461,7 @@ fn region_unlocking_works() {
 		assert_noop!(Regions::unlock(&region_id.into(), Some(1)), Error::<Test>::RegionNotLocked);
 
 		assert_ok!(Regions::lock(&region_id.into(), Some(1)));
+		System::assert_last_event(Event::RegionLocked { region_id }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: true, record: Record::Unavailable }
@@ -470,6 +471,7 @@ fn region_unlocking_works() {
 		assert_noop!(Regions::unlock(&region_id.into(), Some(2)), Error::<Test>::NotOwner);
 
 		assert_ok!(Regions::unlock(&region_id.into(), Some(1)));
+		System::assert_last_event(Event::RegionUnlocked { region_id }.into());
 		assert_eq!(
 			Regions::regions(&region_id).unwrap(),
 			Region { owner: 1, locked: false, record: Record::Unavailable }
@@ -523,4 +525,46 @@ fn utils_read_value_works() {
 			Err(IsmpCustomError::EmptyValue.into())
 		);
 	});
+}
+
+#[test]
+fn drop_region_works() {
+	new_test_ext().execute_with(|| {
+		let region_id = RegionId { begin: 1, core: 81, mask: CoreMask::complete() };
+		let record: RegionRecordOf<Test> = RegionRecord { end: 10, owner: 1, paid: None };
+		let who = 1u32.into();
+
+		assert_noop!(
+			Regions::drop_region(RuntimeOrigin::signed(who), region_id),
+			Error::<Test>::UnknownRegion
+		);
+
+		assert_ok!(Regions::mint_into(&region_id.into(), &2));
+		// region status = Unavailable
+		assert_noop!(
+			Regions::drop_region(RuntimeOrigin::signed(who), region_id),
+			Error::<Test>::NotAvailable
+		);
+
+		assert_ok!(Regions::request_region_record(RuntimeOrigin::none(), region_id));
+		// region status = Pending
+		assert_noop!(
+			Regions::drop_region(RuntimeOrigin::signed(who), region_id),
+			Error::<Test>::NotAvailable
+		);
+
+		assert_ok!(Regions::set_record(region_id, record.clone()));
+
+		assert_noop!(
+			Regions::drop_region(RuntimeOrigin::signed(who), region_id),
+			Error::<Test>::RegionNotExpired
+		);
+
+		RelayBlockNumber::set(11 * 80);
+		assert_ok!(Regions::drop_region(RuntimeOrigin::signed(who), region_id));
+
+		assert!(Regions::regions(region_id).is_none());
+
+		System::assert_last_event(Event::RegionDropped { region_id, who }.into());
+	})
 }

@@ -164,6 +164,19 @@ impl<T: crate::Config> IsmpDispatcher for MockDispatcher<T> {
 
 parameter_types! {
 	pub const CoretimeChainStateMachine: StateMachine = StateMachine::Kusama(1005); // coretime-kusama
+	pub const RegionsUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+}
+
+parameter_types! {
+	pub static RelayBlockNumber: u64 = 0;
+}
+
+pub struct RelayBlockNumberProvider;
+impl BlockNumberProvider for RelayBlockNumberProvider {
+	type BlockNumber = u64;
+	fn current_block_number() -> Self::BlockNumber {
+		RelayBlockNumber::get()
+	}
 }
 
 impl pallet_regions::Config for Test {
@@ -173,6 +186,9 @@ impl pallet_regions::Config for Test {
 	type IsmpDispatcher = MockDispatcher<Self>;
 	type StateMachineHeightProvider = MockStateMachineHeightProvider;
 	type Timeout = ConstU64<1000>;
+	type UnsignedPriority = RegionsUnsignedPriority;
+	type RCBlockNumberProvider = RelayBlockNumberProvider;
+	type TimeslicePeriod = ConstU64<80>;
 	type WeightInfo = ();
 }
 
@@ -186,18 +202,6 @@ impl FeeHandler<AccountId, u64> for OrderCreationFeeHandler {
 			Preservation::Preserve,
 		)?;
 		Ok(())
-	}
-}
-
-parameter_types! {
-	pub static RelayBlockNumber: u64 = 0;
-}
-
-pub struct RelayBlockNumberProvider;
-impl BlockNumberProvider for RelayBlockNumberProvider {
-	type BlockNumber = u64;
-	fn current_block_number() -> Self::BlockNumber {
-		RelayBlockNumber::get()
 	}
 }
 

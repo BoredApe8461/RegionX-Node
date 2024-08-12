@@ -1,7 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { ISubmittableResult } from '@polkadot/types/types';
-import { submitExtrinsic } from './common';
+import { submitExtrinsic, submitUnsigned } from './common';
 import { Get, IsmpRequest } from './types';
 
 async function ismpAddParachain(signer: KeyringPair, regionXApi: ApiPromise) {
@@ -59,24 +58,7 @@ async function makeIsmpResponse(
         },
       },
     ]);
-
-    return new Promise((resolve, reject) => {
-      const unsub = response.send((result: ISubmittableResult) => {
-        const { status, isError } = result;
-        console.log(`Current status is ${status}`);
-        if (status.isInBlock) {
-          console.log(`Transaction included at blockHash ${status.asInBlock}`);
-        } else if (status.isFinalized) {
-          console.log(`Transaction finalized at blockHash ${status.asFinalized}`);
-          unsub.then();
-          return resolve();
-        } else if (isError) {
-          console.log('Transaction error');
-          unsub.then();
-          return reject();
-        }
-      });
-    });
+    await submitUnsigned(response);
   } else {
     new Error('Expected a Get request');
   }
