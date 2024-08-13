@@ -1126,6 +1126,12 @@ impl_runtime_apis! {
 		}
 	}
 
+	impl pallet_orders::runtime_api::OrdersApi<Block, AccountId> for Runtime {
+		fn order_account(order_id: OrderId) -> AccountId {
+			<Runtime as pallet_orders::Config>::OrderToAccountId::convert(order_id)
+		}
+	}
+
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
