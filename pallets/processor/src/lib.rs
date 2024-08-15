@@ -43,6 +43,9 @@ pub use weights::WeightInfo;
 
 const LOG_TARGET: &str = "runtime::order-creator";
 
+pub type BalanceOf<T> =
+	<<T as crate::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
 pub type RegionRecordOf<T> =
 	RegionRecord<<T as frame_system::Config>::AccountId, <T as crate::Config>::Balance>;
 
@@ -118,7 +121,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Order got fulfilled with a region which is matching the requirements.
-		OrderProcessed { order_id: OrderId, region_id: RegionId, seller: T::AccountId },
+		OrderProcessed { order_id: OrderId, region_id: RegionId, seller: T::AccountId, reward: BalanceOf<T> },
 		/// Region got successfully assigned to a parachain.
 		RegionAssigned { region_id: RegionId, para_id: ParaId },
 		/// Region assignment failed.
@@ -204,7 +207,7 @@ pub mod pallet {
 			// remove the order
 			T::Orders::remove_order(&order_id);
 
-			Self::deposit_event(Event::OrderProcessed { order_id, region_id, seller: who });
+			Self::deposit_event(Event::OrderProcessed { order_id, region_id, seller: who, reward: amount });
 
 			// NOTE: If the assignment fails, we don't return an error; instead, we return ok and
 			// allow anyone to attempt to assign the region.
