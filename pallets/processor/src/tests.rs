@@ -80,11 +80,19 @@ fn fulfill_order_works() {
 		// Works with a region that meets the requirements and is unlocked:
 
 		Regions::unlock(&region_id.into(), None).unwrap();
+
+		assert_eq!(Balances::free_balance(region_owner), 0);
 		assert_ok!(Processor::fulfill_order(RuntimeOrigin::signed(region_owner), 0, region_id));
 		// Check events
 		System::assert_has_event(Event::RegionAssigned { region_id, para_id: 2000.into() }.into());
 		System::assert_has_event(
-			Event::OrderProcessed { order_id: 0, region_id, seller: region_owner }.into(),
+			Event::OrderProcessed {
+				order_id: 0,
+				region_id,
+				seller: region_owner,
+				reward: 1500u32.into(),
+			}
+			.into(),
 		);
 
 		// Ensure order is removed:
