@@ -15,7 +15,7 @@ edition = "2021"
 [workspace.dependencies]
 serde = { version = "1.0.201", default-features = false }
 sha2 = { version = "0.10.8", default-features = false }
-clap = { version = "4.5.4" }
+clap = { version = "4.5.16" }
 futures = { version = "0.3.29" }
 jsonrpsee = { version = "0.16.3" }
 color-print = "0.3.6"
