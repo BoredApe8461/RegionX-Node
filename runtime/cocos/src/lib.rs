@@ -194,7 +194,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("regionx-parachain"),
 	impl_name: create_runtime_str!("regionx-parachain"),
 	authoring_version: 1,
-	spec_version: 2_002_000,
+	spec_version: 3_000_000,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -1123,12 +1123,6 @@ impl_runtime_apis! {
 
 		fn current_relay_chain_state() -> RelayChainState {
 			IsmpParachain::current_relay_chain_state()
-		}
-	}
-
-	impl pallet_orders::runtime_api::OrdersApi<Block, AccountId> for Runtime {
-		fn order_account(order_id: OrderId) -> AccountId {
-			<Runtime as pallet_orders::Config>::OrderToAccountId::convert(order_id)
 		}
 	}
 

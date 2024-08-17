@@ -39,8 +39,6 @@ pub use crate::types::*;
 pub mod weights;
 pub use weights::WeightInfo;
 
-pub mod runtime_api;
-
 pub type BalanceOf<T> =
 	<<T as crate::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
